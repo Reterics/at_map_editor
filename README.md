@@ -1,36 +1,27 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# AT Map Editor
 
-## Getting Started
+[![AT Map Editor](https://github.com/Reterics/at_map_editor/actions/workflows/npm-publish-github-packages.yml/badge.svg)](https://github.com/Reterics/at_map_editor/actions/workflows/npm-publish-github-packages.yml)
 
-First, run the development server:
+This project is going to be a Canvas/THREE.js Map editor for my Another Try THREE.JS based game in order to create scenes.
+Created in [Next.js](https://nextjs.org/).
+
+![Screenshot1](./public/screenshot.png)
+
+## Install
+
+For the latest stable version
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run build
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Contribute
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+There are many ways to [contribute](https://github.com/Reterics/invoice-management/blob/main/CONTRIBUTING.md) to Invoice Management.
+* [Submit bugs](https://github.com/Reterics/invoice-management/issues) and help us verify fixes as they are checked in.
+* Review the [source code changes](https://github.com/Reterics/invoice-management/pulls).
+* [Contribute bug fixes](https://github.com/Reterics/invoice-management/blob/main/CONTRIBUTING.md).
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
