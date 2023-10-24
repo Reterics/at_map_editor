@@ -2,6 +2,12 @@
   "name": "at_map_editor",
   "version": "0.1.0",
   "private": true,
+  "license": "GPL-3.0",
+  "author": {
+    "email": "reterics.attila@gmail.com",
+    "name": "Attila Reterics",
+    "url": "https://reterics.com/"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
