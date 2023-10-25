@@ -1,7 +1,7 @@
 import {DrawInterface} from "@/src/types/canvas";
 import {Asset, Circle, Line, Point, Rectangle} from "@/src/types/assets";
 
-const degToRad = (degrees: number) => (Math.PI / 180) * degrees;
+export const degToRad = (degrees: number) => (Math.PI / 180) * degrees;
 
 
 export class Draw implements DrawInterface{

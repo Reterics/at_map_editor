@@ -1,5 +1,5 @@
 
-export type AssetType = 'point'|'circle'|'rect'|'line'
+export type AssetType = 'point'|'circle'|'rect'|'line';
 
 export interface Asset {
     type: AssetType
@@ -36,3 +36,5 @@ export interface Line extends Asset {
     x2: number,
     y2: number
 }
+
+export type AssetObject = Asset|Rectangle|Circle|Line|Point;

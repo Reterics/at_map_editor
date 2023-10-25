@@ -1,10 +1,13 @@
 import {useEffect, useRef, useState} from "react";
-import {Asset, Point} from "@/src/types/assets";
+import {Asset, AssetObject, Point} from "@/src/types/assets";
 import {Draw} from "@/src/utils/math";
-import {it} from "node:test";
 
 
-export default function CanvasEditor({}) {
+export default function CanvasEditor({
+    reference
+}: {
+    reference: AssetObject
+}) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [drawer, setDrawer] = useState<Draw|null>(null);
     const [items, setItems] = useState([] as Asset[]);
@@ -40,13 +43,14 @@ export default function CanvasEditor({}) {
         const x = (e.clientX - rect.left) * scaleX;
         const y = (e.clientY - rect.top) * scaleY;
 
-        return { x, y, type: "point" } as Point
+        return { x, y } as Point
     }
     const onClick = (e: MouseEvent) => {
         const currentPoint = getPointInCanvas(e)
         if (currentPoint) {
             console.log('Add item', items);
-            setItems([...items, currentPoint])
+            const target = {...reference, ...currentPoint} as Asset;
+            setItems([...items, target])
         }
     }
 
