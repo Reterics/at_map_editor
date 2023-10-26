@@ -9,6 +9,7 @@ import {ATMap} from "@/src/types/map";
 import CanvasEditor from "@/components/lib/CanvasEditor";
 import {Asset, AssetObject, AssetType, Rectangle} from "@/src/types/assets";
 import {degToRad} from "@/src/utils/math";
+import ThreeComponent from "@/components/lib/ThreeComponent";
 
 
 export default function Editor() {
@@ -28,13 +29,15 @@ export default function Editor() {
             "type": "line"
         },
     ]; // TODO: Make dynamic
+    const [items, setItems] = useState<AssetObject[]>([]);
+
     const [reference, setReference] = useState(assets[0]);
 
 
     return (
         <Layout>
             <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full mt-2">
-                <CanvasEditor reference={reference} />
+                <CanvasEditor reference={reference} items={items} setItems={setItems} />
             </div>
             <div className="flex flex-row flex-wrap mt-4 overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full">
 
@@ -44,7 +47,9 @@ export default function Editor() {
                         <p className="font-normal text-gray-700 dark:text-gray-400">Click Here to activate asset</p>
                     </a>
                 )}
-
+            </div>
+            <div>
+                <ThreeComponent items={items}/>
             </div>
         </Layout>
     )

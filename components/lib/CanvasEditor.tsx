@@ -4,13 +4,16 @@ import {Draw} from "@/src/utils/math";
 
 
 export default function CanvasEditor({
-    reference
+    reference,
+    items,
+    setItems
 }: {
-    reference: AssetObject
+    reference: AssetObject,
+    items: AssetObject[],
+    setItems:Function
 }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [drawer, setDrawer] = useState<Draw|null>(null);
-    const [items, setItems] = useState([] as Asset[]);
 
 
     const render = () => {

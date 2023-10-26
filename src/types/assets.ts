@@ -2,7 +2,9 @@
 export type AssetType = 'point'|'circle'|'rect'|'line';
 
 export interface Asset {
-    type: AssetType
+    type: AssetType,
+    x?: number,
+    y?: number
 }
 
 export interface Point extends Asset {
@@ -16,9 +18,9 @@ export interface Circle extends Asset{
     x: number,
     y: number,
     radius: number,
-    startAngle: number|undefined,
-    endAngle: number|undefined,
-    anticlockwise: boolean|undefined
+    startAngle?: number,
+    endAngle?: number,
+    anticlockwise?: boolean
 }
 
 export interface Rectangle extends Asset {
