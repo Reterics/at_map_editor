@@ -1,3 +1,4 @@
+"use client";
 import {useEffect, useRef, useState} from "react";
 import {Asset, AssetObject, Point} from "@/src/types/assets";
 import {Draw} from "@/src/utils/math";
@@ -6,10 +7,14 @@ import {Draw} from "@/src/utils/math";
 export default function CanvasEditor({
     reference,
     items,
+    height,
+    width,
     setItems
 }: {
     reference: AssetObject,
     items: AssetObject[],
+    height: number,
+    width: number,
     setItems:Function
 }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -19,16 +24,16 @@ export default function CanvasEditor({
     const render = () => {
         if (drawer) {
             console.log('Render')
-            drawer.render(items);
+            if (canvasRef.current) {
+                drawer.updateCanvas();
+                drawer.render(items);
+            }
         }
     }
 
     useEffect(() => {
         if (canvasRef.current) {
-            const context = canvasRef.current.getContext('2d');
-            if (context) {
-                setDrawer(new Draw(context, canvasRef.current))
-            }
+            setDrawer(new Draw(canvasRef.current));
         }
     }, [canvasRef]);
 
@@ -60,8 +65,10 @@ export default function CanvasEditor({
     return (
         <canvas
         ref={canvasRef}
-        className="w-full h-full border-black"
+        className="w-full h-full border-black rounded-none p-0 m-0"
         onClick={(e) => onClick(e as unknown as MouseEvent)}
+        width={width}
+        height={height}
         >
 
         </canvas>

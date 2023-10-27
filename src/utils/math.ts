@@ -5,17 +5,26 @@ export const degToRad = (degrees: number) => (Math.PI / 180) * degrees;
 
 
 export class Draw implements DrawInterface{
-    private context: CanvasRenderingContext2D;
+    private context: CanvasRenderingContext2D | undefined;
     private canvas: HTMLCanvasElement;
 
-    constructor(context: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-        this.context = context;
+    constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
+        this.updateCanvas();
+    }
 
-        this.context.fillStyle = 'white';
-        this.context.fillRect(0, 0, canvas.width, canvas.height);
-        this.context.fillStyle = 'black';
-
+    updateCanvas () {
+        if (this.canvas) {
+            const ctx = this.canvas.getContext('2d');
+            if (ctx) {
+                this.context = ctx;
+            }
+            if (this.context) {
+                this.context.fillStyle = 'white';
+                this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.context.fillStyle = 'black';
+            }
+        }
     }
 
     circle (
@@ -32,10 +41,11 @@ export class Draw implements DrawInterface{
         if (endAngle === undefined) {
             endAngle = degToRad(360);
         }
-
-        this.context.beginPath();
-        this.context.arc(x, y, radius, startAngle, endAngle, anticlockwise);
-        this.context.stroke();
+        if (this.context) {
+            this.context.beginPath();
+            this.context.arc(x, y, radius, startAngle, endAngle, anticlockwise);
+            this.context.stroke();
+        }
     }
 
     line (
@@ -44,14 +54,16 @@ export class Draw implements DrawInterface{
         x2: number,
         y2: number
     ) {
-        this.context.beginPath();
-        this.context.moveTo(x1, y1);
-        this.context.lineTo(x2, y2);
-        this.context.closePath();
+        if (this.context) {
+            this.context.beginPath();
+            this.context.moveTo(x1, y1);
+            this.context.lineTo(x2, y2);
+            this.context.closePath();
+        }
     }
 
     lines (lines: Point[]) {
-        if (lines.length > 1) {
+        if (lines.length > 1 && this.context) {
             const move = lines.shift();
             if (move) {
                 this.context.beginPath();
@@ -72,8 +84,10 @@ export class Draw implements DrawInterface{
         w: number,
         h: number
     ) {
-        this.context.beginPath();
-        this.context.fillRect(x, y, w, h);
+        if (this.context) {
+            this.context.beginPath();
+            this.context.fillRect(x, y, w, h);
+        }
     }
 
     render(assets: Asset[]) {
