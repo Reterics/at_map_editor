@@ -1,10 +1,12 @@
 import Layout from "@/components/layout";
 import {BsFillTrashFill, BsPencilSquare} from "react-icons/bs";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {AssetObject, AssetType} from "@/src/types/assets";
-import {firebaseCollections, getCollection} from "@/src/firebase/config";
+import {db, firebaseCollections, getCollection} from "@/src/firebase/config";
 import AssetModal from "@/components/modals/AssetModal";
-import {set} from "@firebase/database";
+import {collection, doc, setDoc} from "firebase/firestore";
+import {getFileURL} from "@/src/firebase/storage";
+import Image from 'next/image'
 
 
 export default function Assets() {
@@ -23,17 +25,26 @@ export default function Assets() {
         alert('Method is not implemented');
     }
 
-    const saveAsset = () => {
-        alert('Method is not implemented');
+    const saveAsset = async () => {
+        const modelRef = doc(collection(db, firebaseCollections.assets))
+        await setDoc(modelRef, currentAsset, {merge: true});
+        setShowNewAsset(false);
+        setCurrentAsset({type: "model"});
+        await refreshAssets();
     };
 
     const refreshAssets = async () => {
-        const assets = await getCollection(firebaseCollections.assets);
+        const assets = (await getCollection(firebaseCollections.assets)) as AssetObject[];
+        for(let i = 0; i < assets.length; i++) {
+            if (assets[i].name && !assets[i].image) {
+                assets[i].image = await getFileURL('screenshots/' + assets[i].name + '.png');
+            }
+        }
         setAssets(assets as AssetObject[]);
     };
     useEffect(() => {
         void refreshAssets();
-    });
+    }, []);
 
     return (
         <Layout>
@@ -52,19 +63,20 @@ export default function Assets() {
                 <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
-                        <th scope="col" className="px-6 py-3">
+                        <th scope="col" className="px-6 py-3 w-[50px]">
                             ID
+                        </th>
+
+                        <th scope="col" className="px-6 py-3 w-[140px]">
+                            Image
                         </th>
                         <th scope="col" className="px-6 py-3">
                             Name
                         </th>
                         <th scope="col" className="px-6 py-3">
-                            Image
-                        </th>
-                        <th scope="col" className="px-6 py-3">
                             Type
                         </th>
-                        <th scope="col" className="px-6 py-3">
+                        <th scope="col" className="px-6 py-3 w-[100px]">
                             Action
                         </th>
                     </tr>
@@ -79,12 +91,17 @@ export default function Assets() {
                             </th>
                             <th scope="row"
                                 className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {(asset.name ? asset.name : "")}
+                                {(asset.image ? <Image src={asset.image}
+                                                       alt="Preview Image"
+                                                       width={80}
+                                                       height={32}
+                                /> : "")}
                             </th>
                             <th scope="row"
                                 className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {(asset.image ? asset.image : "")}
+                                {(asset.name ? asset.name : "")}
                             </th>
+
                             <th scope="row"
                                 className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                 {asset.type}

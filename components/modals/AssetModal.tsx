@@ -1,8 +1,13 @@
 import {AssetObject} from "@/src/types/assets";
 import StyledFile from "@/components/form/StyledFile";
 import StyledInput from "@/components/form/StyledInput";
-import {ChangeEvent, useState} from "react";
+import {ChangeEvent, useRef, useState} from "react";
+import * as THREE from "three";
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import {loadModel} from "@/src/utils/model";
+import {uploadFile, uploadFileDataURL} from "@/src/firebase/storage";
 
+let camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, scene: THREE.Scene;
 
 export default function AssetModal({
     visible,
@@ -18,6 +23,68 @@ export default function AssetModal({
     onSave: Function
 }) {
     const [file, setFile] = useState<File|null>(null)
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const reloadPreview = async (file: File) => {
+        if (file && containerRef.current) {
+            const width = 500,
+                height = 250;
+            if (!renderer) {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(75,
+                    width / height, 0.1,
+                    1000);
+                camera.position.x = 5;
+                camera.position.y = 5;
+                camera.position.z = 5;
+                camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+                renderer = new THREE.WebGLRenderer();
+                renderer.setSize(width, height);
+                renderer.render(scene, camera);
+                renderer.setClearColor(new THREE.Color(0xEEEEEE));
+
+                while (containerRef.current?.childNodes.length) {
+                    containerRef.current?.removeChild(containerRef.current?.childNodes[0]);
+                }
+                containerRef.current?.appendChild(renderer.domElement);
+                const controls = new OrbitControls( camera, renderer.domElement );
+                const animate = () => {
+                    requestAnimationFrame(animate);
+                    controls.update();
+                    renderer.render(scene, camera);
+                };
+                animate();
+            }
+
+            scene.clear();
+            const upColor = 0xFFFF80;
+            const downColor = 0x4040FF;
+            const light = new THREE.HemisphereLight(upColor, downColor, 1.0);
+            scene.add(light);
+            const modelGroup = await loadModel.gltf(file);
+            if (modelGroup) {
+                const boundingBox = new THREE.Box3();
+                boundingBox.setFromObject(modelGroup);
+                const boundingBoxCenter = new THREE.Vector3();
+                boundingBox.getCenter(boundingBoxCenter);
+                const boundingBoxSize = new THREE.Vector3();
+                boundingBox.getSize(boundingBoxSize);
+                const boundingBoxDistance = boundingBoxSize.length();
+
+                const cameraPosition = new THREE.Vector3();
+                cameraPosition.copy(boundingBoxCenter);
+
+                cameraPosition.z += boundingBoxDistance;
+                camera.position.copy(cameraPosition);
+                camera.lookAt(boundingBoxCenter);
+
+                scene.add(modelGroup);
+                // camera.lookAt(modelGroup.position);
+            }
+
+        }
+    }
     const handleOnClose = (e: React.MouseEvent) => {
         const target = e.target as HTMLElement;
         if (target.id === 'AssetModal') {
@@ -27,6 +94,7 @@ export default function AssetModal({
 
     const handleOnChangeFile = (file: File) => {
         setFile(file);
+        void reloadPreview(file);
     }
 
     const changeType = (e: ChangeEvent<HTMLInputElement>, key: string) => {
@@ -39,11 +107,20 @@ export default function AssetModal({
         });
     };
 
-    const uploadAndSave = () => {
+    const uploadAndSave = async () => {
         if (!file) {
             alert('You need to upload a model for creating an asset')
             return;
         }
+        if (!renderer || !renderer.domElement) {
+            alert('No valid object loaded');
+            return;
+        }
+        const extension = file.name.substring(file.name.lastIndexOf('.'));
+        renderer.render(scene,camera);
+        const screenshot = renderer.domElement.toDataURL("image/png");
+        await uploadFileDataURL('screenshots/' + currentAsset.name + '.png', screenshot);
+        await uploadFile('files/' + currentAsset.name + extension, file);
         onSave()
     };
 
@@ -71,6 +148,9 @@ export default function AssetModal({
                     />
                     <StyledFile name="model" label="Model" onChange={handleOnChangeFile} />
 
+                    <div ref={containerRef} className="preview flex justify-center m-auto pt-4 pb-4">
+
+                    </div>
                 </form>
 
                 <div className="flex justify-between">
