@@ -1,12 +1,17 @@
 import Layout from "@/components/layout";
 import {BsFillTrashFill, BsPencilSquare} from "react-icons/bs";
 import {useEffect, useState} from "react";
-import {AssetObject} from "@/src/types/assets";
+import {AssetObject, AssetType} from "@/src/types/assets";
 import {firebaseCollections, getCollection} from "@/src/firebase/config";
+import AssetModal from "@/components/modals/AssetModal";
+import {set} from "@firebase/database";
 
 
 export default function Assets() {
     const [assets, setAssets] = useState([] as AssetObject[]);
+    const [currentAsset, setCurrentAsset] =
+        useState({type: "model"} as AssetObject);
+    const [showNewAsset, setShowNewAsset] = useState(false);
 
     const deleteAsset = async (id: string|undefined) => {
         if (id && window.confirm('Are you sure you wish to delete this Asset?')) {
@@ -18,6 +23,10 @@ export default function Assets() {
         alert('Method is not implemented');
     }
 
+    const saveAsset = () => {
+        alert('Method is not implemented');
+    };
+
     const refreshAssets = async () => {
         const assets = await getCollection(firebaseCollections.assets);
         setAssets(assets as AssetObject[]);
@@ -25,6 +34,7 @@ export default function Assets() {
     useEffect(() => {
         void refreshAssets();
     });
+
     return (
         <Layout>
             <div className="flex justify-between max-w-screen-xl m-auto">
@@ -33,7 +43,7 @@ export default function Assets() {
                         className="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none
                             focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2
                             dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
-                        onClick={() => alert("Method is not implemented")}
+                        onClick={() => setShowNewAsset(true)}
                 >
                     Add Asset
                 </button>
@@ -89,6 +99,13 @@ export default function Assets() {
                     </tbody>
                 </table>
             </div>
+            <AssetModal
+                visible={showNewAsset}
+                onClose={() => setShowNewAsset(false)}
+                onSave={() => saveAsset()}
+                currentAsset={currentAsset}
+                setCurrentAsset={setCurrentAsset}
+            />
         </Layout>
     )
 }

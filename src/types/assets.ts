@@ -1,5 +1,5 @@
 
-export type AssetType = 'point'|'circle'|'rect'|'line';
+export type AssetType = 'point'|'circle'|'rect'|'line'|'model';
 
 export interface Asset {
     id?: string,
