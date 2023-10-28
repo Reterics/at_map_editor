@@ -2,6 +2,9 @@
 export type AssetType = 'point'|'circle'|'rect'|'line';
 
 export interface Asset {
+    id?: string,
+    name?: string,
+    image?: string,
     type: AssetType,
     x?: number,
     y?: number
