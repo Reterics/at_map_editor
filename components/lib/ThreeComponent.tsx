@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import {AssetObject} from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-let camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, scene: THREE.Scene;
+let camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, scene: THREE.Scene, controls: OrbitControls;
 
 export default function ThreeComponent({
     items,
@@ -32,7 +32,7 @@ export default function ThreeComponent({
             }
             model = new THREE.Mesh(geometry, material);
             if (model && typeof item.x === 'number' && typeof item.y === "number") {
-                model.position.set(item.x, 0, item.y);
+                model.position.set(item.x, item.y, 0);
             }
             if (model && scene) {
                 scene.add(model);
@@ -44,20 +44,19 @@ export default function ThreeComponent({
         if (typeof window !== 'undefined') {
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer();
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
             renderer.setSize(width, height);
             while (containerRef.current?.childNodes.length) {
                 containerRef.current?.removeChild(containerRef.current?.childNodes[0]);
             }
             containerRef.current?.appendChild(renderer.domElement);
-            camera.position.z = 70;
-            camera.position.x = 130;
-            camera.position.y = 250;
-
+            camera.up.set(0, -1, 0);
             refreshScene();
 
             renderer.render(scene, camera);
-            const controls = new OrbitControls( camera, renderer.domElement );
+            controls = new OrbitControls( camera, renderer.domElement );
 
             const animate = () => {
                 requestAnimationFrame(animate);
@@ -85,6 +84,12 @@ export default function ThreeComponent({
         camera.updateProjectionMatrix();
 
         renderer.setSize(width, height);
+
+        const lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
+        camera.position.copy(lookAt);
+        camera.position.z = - Math.round(Math.max(height, width) * 3 / 4);
+        controls.target.copy(lookAt);
+        renderer.render(scene, camera);
     }
 
     return <div ref={containerRef}/>;

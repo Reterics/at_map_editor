@@ -1,10 +1,20 @@
 import {GLTF, GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
-import {BufferGeometry, Group, Mesh, MeshPhongMaterial, NormalBufferAttributes, Object3DEventMap} from "three";
+import {
+    BufferGeometry,
+    Group,
+    Mesh,
+    MeshPhongMaterial,
+    NormalBufferAttributes,
+    Object3DEventMap,
+    PerspectiveCamera
+} from "three";
 import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
 import {Loader} from "three/src/Three";
 import {ColladaLoader} from "three/examples/jsm/loaders/ColladaLoader";
 import {STLLoader} from "three/examples/jsm/loaders/STLLoader";
+import * as THREE from "three";
+import {Object3D} from "three/src/core/Object3D";
 
 const genericLoader = (file: File, modelLoader: Loader) => {
     return new Promise(resolve => {
@@ -54,4 +64,21 @@ export const loadModel = {
         }
         return null;
     }
+}
+
+export const lookAtObject = (models: Object3D, camera: PerspectiveCamera): void => {
+    const boundingBox = new THREE.Box3();
+    boundingBox.setFromObject(models);
+    const boundingBoxCenter = new THREE.Vector3();
+    boundingBox.getCenter(boundingBoxCenter);
+    const boundingBoxSize = new THREE.Vector3();
+    boundingBox.getSize(boundingBoxSize);
+    const boundingBoxDistance = boundingBoxSize.length();
+
+    const cameraPosition = new THREE.Vector3();
+    cameraPosition.copy(boundingBoxCenter);
+
+    cameraPosition.z += boundingBoxDistance;
+    camera.position.copy(cameraPosition);
+    camera.lookAt(boundingBoxCenter);
 }

@@ -35,7 +35,7 @@ export default function CanvasEditor({
         if (canvasRef.current) {
             setDrawer(new Draw(canvasRef.current));
         }
-    }, [canvasRef]);
+    }, [canvasRef.current]);
 
     if (canvasRef && canvasRef.current && drawer) {
         void render();

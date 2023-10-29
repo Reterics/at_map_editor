@@ -4,7 +4,7 @@ import StyledInput from "@/components/form/StyledInput";
 import {ChangeEvent, useRef, useState} from "react";
 import * as THREE from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import {loadModel} from "@/src/utils/model";
+import {loadModel, lookAtObject} from "@/src/utils/model";
 import {uploadFile, uploadFileDataURL} from "@/src/firebase/storage";
 
 let camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, scene: THREE.Scene;
@@ -64,20 +64,7 @@ export default function AssetModal({
             scene.add(light);
             const modelGroup = await loadModel.gltf(file);
             if (modelGroup) {
-                const boundingBox = new THREE.Box3();
-                boundingBox.setFromObject(modelGroup);
-                const boundingBoxCenter = new THREE.Vector3();
-                boundingBox.getCenter(boundingBoxCenter);
-                const boundingBoxSize = new THREE.Vector3();
-                boundingBox.getSize(boundingBoxSize);
-                const boundingBoxDistance = boundingBoxSize.length();
-
-                const cameraPosition = new THREE.Vector3();
-                cameraPosition.copy(boundingBoxCenter);
-
-                cameraPosition.z += boundingBoxDistance;
-                camera.position.copy(cameraPosition);
-                camera.lookAt(boundingBoxCenter);
+                lookAtObject(modelGroup, camera);
 
                 scene.add(modelGroup);
                 // camera.lookAt(modelGroup.position);
