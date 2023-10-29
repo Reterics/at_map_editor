@@ -5,7 +5,12 @@
 This project is going to be a Canvas/THREE.js Map editor for my Another Try THREE.JS based game in order to create scenes.
 Created in [Next.js](https://nextjs.org/).
 
-![Screenshot1](./public/screenshot.png)
+## Features
+
+ - Creating map/scene from assets putting them on a 2D Canvas on the left side, and see on the right side the final scene in 3D.
+![Map Editor](./public/screenshot.png)
+ - Manage assets by uploading them in the dashboard. Every asset is stored safely in Google Cloud Storage
+![Assets Management](./public/screenshot2.png)
 
 ## Install
 

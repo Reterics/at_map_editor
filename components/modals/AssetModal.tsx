@@ -6,6 +6,7 @@ import * as THREE from "three";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {loadModel, lookAtObject} from "@/src/utils/model";
 import {uploadFile, uploadFileDataURL} from "@/src/firebase/storage";
+import {Sky} from "three/examples/jsm/objects/Sky";
 
 let camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, scene: THREE.Scene;
 
@@ -62,6 +63,28 @@ export default function AssetModal({
             const downColor = 0x4040FF;
             const light = new THREE.HemisphereLight(upColor, downColor, 1.0);
             scene.add(light);
+
+            const sky = new Sky();
+            sky.scale.setScalar( 450000 );
+            scene.add( sky );
+
+            const sun = new THREE.Vector3();
+            const uniforms = sky.material.uniforms;
+            uniforms[ 'turbidity' ].value = 10;
+            uniforms[ 'rayleigh' ].value = 3;
+            uniforms[ 'mieCoefficient' ].value = 0.005;
+            uniforms[ 'mieDirectionalG' ].value = 0.7;
+
+            const phi = THREE.MathUtils.degToRad( 90 - 2 );
+            const theta = THREE.MathUtils.degToRad( 180 );
+
+            sun.setFromSphericalCoords( 1, phi, theta );
+
+            uniforms[ 'sunPosition' ].value.copy( sun );
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3)
+            scene.add(ambientLight)
+
             const modelGroup = await loadModel.gltf(file);
             if (modelGroup) {
                 lookAtObject(modelGroup, camera);
