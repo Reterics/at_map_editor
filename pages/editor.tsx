@@ -2,12 +2,13 @@
 import Layout from "@/components/layout";
 import {useEffect, useState} from "react";
 import {
-    BsPencilSquare,
-    BsFillTrashFill, BsFillGrid1X2Fill, BsFillImageFill, BsLayoutTextWindowReverse, BsBadge3DFill, BsFillMapFill
+    BsFillGrid1X2Fill,
+    BsBadge3DFill,
+    BsFillMapFill,
+    BsFillSquareFill, BsFillCircleFill, BsSlashLg
 } from "react-icons/bs";
-import {ATMap} from "@/src/types/map";
 import CanvasEditor from "@/components/lib/CanvasEditor";
-import {Asset, AssetObject, AssetType, Rectangle} from "@/src/types/assets";
+import {AssetObject} from "@/src/types/assets";
 import {degToRad} from "@/src/utils/math";
 import ThreeComponent from "@/components/lib/ThreeComponent";
 import {LayoutType} from "@/src/types/general";
@@ -34,7 +35,7 @@ export default function Editor() {
     const [layout, setLayout] = useState<LayoutType>("normal");
     const [editorDimensions, setEditorDimensions] =
         useState([0, 0]);
-    const [reference, setReference] = useState(assets[0]);
+    const [reference, setReference] = useState(assets[3]);
 
     const padding = {
         top: 100,
@@ -65,6 +66,11 @@ export default function Editor() {
                 break;
         }
     };
+
+    const setReferenceType = (type: string) => {
+        const asset = assets.find(a=>a.type === type);
+        setReference(Object.assign({}, asset));
+    }
 
     return (
         <Layout>
@@ -98,16 +104,46 @@ export default function Editor() {
 
             </div>
 
-            {
-                (layout === "normal" || layout === "canvas") && <div className="flex flex-row flex-wrap mt-4 overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full">
-                    {assets.map((asset) =>
-                        <a href="#" key={asset.type} onClick={()=>setReference(asset)} className="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 mr-2">
-                            <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{asset.type}</h5>
-                            <p className="font-normal text-gray-700 dark:text-gray-400">Click Here to activate asset</p>
-                        </a>
-                    )}
-                </div>
-            }
+            <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full mt-2">
+
+                <button onClick={()=>setReferenceType("rect")}
+                        style={{borderColor: reference.type === "rect" ? 'white' : "gray"}}
+                    className="p-2 text-gray-900 bg-white border border-gray-200 rounded-md hover:bg-gray-100
+                    hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
+                    dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600
+                    dark:focus:ring-blue-500 dark:focus:text-white mr-1">
+                    <BsFillSquareFill />
+                </button>
+
+                <button onClick={()=>setReferenceType("circle")}
+                        style={{borderColor: reference.type === "circle" ? 'white' : "gray"}}
+                    className="p-2 text-gray-900 bg-white border border-gray-200 rounded-md hover:bg-gray-100
+                    hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
+                    dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600
+                    dark:focus:ring-blue-500 dark:focus:text-white mr-1">
+                    <BsFillCircleFill />
+                </button>
+                <button onClick={()=>setReferenceType("line")}
+                         style={{borderColor: reference.type === "line" ? 'white' : "gray"}}
+                    className="p-2 text-gray-900 bg-white border border-gray-200 rounded-md hover:bg-gray-100
+                    hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
+                    dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600
+                    dark:focus:ring-blue-500 dark:focus:text-white mr-1">
+                    <BsSlashLg />
+                </button>
+
+                {
+                    (layout === "normal" || layout === "canvas") && <div className="flex flex-row flex-wrap mt-4 overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full">
+                        {assets.filter(assets=>assets.type === "model").map((asset) =>
+                            <a href="#" key={asset.type} onClick={()=>setReference(asset)} className="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 mr-2">
+                                <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{asset.type}</h5>
+                                <p className="font-normal text-gray-700 dark:text-gray-400">Click Here to activate asset</p>
+                            </a>
+                        )}
+                    </div>
+                }
+            </div>
+
 
         </Layout>
     )

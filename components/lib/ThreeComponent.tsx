@@ -1,6 +1,6 @@
 import React, {useRef, useEffect, useState} from 'react';
 import * as THREE from 'three';
-import {AssetObject} from "@/src/types/assets";
+import {AssetObject, Circle} from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 let camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, scene: THREE.Scene, controls: OrbitControls;
@@ -28,7 +28,10 @@ export default function ThreeComponent({
                 case "rect":
                     geometry = new THREE.BoxGeometry();
                     material = new THREE.MeshBasicMaterial({ color: 0x0fffff });
-
+                    break;
+                case "circle":
+                    geometry = new THREE.SphereGeometry((item as Circle).radius, 32, 16 );
+                    material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
             }
             model = new THREE.Mesh(geometry, material);
             if (model && typeof item.x === 'number' && typeof item.y === "number") {
