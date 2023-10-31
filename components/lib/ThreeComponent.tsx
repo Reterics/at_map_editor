@@ -1,6 +1,6 @@
 import React, {useRef, useEffect, useState} from 'react';
 import * as THREE from 'three';
-import {AssetObject, Circle} from "@/src/types/assets";
+import {AssetObject, Circle, Line} from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 let camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, scene: THREE.Scene, controls: OrbitControls;
@@ -24,6 +24,7 @@ export default function ThreeComponent({
             let model;
             let material;
             let geometry;
+            let position1, position2;
             switch (item.type) {
                 case "rect":
                     geometry = new THREE.BoxGeometry();
@@ -32,9 +33,28 @@ export default function ThreeComponent({
                 case "circle":
                     geometry = new THREE.SphereGeometry((item as Circle).radius, 32, 16 );
                     material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
+                    break;
+                case "line":
+                    const line = item as Line;
+                    position1 = new THREE.Vector3(line.x1, line.y1, 0);
+                    position2 = new THREE.Vector3(line.x2, line.y2, 0);
+                    const height = position1.distanceTo(position2);
+
+                    geometry = new THREE.CylinderGeometry( 5, 5, height, 32 );
+                    material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
             }
             model = new THREE.Mesh(geometry, material);
-            if (model && typeof item.x === 'number' && typeof item.y === "number") {
+            if (model && position1 && position2) {
+                const positionMid = new THREE.Vector3();
+                positionMid.addVectors(position1, position2).multiplyScalar(0.5);
+                model.position.copy(positionMid);
+                const direction = new THREE.Vector3();
+                direction.subVectors(position2, position1).normalize();
+
+                const quaternion = new THREE.Quaternion();
+                quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+                model.setRotationFromQuaternion(quaternion);
+            } else if (model && typeof item.x === 'number' && typeof item.y === "number") {
                 model.position.set(item.x, item.y, 0);
             }
             if (model && scene) {
