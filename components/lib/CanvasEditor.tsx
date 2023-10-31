@@ -90,11 +90,9 @@ export default function CanvasEditor({
     };
 
     const onMouseDown = (e: MouseEvent) => {
-        console.log(reference.type);
         if (reference.type === "line") {
             const mousePoint = getPointInCanvas(e);
             if (mousePoint && canvasRef.current) {
-                console.log(mousePoint);
                 isDrawing = true;
                 startX = mousePoint.x;
                 startY = mousePoint.y;

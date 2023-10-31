@@ -96,8 +96,11 @@ export class Draw implements DrawInterface{
     }
 
     render(assets: Asset[]) {
-        console.log(assets);
         assets.forEach(asset => {
+            if (asset.color && this.context) {
+                this.context.fillStyle = asset.color;
+                this.context.strokeStyle = asset.color;
+            }
             switch (asset.type) {
                 case "circle":
                     const c = asset as Circle;
@@ -117,6 +120,10 @@ export class Draw implements DrawInterface{
                     break;
             }
         });
+        if (this.context) {
+            this.context.fillStyle = 'black';
+        }
     }
+
 }
 
