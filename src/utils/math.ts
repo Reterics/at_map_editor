@@ -13,6 +13,10 @@ export class Draw implements DrawInterface{
         this.updateCanvas();
     }
 
+    getContext() {
+        return this.context;
+    }
+
     updateCanvas () {
         if (this.canvas) {
             const ctx = this.canvas.getContext('2d');
@@ -58,6 +62,7 @@ export class Draw implements DrawInterface{
             this.context.beginPath();
             this.context.moveTo(x1, y1);
             this.context.lineTo(x2, y2);
+            this.context.stroke();
             this.context.closePath();
         }
     }
@@ -91,6 +96,7 @@ export class Draw implements DrawInterface{
     }
 
     render(assets: Asset[]) {
+        console.log(assets);
         assets.forEach(asset => {
             switch (asset.type) {
                 case "circle":
