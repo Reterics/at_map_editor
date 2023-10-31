@@ -7,7 +7,8 @@ export interface Asset {
     image?: string,
     type: AssetType,
     x?: number,
-    y?: number
+    y?: number,
+    color?: string
 }
 
 export interface Point extends Asset {

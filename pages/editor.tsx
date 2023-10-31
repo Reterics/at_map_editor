@@ -1,11 +1,11 @@
 "use client";
 import Layout from "@/components/layout";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {
     BsFillGrid1X2Fill,
     BsBadge3DFill,
     BsFillMapFill,
-    BsFillSquareFill, BsFillCircleFill, BsSlashLg
+    BsFillSquareFill, BsFillCircleFill, BsSlashLg, BsPaintBucket
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
 import {AssetObject} from "@/src/types/assets";
@@ -36,6 +36,8 @@ export default function Editor() {
     const [editorDimensions, setEditorDimensions] =
         useState([0, 0]);
     const [reference, setReference] = useState(assets[3]);
+    const colorRef = useRef(null);
+
 
     const padding = {
         top: 100,
@@ -76,10 +78,23 @@ export default function Editor() {
         <Layout>
             <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full mt-2">
                 <button onClick={()=>switchUI()} type="button"
-                        className="p-2 text-gray-900 bg-white border border-gray-200 rounded-r-md hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-blue-500 dark:focus:text-white">
+                        className="p-2 text-gray-900 bg-white border border-gray-200 rounded-r-md hover:bg-gray-100
+                        hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
+                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white
+                        dark:hover:bg-gray-600 dark:focus:ring-blue-500 dark:focus:text-white mr-1">
 
                     {layout === "normal" ? (<BsFillGrid1X2Fill />) : layout === "three" ? (<BsBadge3DFill />) :
                         (<BsFillMapFill />)}
+                </button>
+                <button type="button" onClick={()=>colorRef.current && (colorRef.current as HTMLInputElement).click()}
+                    className="p-2 text-gray-900 bg-white border border-gray-200 rounded-r-md hover:bg-gray-100
+                    hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
+                    dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600
+                    dark:focus:ring-blue-500 dark:focus:text-white mr-1"
+                style={{backgroundColor: reference.color || '#000000'}}>
+                    <input ref={colorRef} type="color" className="hidden" value={reference.color || '#000000'}
+                           onChange={(e) => setReference({...reference, color: e.target.value})}/>
+                    <BsPaintBucket />
                 </button>
             </div>
             <div className="flex flex-row justify-around">

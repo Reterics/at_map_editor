@@ -22,17 +22,16 @@ export default function ThreeComponent({
         }
         items.forEach(item => {
             let model;
-            let material;
+            let material = new THREE.MeshBasicMaterial({ color: item.color ?
+                    new THREE.Color(item.color) : 0xffffff });
             let geometry;
             let position1, position2;
             switch (item.type) {
                 case "rect":
                     geometry = new THREE.BoxGeometry();
-                    material = new THREE.MeshBasicMaterial({ color: 0x0fffff });
                     break;
                 case "circle":
                     geometry = new THREE.SphereGeometry((item as Circle).radius, 32, 16 );
-                    material = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
                     break;
                 case "line":
                     const line = item as Line;
@@ -41,7 +40,6 @@ export default function ThreeComponent({
                     const height = position1.distanceTo(position2);
 
                     geometry = new THREE.CylinderGeometry( 5, 5, height, 32 );
-                    material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
             }
             model = new THREE.Mesh(geometry, material);
             if (model && position1 && position2) {
