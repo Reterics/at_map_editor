@@ -32,7 +32,7 @@ export interface Rectangle extends Asset {
     x: number,
     y: number,
     w: number,
-    h: number
+    h: number,
 }
 
 export interface Line extends Asset {

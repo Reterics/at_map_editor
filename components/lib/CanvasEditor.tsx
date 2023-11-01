@@ -1,13 +1,11 @@
 "use client";
 import {useEffect, useRef, useState} from "react";
-import {Asset, AssetObject, Point, Line} from "@/src/types/assets";
-import {Draw} from "@/src/utils/math";
-import {Simulate} from "react-dom/test-utils";
+import {Asset, AssetObject, Point, Line, Rectangle, Circle} from "@/src/types/assets";
+import {Draw, getDistance} from "@/src/utils/math";
 
 let isDrawing = false; // Track if the mouse is being held down
 let startX: number,
-    startY: number,
-    tmpCtx: CanvasRenderingContext2D;
+    startY: number;
 
 export default function CanvasEditor({
     reference,
@@ -59,13 +57,47 @@ export default function CanvasEditor({
         return { x, y } as Point
     }
 
-    const onClick = (e: MouseEvent) => {
+    /*const onClick = (e: MouseEvent) => {
         const currentPoint = getPointInCanvas(e)
-        if (currentPoint && reference.type !== "line") {
+        if (currentPoint) {
             console.log('Add item', items);
             const target = {...reference, ...currentPoint} as Asset;
             setItems([...items, target])
         }
+    }*/
+
+    const getCurrentAsset = (mousePoint: Point): Asset|null => {
+        const endX = mousePoint.x;
+        const endY = mousePoint.y;
+        let distance;
+        switch (reference.type) {
+            case "rect":
+                distance = getDistance(startX, startY, endX, endY);
+                return {
+                    ...reference,
+                    x: startX,
+                    y: startY,
+                    w: distance,
+                    h: distance
+                } as Rectangle;
+            case "line":
+                return {
+                    ...reference,
+                    x1: startX,
+                    x2: endX,
+                    y1: startY,
+                    y2: endY
+                } as Line;
+            case "circle":
+                distance = getDistance(startX, startY, endX, endY);
+                return {
+                    ...reference,
+                    x: mousePoint.x,
+                    y: mousePoint.y,
+                    radius: distance || 1
+                } as Circle
+        }
+        return null;
     }
 
     const onMouseMove = (e: MouseEvent) => {
@@ -73,30 +105,23 @@ export default function CanvasEditor({
 
         const mousePoint = getPointInCanvas(e);
         if (canvasRef.current && mousePoint) {
-            const endX = mousePoint.x;
-            const endY = mousePoint.y;
-
-
             render();
-            const tmpCtx = drawer?.getContext();
-            if (tmpCtx) {
-                tmpCtx.beginPath();
-                tmpCtx.moveTo(startX, startY);
-                tmpCtx.lineTo(endX, endY);
-                tmpCtx.stroke();
+            if (drawer) {
+                const asset = getCurrentAsset(mousePoint);
+                if (asset) {
+                    drawer.renderAsset(asset, false);
+                }
             }
         }
 
     };
 
     const onMouseDown = (e: MouseEvent) => {
-        if (reference.type === "line") {
-            const mousePoint = getPointInCanvas(e);
-            if (mousePoint && canvasRef.current) {
-                isDrawing = true;
-                startX = mousePoint.x;
-                startY = mousePoint.y;
-            }
+        const mousePoint = getPointInCanvas(e);
+        if (mousePoint && canvasRef.current) {
+            isDrawing = true;
+            startX = mousePoint.x;
+            startY = mousePoint.y;
         }
     };
 
@@ -104,17 +129,12 @@ export default function CanvasEditor({
         if (startX && startY ) {
             const mousePoint = getPointInCanvas(e);
             if (canvasRef.current && mousePoint) {
-                const endX = mousePoint.x;
-                const endY = mousePoint.y;
+                const asset = getCurrentAsset(mousePoint);
 
-                console.log('Add Line');
-                const target = {
-                    ...reference,
-                    x1: startX,
-                    y1: startY,
-                    x2: endX,
-                    y2: endY} as Line;
-                setItems([...items, target])
+                if (asset) {
+                    console.log('Add Asset');
+                    setItems([...items, asset])
+                }
             }
         }
         isDrawing = false;
@@ -125,7 +145,7 @@ export default function CanvasEditor({
         <canvas
         ref={canvasRef}
         className="w-full h-full border-black rounded-none p-0 m-0"
-        onClick={(e) => onClick(e as unknown as MouseEvent)}
+        /*onClick={(e) => onClick(e as unknown as MouseEvent)}*/
         onMouseDown={(e)=>onMouseDown(e as unknown as MouseEvent)}
         onMouseUp={(e)=>onMouseUp(e as unknown as MouseEvent)}
         onMouseMove={(e)=>onMouseMove(e as unknown as MouseEvent)}

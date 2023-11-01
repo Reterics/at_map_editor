@@ -3,6 +3,11 @@ import {Asset, Circle, Line, Point, Rectangle} from "@/src/types/assets";
 
 export const degToRad = (degrees: number) => (Math.PI / 180) * degrees;
 
+export const getDistance = (x1: number, y1: number, x2: number, y2: number) => {
+    const y = x2 - x1, x = y2 - y1;
+
+    return Math.sqrt(x * x + y * y);
+};
 
 export class Draw implements DrawInterface{
     private context: CanvasRenderingContext2D | undefined;
@@ -95,31 +100,36 @@ export class Draw implements DrawInterface{
         }
     }
 
+    renderAsset(asset: Asset, internal: boolean|null|undefined) {
+        if (asset.color && this.context) {
+            this.context.fillStyle = asset.color;
+            this.context.strokeStyle = asset.color;
+        }
+        switch (asset.type) {
+            case "circle":
+                const c = asset as Circle;
+                this.circle(c.x, c.y, c.radius, c.startAngle, c.endAngle, c.anticlockwise);
+                break;
+            case "line":
+                const l = asset as Line;
+                this.line(l.x1, l.y1, l.x2, l.y2);
+                break;
+            case "point":
+                const p = asset as Point;
+                this.circle(p.x, p.y, 1, undefined, undefined, undefined);
+                break;
+            case "rect":
+                const r = asset as Rectangle;
+                this.rect(r.x, r.y, r.w, r.h);
+                break;
+        }
+        if (!internal && this.context) {
+            this.context.fillStyle = 'black';
+        }
+    }
+
     render(assets: Asset[]) {
-        assets.forEach(asset => {
-            if (asset.color && this.context) {
-                this.context.fillStyle = asset.color;
-                this.context.strokeStyle = asset.color;
-            }
-            switch (asset.type) {
-                case "circle":
-                    const c = asset as Circle;
-                    this.circle(c.x, c.y, c.radius, c.startAngle, c.endAngle, c.anticlockwise);
-                    break;
-                case "line":
-                    const l = asset as Line;
-                    this.line(l.x1, l.y1, l.x2, l.y2);
-                    break;
-                case "point":
-                    const p = asset as Point;
-                    this.circle(p.x, p.y, 1, undefined, undefined, undefined);
-                    break;
-                case "rect":
-                    const r = asset as Rectangle;
-                    this.rect(r.x, r.y, r.w, r.h);
-                    break;
-            }
-        });
+        assets.forEach(asset => this.renderAsset(asset, true));
         if (this.context) {
             this.context.fillStyle = 'black';
         }
