@@ -72,13 +72,13 @@ export default function CanvasEditor({
         let distance;
         switch (reference.type) {
             case "rect":
-                distance = getDistance(startX, startY, endX, endY);
+                // distance = getDistance(startX, startY, endX, endY);
                 return {
                     ...reference,
                     x: startX,
                     y: startY,
-                    w: distance,
-                    h: distance
+                    w: mousePoint.x - startX,
+                    h: mousePoint.y - startY
                 } as Rectangle;
             case "line":
                 return {
