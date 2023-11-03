@@ -5,7 +5,7 @@ import {
     BsFillGrid1X2Fill,
     BsBadge3DFill,
     BsFillMapFill,
-    BsFillSquareFill, BsFillCircleFill, BsSlashLg, BsPaintBucket, BsFillCursorFill
+    BsFillSquareFill, BsFillCircleFill, BsSlashLg, BsPaintBucket, BsFillCursorFill, BsEraserFill
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
 import {AssetObject} from "@/src/types/assets";
@@ -41,6 +41,7 @@ export default function Editor() {
     const [reference, setReference] = useState(assets[3]);
     const colorRef = useRef(null);
 
+    const selected = items.find(item=>item.selected);
 
     const padding = {
         top: 100,
@@ -77,6 +78,10 @@ export default function Editor() {
         setReference(Object.assign({}, asset));
     }
 
+    const deleteSelected = (): void => {
+        setItems([...items.filter((item) => !item.selected)]);
+    };
+
     return (
         <Layout>
             <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full mt-2">
@@ -99,6 +104,16 @@ export default function Editor() {
                            onChange={(e) => setReference({...reference, color: e.target.value})}/>
                     <BsPaintBucket />
                 </button>
+                {selected && <button type="button" onClick={()=>deleteSelected()}
+                                      className="p-2 text-gray-900 bg-white border border-gray-200 rounded-r-md hover:bg-gray-100
+                    hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
+                    dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600
+                    dark:focus:ring-blue-500 dark:focus:text-white mr-1"
+                >
+                    <BsEraserFill />
+                </button>
+                }
+
             </div>
             <div className="flex flex-row justify-around">
                 {
