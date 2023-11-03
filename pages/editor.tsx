@@ -5,7 +5,7 @@ import {
     BsFillGrid1X2Fill,
     BsBadge3DFill,
     BsFillMapFill,
-    BsFillSquareFill, BsFillCircleFill, BsSlashLg, BsPaintBucket
+    BsFillSquareFill, BsFillCircleFill, BsSlashLg, BsPaintBucket, BsFillCursorFill
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
 import {AssetObject} from "@/src/types/assets";
@@ -16,6 +16,9 @@ import {LayoutType} from "@/src/types/general";
 
 export default function Editor() {
     const assets: AssetObject[] = [
+        {
+            "type": "cursor"
+        },
         {
             "type": "point"
         },{
@@ -121,6 +124,14 @@ export default function Editor() {
 
             <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full mt-2">
 
+                <button onClick={()=>setReferenceType("cursor")}
+                        style={{borderColor: reference.type === "cursor" ? 'white' : "gray"}}
+                        className="p-2 text-gray-900 bg-white border border-gray-200 rounded-md hover:bg-gray-100
+                    hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
+                    dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600
+                    dark:focus:ring-blue-500 dark:focus:text-white mr-1">
+                    <BsFillCursorFill />
+                </button>
                 <button onClick={()=>setReferenceType("rect")}
                         style={{borderColor: reference.type === "rect" ? 'white' : "gray"}}
                     className="p-2 text-gray-900 bg-white border border-gray-200 rounded-md hover:bg-gray-100

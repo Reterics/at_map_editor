@@ -1,7 +1,8 @@
 "use client";
 import {useEffect, useRef, useState} from "react";
 import {Asset, AssetObject, Point, Line, Rectangle, Circle} from "@/src/types/assets";
-import {Draw, getDistance} from "@/src/utils/math";
+import {Draw, getDistance, isPointInRectangle, isPointInsideCircle, isPointOnLine} from "@/src/utils/math";
+import {ref} from "firebase/storage";
 
 let isDrawing = false; // Track if the mouse is being held down
 let startX: number,
@@ -57,14 +58,33 @@ export default function CanvasEditor({
         return { x, y } as Point
     }
 
-    /*const onClick = (e: MouseEvent) => {
+    const onClick = (e: MouseEvent) => {
         const currentPoint = getPointInCanvas(e)
         if (currentPoint) {
-            console.log('Add item', items);
-            const target = {...reference, ...currentPoint} as Asset;
-            setItems([...items, target])
+            const updatedItems = items.map(item => {
+                switch (item.type) {
+                    case "rect":
+                        item.selected = isPointInRectangle(currentPoint, item as Rectangle);
+                        break;
+                    case "line":
+                        const line = item as Line;
+                        item.selected = isPointOnLine(currentPoint.x, currentPoint.y, line.x1, line.y1, line.x2,
+                            line.y2);
+                        break;
+                    case "circle":
+                        const circle = item as Circle;
+                        item.selected = isPointInsideCircle(currentPoint.x, currentPoint.y, circle.x, circle.y,
+                            circle.radius);
+                        break;
+                    default:
+                        item.selected = false;
+                }
+
+                return item;
+            });
+            setItems(updatedItems)
         }
-    }*/
+    }
 
     const getCurrentAsset = (mousePoint: Point): Asset|null => {
         const endX = mousePoint.x;
@@ -118,7 +138,7 @@ export default function CanvasEditor({
 
     const onMouseDown = (e: MouseEvent) => {
         const mousePoint = getPointInCanvas(e);
-        if (mousePoint && canvasRef.current) {
+        if (reference.type !== "cursor" && mousePoint && canvasRef.current) {
             isDrawing = true;
             startX = mousePoint.x;
             startY = mousePoint.y;
@@ -145,7 +165,7 @@ export default function CanvasEditor({
         <canvas
         ref={canvasRef}
         className="w-full h-full border-black rounded-none p-0 m-0"
-        /*onClick={(e) => onClick(e as unknown as MouseEvent)}*/
+        onClick={(e) => onClick(e as unknown as MouseEvent)}
         onMouseDown={(e)=>onMouseDown(e as unknown as MouseEvent)}
         onMouseUp={(e)=>onMouseUp(e as unknown as MouseEvent)}
         onMouseMove={(e)=>onMouseMove(e as unknown as MouseEvent)}
