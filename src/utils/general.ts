@@ -1,3 +1,5 @@
+import {TextFile} from "@/src/types/general";
+
 export const colorNameToHex = (colorName: string) => {
     const colorNames:{[keys: string]:string} = {
         black: "#000000",
@@ -59,3 +61,68 @@ export const interpolateColor = (color1: string, color2: string, percentage: num
     // Convert the interpolated RGB values to a hex color code
     return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
 };
+
+
+export const downloadAsFile = (name: string, body: string, fileType = 'text/plain') => {
+    if (!name) {
+        name = Math.floor(new Date().getTime() / 360000) + ".json";
+    }
+    try {
+        let textToSaveAsBlob = new Blob([body], {type: fileType});
+        let textToSaveAsURL = URL.createObjectURL(textToSaveAsBlob);
+        let fileNameToSaveAs = name;
+
+        let downloadLink = document.createElement('a');
+        downloadLink.download = fileNameToSaveAs;
+        downloadLink.innerHTML = 'Download As File';
+        downloadLink.href = textToSaveAsURL;
+        downloadLink.style.display = 'none';
+        document.body.appendChild(downloadLink);
+
+        downloadLink.click();
+        downloadLink.outerHTML = '';
+
+
+    } catch (e) {
+        // @ts-ignore
+        console.error(e.message);
+    }
+};
+
+
+export const uploadFileInputAsText = (file: Blob): Promise<string|ArrayBuffer|null> => {
+    return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = function () {
+            resolve(reader.result);
+        };
+        reader.readAsText(file);
+        reader.onerror = function (error) {
+            console.log('Error: ', error);
+        };
+    })
+};
+
+export const readTextFile = (accept = 'application/json'): Promise<TextFile> => {
+    return new Promise(resolve => {
+        const fileInput = document.createElement("input");
+        fileInput.setAttribute("type", "file");
+        if (accept) {
+            fileInput.setAttribute('accept', accept);
+        }
+        fileInput.onchange = async function () {
+            const formData: TextFile = {
+                value: ''
+            };
+            const files = fileInput.files as FileList;
+            if (files && files.length) {
+                formData.value = await uploadFileInputAsText(files[0]);
+                formData.file_input = files[0];
+            }
+            fileInput.outerHTML = "";
+            resolve(formData);
+        };
+        document.body.appendChild(fileInput);
+        fileInput.click();
+    });
+}
