@@ -1,7 +1,8 @@
 "use client";
 import {useEffect, useRef, useState} from "react";
 import {Asset, AssetObject, Point, Line, Rectangle, Circle} from "@/src/types/assets";
-import {Draw, getDistance, isPointInRectangle, isPointInsideCircle, isPointOnLine} from "@/src/utils/math";
+import {getDistance, isPointInRectangle, isPointInsideCircle, isPointOnLine} from "@/src/utils/math";
+import {Draw} from "@/src/utils/draw";
 
 let isDrawing = false; // Track if the mouse is being held down
 let startX: number,

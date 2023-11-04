@@ -2,17 +2,9 @@
 import Layout from "@/components/layout";
 import {useEffect, useRef, useState} from "react";
 import {
-    BsFillGrid1X2Fill,
-    BsBadge3DFill,
-    BsFillMapFill,
-    BsFillSquareFill,
-    BsFillCircleFill,
-    BsSlashLg,
-    BsPaintBucket,
-    BsFillCursorFill,
-    BsEraserFill,
-    BsCloudDownloadFill,
-    BsCloudUploadFill, BsUpload, BsDownload, BsFillFolderFill, BsFillFileEarmarkFill, BsFileEarmark, BsFolder2Open
+    BsFillGrid1X2Fill, BsBadge3DFill, BsFillMapFill,
+    BsFillSquareFill, BsFillCircleFill, BsSlashLg, BsPaintBucket,
+    BsFillCursorFill, BsEraserFill, BsDownload, BsFileEarmark, BsFolder2Open
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
 import {AssetObject} from "@/src/types/assets";
@@ -20,6 +12,7 @@ import {degToRad} from "@/src/utils/math";
 import ThreeComponent from "@/components/lib/ThreeComponent";
 import {LayoutType} from "@/src/types/general";
 import {downloadAsFile, readTextFile} from "@/src/utils/general";
+import ToolbarButton from "@/components/form/ToolbarButton";
 
 
 export default function Editor() {
@@ -51,12 +44,12 @@ export default function Editor() {
 
     const selected = items.find(item=>item.selected);
 
-    const padding = {
-        top: 100,
-        left: 10,
-        right: 10,
-    }
     useEffect(() => {
+        const padding = {
+            top: 100,
+            left: 10,
+            right: 10,
+        };
         if (typeof window !== 'undefined') {
             setEditorDimensions([
                 (layout === "normal" ? window.innerWidth / 2 - padding.left - padding.right  :
@@ -65,7 +58,7 @@ export default function Editor() {
                     window.innerHeight - padding.top)
             ])
         }
-    }, []);
+    }, [layout]);
 
     const switchUI = () => {
         switch (layout) {
@@ -115,57 +108,33 @@ export default function Editor() {
     return (
         <Layout>
             <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full mt-2">
-                <button onClick={()=>reset()} type="button"
-                        className="p-2 text-gray-900 bg-white border border-gray-200 rounded-r-md hover:bg-gray-100
-                        hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
-                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white
-                        dark:hover:bg-gray-600 dark:focus:ring-blue-500 dark:focus:text-white mr-1">
-
+                <ToolbarButton onClick={()=>reset()}>
                     <BsFileEarmark />
-                </button>
-                <button onClick={()=>importData()} type="button"
-                        className="p-2 text-gray-900 bg-white border border-gray-200 rounded-r-md hover:bg-gray-100
-                        hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
-                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white
-                        dark:hover:bg-gray-600 dark:focus:ring-blue-500 dark:focus:text-white mr-1">
+                </ToolbarButton>
 
+                <ToolbarButton onClick={()=>importData()}>
                     <BsFolder2Open />
-                </button>
-                <button onClick={()=>exportData()} type="button"
-                        className="p-2 text-gray-900 bg-white border border-gray-200 rounded-r-md hover:bg-gray-100
-                        hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
-                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white
-                        dark:hover:bg-gray-600 dark:focus:ring-blue-500 dark:focus:text-white mr-1">
+                </ToolbarButton>
 
+                <ToolbarButton onClick={()=>exportData()}>
                     <BsDownload />
-                </button>
-                <button onClick={()=>switchUI()} type="button"
-                        className="p-2 text-gray-900 bg-white border border-gray-200 rounded-r-md hover:bg-gray-100
-                        hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
-                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white
-                        dark:hover:bg-gray-600 dark:focus:ring-blue-500 dark:focus:text-white mr-1">
+                </ToolbarButton>
 
+                <ToolbarButton onClick={()=>switchUI()}>
                     {layout === "normal" ? (<BsFillGrid1X2Fill />) : layout === "three" ? (<BsBadge3DFill />) :
                         (<BsFillMapFill />)}
-                </button>
-                <button type="button" onClick={()=>colorRef.current && (colorRef.current as HTMLInputElement).click()}
-                    className="p-2 text-gray-900 bg-white border border-gray-200 rounded-r-md hover:bg-gray-100
-                    hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
-                    dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600
-                    dark:focus:ring-blue-500 dark:focus:text-white mr-1"
-                style={{backgroundColor: reference.color || '#000000'}}>
+                </ToolbarButton>
+
+                <ToolbarButton onClick={()=>colorRef.current && (colorRef.current as HTMLInputElement).click()}
+                                style={{backgroundColor: reference.color || '#000000'}}>
                     <input ref={colorRef} type="color" className="hidden" value={reference.color || '#000000'}
                            onChange={(e) => setReference({...reference, color: e.target.value})}/>
                     <BsPaintBucket />
-                </button>
-                {selected && <button type="button" onClick={()=>deleteSelected()}
-                                      className="p-2 text-gray-900 bg-white border border-gray-200 rounded-r-md hover:bg-gray-100
-                    hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
-                    dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600
-                    dark:focus:ring-blue-500 dark:focus:text-white mr-1"
-                >
-                    <BsEraserFill />
-                </button>
+                </ToolbarButton>
+
+                {selected && <ToolbarButton onClick={()=>deleteSelected()}>
+                                <BsEraserFill />
+                            </ToolbarButton>
                 }
 
             </div>
@@ -193,39 +162,26 @@ export default function Editor() {
 
             <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full mt-2">
 
-                <button onClick={()=>setReferenceType("cursor")}
-                        style={{borderColor: reference.type === "cursor" ? 'white' : "gray"}}
-                        className="p-2 text-gray-900 bg-white border border-gray-200 rounded-md hover:bg-gray-100
-                    hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
-                    dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600
-                    dark:focus:ring-blue-500 dark:focus:text-white mr-1">
+                <ToolbarButton onClick={()=>setReferenceType("cursor")}
+                                active={reference.type === "cursor"}>
                     <BsFillCursorFill />
-                </button>
-                <button onClick={()=>setReferenceType("rect")}
-                        style={{borderColor: reference.type === "rect" ? 'white' : "gray"}}
-                    className="p-2 text-gray-900 bg-white border border-gray-200 rounded-md hover:bg-gray-100
-                    hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
-                    dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600
-                    dark:focus:ring-blue-500 dark:focus:text-white mr-1">
-                    <BsFillSquareFill />
-                </button>
+                </ToolbarButton>
 
-                <button onClick={()=>setReferenceType("circle")}
-                        style={{borderColor: reference.type === "circle" ? 'white' : "gray"}}
-                    className="p-2 text-gray-900 bg-white border border-gray-200 rounded-md hover:bg-gray-100
-                    hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
-                    dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600
-                    dark:focus:ring-blue-500 dark:focus:text-white mr-1">
+                <ToolbarButton onClick={()=>setReferenceType("rect")}
+                                active={reference.type === "rect"}>
+                    <BsFillSquareFill />
+                </ToolbarButton>
+
+                <ToolbarButton onClick={()=>setReferenceType("circle")}
+                                active={reference.type === "circle"}
+                    >
                     <BsFillCircleFill />
-                </button>
-                <button onClick={()=>setReferenceType("line")}
-                         style={{borderColor: reference.type === "line" ? 'white' : "gray"}}
-                    className="p-2 text-gray-900 bg-white border border-gray-200 rounded-md hover:bg-gray-100
-                    hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700
-                    dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600
-                    dark:focus:ring-blue-500 dark:focus:text-white mr-1">
+                </ToolbarButton>
+
+                <ToolbarButton onClick={()=>setReferenceType("line")}
+                                active={reference.type === "line"}>
                     <BsSlashLg />
-                </button>
+                </ToolbarButton>
 
                 {
                     (layout === "normal" || layout === "canvas") && <div className="flex flex-row flex-wrap mt-4 overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full">
