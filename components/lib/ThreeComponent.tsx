@@ -53,6 +53,9 @@ export default function ThreeComponent({
                 const quaternion = new THREE.Quaternion();
                 quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
                 model.setRotationFromQuaternion(quaternion);
+            } else if (model && item.type === "rect") {
+                const rect = item as Rectangle;
+                model.position.set(rect.x + rect.w / 2, rect.y + rect.h / 2, 0);
             } else if (model && typeof item.x === 'number' && typeof item.y === "number") {
                 model.position.set(item.x, item.y, 0);
             }
