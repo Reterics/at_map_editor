@@ -19,7 +19,7 @@ export default function CanvasEditor({
     items: AssetObject[],
     height: number,
     width: number,
-    setItems:Function
+    setItems:Function,
 }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [drawer, setDrawer] = useState<Draw|null>(null);
@@ -79,10 +79,9 @@ export default function CanvasEditor({
                     default:
                         item.selected = false;
                 }
-
                 return item;
             });
-            setItems(updatedItems)
+            setItems([...updatedItems]);
         }
     }
 

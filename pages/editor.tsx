@@ -153,6 +153,7 @@ export default function Editor() {
                     (layout === "normal" || layout === "three") && <div className="relative overflow-x-auto shadow-md
                     max-w-screen-xl m-auto w-full mt-2 border-2 p-0">
                         <ThreeComponent items={items}
+                                        selected={selected}
                                         width={editorDimensions[0]}
                                         height={editorDimensions[1]} />
                     </div>

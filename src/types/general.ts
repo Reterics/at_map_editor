@@ -1,3 +1,6 @@
+declare global {
+    interface Window { AT_Editor: any; }
+}
 
 
 export type LayoutType = 'normal'|'canvas'|'three';

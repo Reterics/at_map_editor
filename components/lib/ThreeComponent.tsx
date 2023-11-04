@@ -3,19 +3,24 @@ import * as THREE from 'three';
 import {AssetObject, Circle, Line, Rectangle} from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-let camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, scene: THREE.Scene, controls: OrbitControls;
-
+let camera: THREE.PerspectiveCamera,
+    renderer: THREE.WebGLRenderer,
+    scene: THREE.Scene, controls: OrbitControls;
 export default function ThreeComponent({
     items,
     height,
-    width
+    width,
+    selected
 }: {
     items: AssetObject[],
+    selected?: AssetObject
     height: number,
     width: number
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [loaded, setLoaded] = useState(false);
+    let arrowHelpers: THREE.Group;
+    let helpersCount = 0;
     const refreshScene = () => {
         if (scene) {
             scene.clear();
@@ -62,7 +67,7 @@ export default function ThreeComponent({
             if (model && scene) {
                 scene.add(model);
             }
-        })
+        });
     };
 
     const loadTHREEComponent = () => {
@@ -93,14 +98,91 @@ export default function ThreeComponent({
             animate();
 
             setLoaded(true);
+
+            if (process.env.NODE_ENV === "development") {
+                window.AT_Editor = window.AT_Editor || {};
+                window.AT_Editor.scene = scene;
+                window.AT_Editor.camera = scene;
+                window.AT_Editor.renderer = scene;
+            }
             // Clean up the event listener when the component is unmounted
             return () => {};
         }
     };
 
+    const addArrowHelper = ()=>{
+        const arrowGroup = new THREE.Group();
+        arrowGroup.name = "arrows";
+        const xAxisDirection = new THREE.Vector3(1, 0, 0);
+        const yAxisDirection = new THREE.Vector3(0, 1, 0);
+        const zAxisDirection = new THREE.Vector3(0, 0, 1);
+
+        const origin = new THREE.Vector3( 0, 0, 0 );
+        const length = 100;
+
+        const xAxisArrow = new THREE.ArrowHelper(xAxisDirection, origin, length, 0xff0000);
+        const yAxisArrow = new THREE.ArrowHelper(yAxisDirection, origin, length, 0x00ff00);
+        const zAxisArrow = new THREE.ArrowHelper(zAxisDirection, origin, length, 0x0000ff);
+
+        arrowGroup.add(xAxisArrow);
+        arrowGroup.add(yAxisArrow);
+        arrowGroup.add(zAxisArrow);
+
+        scene.add(arrowGroup);
+
+        if (process.env.NODE_ENV === "development") {
+            window.AT_Editor = window.AT_Editor || {};
+            window.AT_Editor.arrows = arrowGroup;
+        }
+    }
+
+    const updateArrowHelper = ()=>{
+        if (scene && scene.children && selected) {
+            if (!arrowHelpers) {
+                addArrowHelper();
+                arrowHelpers = scene.children.find(mesh => mesh instanceof THREE.Group &&
+                    mesh.name === "arrows") as THREE.Group
+            }
+            if (arrowHelpers) {
+                if (selected.type === "line") {
+                    const line = selected as Line,
+                        position1 = new THREE.Vector3(line.x1, line.y1, 0),
+                        position2 = new THREE.Vector3(line.x2, line.y2, 0);
+                    const positionMid = new THREE.Vector3();
+                    positionMid.addVectors(position1, position2).multiplyScalar(0.5);
+                    arrowHelpers.position.copy(positionMid);
+                    arrowHelpers.visible = true;
+
+                } else if (selected.type === "rect") {
+                    const rect = selected as Rectangle;
+                    arrowHelpers.position.set(rect.x + rect.w / 2, rect.y + rect.h / 2, 0);
+                    arrowHelpers.visible = true;
+
+                } else if (typeof selected.x === "number" && typeof selected.y === "number") {
+                    arrowHelpers.position.set(selected.x, selected.y, 0);
+                    arrowHelpers.visible = true;
+
+                } else {
+                    arrowHelpers.visible = false;
+                }
+            }
+        } else if (!selected && arrowHelpers) {
+            arrowHelpers.visible = false;
+        }
+    }
+
+
+    if (scene) {
+        arrowHelpers =
+            scene.children.find(mesh => mesh instanceof THREE.Group &&
+                mesh.name === "arrows") as THREE.Group;
+        if (arrowHelpers) {
+            helpersCount++;
+        }
+    }
     useEffect(loadTHREEComponent, []);
 
-    if (scene && scene.children.length < items.length) {
+    if (scene && scene.children.length - helpersCount < items.length) {
         refreshScene();
     }
 
@@ -116,6 +198,8 @@ export default function ThreeComponent({
         controls.target.copy(lookAt);
         renderer.render(scene, camera);
     }
+
+    updateArrowHelper();
 
     return <div ref={containerRef}/>;
 }
