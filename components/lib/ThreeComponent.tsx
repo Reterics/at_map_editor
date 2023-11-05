@@ -10,12 +10,14 @@ export default function ThreeComponent({
     items,
     height,
     width,
-    selected
+    selected,
+    setItems
 }: {
     items: AssetObject[],
     selected?: AssetObject
     height: number,
-    width: number
+    width: number,
+    setItems:Function,
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [loaded, setLoaded] = useState(false);
@@ -25,7 +27,7 @@ export default function ThreeComponent({
         if (scene) {
             scene.clear();
         }
-        items.forEach(item => {
+        items.forEach((item, index) => {
             let model;
             let material = new THREE.MeshBasicMaterial({ color: item.color ?
                     new THREE.Color(item.color) : 0xffffff });
@@ -48,6 +50,7 @@ export default function ThreeComponent({
                     geometry = new THREE.CylinderGeometry( 5, 5, height, 32 );
             }
             model = new THREE.Mesh(geometry, material);
+            model.name = "mesh_" + index;
             if (model && position1 && position2) {
                 const positionMid = new THREE.Vector3();
                 positionMid.addVectors(position1, position2).multiplyScalar(0.5);
@@ -171,6 +174,38 @@ export default function ThreeComponent({
         }
     }
 
+    const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> ) => {
+        event.preventDefault();
+
+        if (camera && scene && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+
+            const mouse = new THREE.Vector2();
+
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            const rayCaster = new THREE.Raycaster();
+            rayCaster.setFromCamera(mouse, camera);
+            const intersects = rayCaster.intersectObjects(scene.children, true);
+
+            if ( intersects.length > 0 ) {
+                const mesh = intersects.find(mesh => mesh.object.name
+                    && mesh.object.name.startsWith("mesh_"));
+                if (mesh) {
+                    const index = Number(mesh.object.name.replace("mesh_", ""));
+
+                    if (items[index]) {
+                        const updatedItems = items.map((item, i) => {
+                            item.selected = i === index;
+                            return item;
+                        });
+                        setItems([...updatedItems]);
+                    }
+                }
+            }
+        }
+    };
 
     if (scene) {
         arrowHelpers =
@@ -180,7 +215,7 @@ export default function ThreeComponent({
             helpersCount++;
         }
     }
-    useEffect(loadTHREEComponent, []);
+    useEffect(loadTHREEComponent, [height, width]);
 
     if (scene && scene.children.length - helpersCount < items.length) {
         refreshScene();
@@ -201,5 +236,5 @@ export default function ThreeComponent({
 
     updateArrowHelper();
 
-    return <div ref={containerRef}/>;
+    return <div ref={containerRef} onMouseDown={onMouseDown}/>;
 }

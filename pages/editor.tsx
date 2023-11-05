@@ -155,7 +155,9 @@ export default function Editor() {
                         <ThreeComponent items={items}
                                         selected={selected}
                                         width={editorDimensions[0]}
-                                        height={editorDimensions[1]} />
+                                        height={editorDimensions[1]}
+                                        setItems={setItems}
+                        />
                     </div>
                 }
 
