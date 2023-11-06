@@ -6,6 +6,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 let camera: THREE.PerspectiveCamera,
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene, controls: OrbitControls;
+
 export default function ThreeComponent({
     items,
     height,
@@ -23,6 +24,21 @@ export default function ThreeComponent({
     const [loaded, setLoaded] = useState(false);
     let arrowHelpers: THREE.Group;
     let helpersCount = 0;
+
+    const updateCameraPosition = () => {
+        if (camera && renderer) {
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(width, height);
+
+            const lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
+            camera.position.copy(lookAt);
+            camera.position.z = - Math.round(Math.max(height, width) * 3 / 4);
+            controls.target.copy(lookAt);
+            renderer.render(scene, camera);
+        }
+    }
+
     const refreshScene = () => {
         if (scene) {
             scene.clear();
@@ -97,7 +113,7 @@ export default function ThreeComponent({
                 renderer.render(scene, camera);
             };
 
-
+            updateCameraPosition();
             animate();
 
             setLoaded(true);
@@ -105,8 +121,8 @@ export default function ThreeComponent({
             if (process.env.NODE_ENV === "development") {
                 window.AT_Editor = window.AT_Editor || {};
                 window.AT_Editor.scene = scene;
-                window.AT_Editor.camera = scene;
-                window.AT_Editor.renderer = scene;
+                window.AT_Editor.camera = camera;
+                window.AT_Editor.renderer = renderer;
             }
             // Clean up the event listener when the component is unmounted
             return () => {};
@@ -190,6 +206,7 @@ export default function ThreeComponent({
             const intersects = rayCaster.intersectObjects(scene.children, true);
 
             if ( intersects.length > 0 ) {
+                console.log(intersects)
                 const mesh = intersects.find(mesh => mesh.object.name
                     && mesh.object.name.startsWith("mesh_"));
                 if (mesh) {
@@ -221,17 +238,9 @@ export default function ThreeComponent({
         refreshScene();
     }
 
-    if (loaded && camera && renderer) {
+    if (loaded && camera && renderer && camera.aspect !== width / height) {
         camera.aspect = width / height;
-        camera.updateProjectionMatrix();
-
-        renderer.setSize(width, height);
-
-        const lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
-        camera.position.copy(lookAt);
-        camera.position.z = - Math.round(Math.max(height, width) * 3 / 4);
-        controls.target.copy(lookAt);
-        renderer.render(scene, camera);
+        updateCameraPosition();
     }
 
     updateArrowHelper();
