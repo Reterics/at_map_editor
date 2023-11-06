@@ -185,11 +185,11 @@ export default function ThreeComponent({
 
                 } else if (selected.type === "rect") {
                     const rect = selected as Rectangle;
-                    arrowHelpers.position.set(rect.x + rect.w / 2, rect.y + rect.h / 2, 0);
+                    arrowHelpers.position.set(rect.x + rect.w / 2, rect.y + rect.h / 2, rect.z || 0);
                     arrowHelpers.visible = true;
 
                 } else if (typeof selected.x === "number" && typeof selected.y === "number") {
-                    arrowHelpers.position.set(selected.x, selected.y, 0);
+                    arrowHelpers.position.set(selected.x, selected.y, selected.z || 0);
                     arrowHelpers.visible = true;
 
                 } else {
@@ -260,7 +260,10 @@ export default function ThreeComponent({
                     case "circle":
                         setItems([...items, {...reference,
                             x: shadowObject.position.x,
-                            y: shadowObject.position.y}]);
+                            y: shadowObject.position.y,
+                            z: shadowObject.position.z,
+                            radius: (shadowObject.geometry as THREE.SphereGeometry).parameters.radius
+                        }]);
                 }
                 scene.remove(shadowObject);
                 shadowObject = null;
@@ -327,7 +330,7 @@ export default function ThreeComponent({
                             (config as Rectangle).h = 50;
                             break;
                         case "circle":
-                            (config as Circle).radius = 50;
+                            (config as Circle).radius = 25;
                             break;
                     }
                     shadowObject = getMeshForItem(config);
