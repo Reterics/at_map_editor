@@ -2,23 +2,27 @@ import React, {useRef, useEffect, useState} from 'react';
 import * as THREE from 'three';
 import {AssetObject, Circle, Line, Rectangle} from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import {Mesh} from "three";
 
 let camera: THREE.PerspectiveCamera,
     renderer: THREE.WebGLRenderer,
-    scene: THREE.Scene, controls: OrbitControls;
+    scene: THREE.Scene, controls: OrbitControls,
+    shadowObject: THREE.Mesh|null;
 
 export default function ThreeComponent({
     items,
     height,
     width,
     selected,
-    setItems
+    setItems,
+    reference
 }: {
     items: AssetObject[],
     selected?: AssetObject
     height: number,
     width: number,
     setItems:Function,
+    reference: AssetObject
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [loaded, setLoaded] = useState(false);
@@ -39,50 +43,56 @@ export default function ThreeComponent({
         }
     }
 
+    const getMeshForItem = (item: AssetObject): THREE.Mesh => {
+        let model;
+        let material = new THREE.MeshBasicMaterial({ color: item.color ?
+                new THREE.Color(item.color) : 0xffffff });
+        let geometry;
+        let position1, position2;
+        switch (item.type) {
+            case "rect":
+                const rect = item as Rectangle;
+                geometry = new THREE.BoxGeometry(rect.w, rect.h, Math.round((rect.w + rect.h) / 2));
+                break;
+            case "circle":
+                geometry = new THREE.SphereGeometry((item as Circle).radius, 32, 16 );
+                break;
+            case "line":
+                const line = item as Line;
+                position1 = new THREE.Vector3(line.x1, line.y1, 0);
+                position2 = new THREE.Vector3(line.x2, line.y2, 0);
+                const height = position1.distanceTo(position2);
+
+                geometry = new THREE.CylinderGeometry( 5, 5, height, 32 );
+        }
+        model = new THREE.Mesh(geometry, material);
+        if (model && position1 && position2) {
+            const positionMid = new THREE.Vector3();
+            positionMid.addVectors(position1, position2).multiplyScalar(0.5);
+            model.position.copy(positionMid);
+            const direction = new THREE.Vector3();
+            direction.subVectors(position2, position1).normalize();
+
+            const quaternion = new THREE.Quaternion();
+            quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+            model.setRotationFromQuaternion(quaternion);
+        } else if (model && item.type === "rect") {
+            const rect = item as Rectangle;
+            model.position.set(rect.x + rect.w / 2, rect.y + rect.h / 2, 0);
+        } else if (model && typeof item.x === 'number' && typeof item.y === "number") {
+            model.position.set(item.x, item.y, 0);
+        }
+        return model;
+    };
+
     const refreshScene = () => {
         if (scene) {
             scene.clear();
         }
         items.forEach((item, index) => {
-            let model;
-            let material = new THREE.MeshBasicMaterial({ color: item.color ?
-                    new THREE.Color(item.color) : 0xffffff });
-            let geometry;
-            let position1, position2;
-            switch (item.type) {
-                case "rect":
-                    const rect = item as Rectangle;
-                    geometry = new THREE.BoxGeometry(rect.w, rect.h, Math.round((rect.w + rect.h) / 2));
-                    break;
-                case "circle":
-                    geometry = new THREE.SphereGeometry((item as Circle).radius, 32, 16 );
-                    break;
-                case "line":
-                    const line = item as Line;
-                    position1 = new THREE.Vector3(line.x1, line.y1, 0);
-                    position2 = new THREE.Vector3(line.x2, line.y2, 0);
-                    const height = position1.distanceTo(position2);
+            const model = getMeshForItem(item);
 
-                    geometry = new THREE.CylinderGeometry( 5, 5, height, 32 );
-            }
-            model = new THREE.Mesh(geometry, material);
             model.name = "mesh_" + index;
-            if (model && position1 && position2) {
-                const positionMid = new THREE.Vector3();
-                positionMid.addVectors(position1, position2).multiplyScalar(0.5);
-                model.position.copy(positionMid);
-                const direction = new THREE.Vector3();
-                direction.subVectors(position2, position1).normalize();
-
-                const quaternion = new THREE.Quaternion();
-                quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
-                model.setRotationFromQuaternion(quaternion);
-            } else if (model && item.type === "rect") {
-                const rect = item as Rectangle;
-                model.position.set(rect.x + rect.w / 2, rect.y + rect.h / 2, 0);
-            } else if (model && typeof item.x === 'number' && typeof item.y === "number") {
-                model.position.set(item.x, item.y, 0);
-            }
             if (model && scene) {
                 scene.add(model);
             }
@@ -190,9 +200,7 @@ export default function ThreeComponent({
         }
     }
 
-    const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> ) => {
-        event.preventDefault();
-
+    const getMouseIntersects = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (camera && scene && containerRef.current) {
             const rect = containerRef.current.getBoundingClientRect();
 
@@ -203,22 +211,28 @@ export default function ThreeComponent({
 
             const rayCaster = new THREE.Raycaster();
             rayCaster.setFromCamera(mouse, camera);
-            const intersects = rayCaster.intersectObjects(scene.children, true);
+            return rayCaster.intersectObjects(scene.children, true);
+        }
+        return [];
+    }
 
-            if ( intersects.length > 0 ) {
-                console.log(intersects)
-                const mesh = intersects.find(mesh => mesh.object.name
-                    && mesh.object.name.startsWith("mesh_"));
-                if (mesh) {
-                    const index = Number(mesh.object.name.replace("mesh_", ""));
+    const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        event.preventDefault();
+        const intersects = getMouseIntersects(event);
 
-                    if (items[index]) {
-                        const updatedItems = items.map((item, i) => {
-                            item.selected = i === index;
-                            return item;
-                        });
-                        setItems([...updatedItems]);
-                    }
+        if (intersects.length) {
+            console.log(intersects)
+            const mesh = intersects.find(mesh => mesh.object.name
+                && mesh.object.name.startsWith("mesh_"));
+            if (mesh) {
+                const index = Number(mesh.object.name.replace("mesh_", ""));
+
+                if (items[index]) {
+                    const updatedItems = items.map((item, i) => {
+                        item.selected = i === index;
+                        return item;
+                    });
+                    setItems([...updatedItems]);
                 }
             }
         }
@@ -245,5 +259,89 @@ export default function ThreeComponent({
 
     updateArrowHelper();
 
-    return <div ref={containerRef} onMouseDown={onMouseDown}/>;
+    // TODO: Change this according to the object size
+    const pixelOffsetX = 50; // Adjust the number of pixels horizontally
+    const pixelOffsetY = 50; // Adjust the number of pixels vertically
+
+    function isCollisionDetected(object1: THREE.Object3D, object2: THREE.Object3D) {
+        const box1 = new THREE.Box3().setFromObject(object1);
+        const box2 = new THREE.Box3().setFromObject(object2);
+
+        return box1.intersectsBox(box2);
+    }
+
+
+    const onMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        event.preventDefault();
+        if (reference.type === "cursor") {
+            return;
+        }
+        const justCreated = !shadowObject;
+
+        const intersects = getMouseIntersects(event);
+        if (intersects.length) {
+            const intersect = intersects.find(object => {
+                return object.object.name !== "shadowObject" && object.object.isObject3D;
+            });
+            if (intersect) {
+                const point = intersect.point;
+                const mainObject = intersect.object as Mesh;
+                if (justCreated) {
+                    const config = {
+                        ...reference,
+                        color: "#3cffee",
+                    };
+                    switch (reference.type) {
+                        case "rect":
+                            (config as Rectangle).w = 50;
+                            (config as Rectangle).h = 50;
+                            break;
+                        case "circle":
+                            (config as Circle).radius = 50;
+                            break;
+                    }
+                    shadowObject = getMeshForItem(config);
+                    shadowObject.name = "shadowObject";
+                    (shadowObject.material as THREE.MeshBasicMaterial).opacity = 0.5;
+                    (shadowObject.material as THREE.MeshBasicMaterial).needsUpdate = true;
+                }
+
+                if (shadowObject) {
+                    const movementSpeed = 3; // Adjust the speed as needed
+                    shadowObject.position.copy(camera.position)
+                    const direction = point.clone().sub(shadowObject.position);
+                    direction.normalize();
+
+                    const directionVector = direction.multiplyScalar(movementSpeed);
+                    let i = 0;
+                    while (!isCollisionDetected(shadowObject, mainObject)) {
+                        shadowObject.position.add(directionVector);
+                        i++;
+                        if (i >= 1000) {
+                            break;
+                        }
+                    }
+
+                    if (justCreated) {
+                        scene.add(shadowObject);
+                    }
+                }
+            }
+        }
+    };
+
+    const onMouseOut = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        event.preventDefault();
+        if (shadowObject) {
+            scene.remove(shadowObject);
+            shadowObject = null;
+        }
+    };
+
+    return <div ref={containerRef}
+                onMouseDown={onMouseDown}
+                onMouseOver={onMouseMove}
+                onMouseMove={onMouseMove}
+                onMouseOut={onMouseOut}
+    />;
 }

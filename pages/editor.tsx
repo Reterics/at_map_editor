@@ -157,6 +157,7 @@ export default function Editor() {
                                         width={editorDimensions[0]}
                                         height={editorDimensions[1]}
                                         setItems={setItems}
+                                        reference={reference}
                         />
                     </div>
                 }
