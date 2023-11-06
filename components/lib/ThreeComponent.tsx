@@ -221,7 +221,6 @@ export default function ThreeComponent({
         const intersects = getMouseIntersects(event);
 
         if (intersects.length) {
-            console.log(intersects)
             const mesh = intersects.find(mesh => mesh.object.name
                 && mesh.object.name.startsWith("mesh_"));
             if (mesh) {
@@ -258,10 +257,6 @@ export default function ThreeComponent({
     }
 
     updateArrowHelper();
-
-    // TODO: Change this according to the object size
-    const pixelOffsetX = 50; // Adjust the number of pixels horizontally
-    const pixelOffsetY = 50; // Adjust the number of pixels vertically
 
     function isCollisionDetected(object1: THREE.Object3D, object2: THREE.Object3D) {
         const box1 = new THREE.Box3().setFromObject(object1);
