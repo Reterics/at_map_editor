@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import {AssetObject, Circle, Line, Rectangle} from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import {Mesh} from "three";
+import {ref} from "firebase/storage";
 
 let camera: THREE.PerspectiveCamera,
     renderer: THREE.WebGLRenderer,
@@ -78,9 +79,9 @@ export default function ThreeComponent({
             model.setRotationFromQuaternion(quaternion);
         } else if (model && item.type === "rect") {
             const rect = item as Rectangle;
-            model.position.set(rect.x + rect.w / 2, rect.y + rect.h / 2, 0);
+            model.position.set(rect.x + rect.w / 2, rect.y + rect.h / 2, rect.z || 0);
         } else if (model && typeof item.x === 'number' && typeof item.y === "number") {
-            model.position.set(item.x, item.y, 0);
+            model.position.set(item.x, item.y, item.z || 0);
         }
         return model;
     };
@@ -218,23 +219,54 @@ export default function ThreeComponent({
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         event.preventDefault();
-        const intersects = getMouseIntersects(event);
+        if (reference.type === "cursor") {
+            const intersects = getMouseIntersects(event);
 
-        if (intersects.length) {
-            const mesh = intersects.find(mesh => mesh.object.name
-                && mesh.object.name.startsWith("mesh_"));
-            if (mesh) {
-                const index = Number(mesh.object.name.replace("mesh_", ""));
+            if (intersects.length) {
+                const mesh = intersects.find(mesh => mesh.object.name
+                    && mesh.object.name.startsWith("mesh_"));
+                if (mesh) {
+                    const index = Number(mesh.object.name.replace("mesh_", ""));
 
-                if (items[index]) {
-                    const updatedItems = items.map((item, i) => {
-                        item.selected = i === index;
-                        return item;
-                    });
-                    setItems([...updatedItems]);
+                    if (items[index]) {
+                        const updatedItems = items.map((item, i) => {
+                            item.selected = i === index;
+                            return item;
+                        });
+                        setItems([...updatedItems]);
+                    }
                 }
             }
+        } else if (reference.type === "circle" || reference.type === "rect") {
+            if (shadowObject) {
+                switch (reference.type) {
+                    case "rect":
+                        const boundingBox = new THREE.Box3().setFromObject(shadowObject);
+                        const center = new THREE.Vector3();
+                        boundingBox.getCenter(center);
+                        const w = (shadowObject.geometry as THREE.BoxGeometry).parameters.width;
+                        const h = (shadowObject.geometry as THREE.BoxGeometry).parameters.height;
+                        const x = shadowObject.position.x - w / 2;
+                        const y = shadowObject.position.y - h / 2;
+
+                        setItems([...items, {...reference,
+                            x: x,
+                            y: y,
+                            w: w,
+                            h: h,
+                            z: shadowObject.position.z
+                        }]);
+                        break;
+                    case "circle":
+                        setItems([...items, {...reference,
+                            x: shadowObject.position.x,
+                            y: shadowObject.position.y}]);
+                }
+                scene.remove(shadowObject);
+                shadowObject = null;
+            }
         }
+
     };
 
     if (scene) {
@@ -244,6 +276,9 @@ export default function ThreeComponent({
         if (arrowHelpers) {
             helpersCount++;
         }
+    }
+    if (shadowObject) {
+        helpersCount++;
     }
     useEffect(loadTHREEComponent, [height, width]);
 
@@ -334,7 +369,7 @@ export default function ThreeComponent({
     };
 
     return <div ref={containerRef}
-                onMouseDown={onMouseDown}
+                onDoubleClick={onMouseDown}
                 onMouseOver={onMouseMove}
                 onMouseMove={onMouseMove}
                 onMouseOut={onMouseOut}

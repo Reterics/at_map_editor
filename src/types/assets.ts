@@ -8,6 +8,7 @@ export interface Asset {
     type: AssetType,
     x?: number,
     y?: number,
+    z?: number,
     color?: string,
     selected?:boolean
 }
