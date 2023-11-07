@@ -372,6 +372,7 @@ export default function ThreeComponent({
     };
 
     return <div ref={containerRef}
+                onClick={(e)=> reference.type === "cursor" ? onMouseDown(e) : null}
                 onDoubleClick={onMouseDown}
                 onMouseOver={onMouseMove}
                 onMouseMove={onMouseMove}
