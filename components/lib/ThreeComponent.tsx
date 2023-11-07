@@ -289,6 +289,8 @@ export default function ThreeComponent({
                     material.map = texture;
                     material.needsUpdate = true;
                     const plane = new THREE.Mesh( geometry, material );
+                    plane.position.setX(width / 2);
+                    plane.position.setY(height / 2);
                     plane.name = "plane";
                     scene.add( plane );
                 });
