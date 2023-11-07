@@ -2,15 +2,27 @@
 import Layout from "@/components/layout";
 import {useEffect, useRef, useState} from "react";
 import {
-    BsFillGrid1X2Fill, BsBadge3DFill, BsFillMapFill,
-    BsFillSquareFill, BsFillCircleFill, BsSlashLg, BsPaintBucket,
-    BsFillCursorFill, BsEraserFill, BsDownload, BsFileEarmark, BsFolder2Open
+    BsFillGrid1X2Fill,
+    BsBadge3DFill,
+    BsFillMapFill,
+    BsFillSquareFill,
+    BsFillCircleFill,
+    BsSlashLg,
+    BsPaintBucket,
+    BsFillCursorFill,
+    BsEraserFill,
+    BsDownload,
+    BsFileEarmark,
+    BsFolder2Open,
+    BsGeoAlt,
+    BsGlobeAmericas,
+    BsArrowsFullscreen
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
 import {AssetObject} from "@/src/types/assets";
 import {degToRad} from "@/src/utils/math";
 import ThreeComponent from "@/components/lib/ThreeComponent";
-import {LayoutType} from "@/src/types/general";
+import {LayoutType, ThreeControlType} from "@/src/types/general";
 import {downloadAsFile, readTextFile} from "@/src/utils/general";
 import ToolbarButton from "@/components/form/ToolbarButton";
 
@@ -40,6 +52,7 @@ export default function Editor() {
     const [editorDimensions, setEditorDimensions] =
         useState([0, 0]);
     const [reference, setReference] = useState(assets[3]);
+    const [threeControl, setThreeControl] = useState<ThreeControlType>("orbit");
     const colorRef = useRef(null);
 
     const selected = items.find(item=>item.selected);
@@ -137,6 +150,24 @@ export default function Editor() {
                             </ToolbarButton>
                 }
 
+                <ToolbarButton
+                    style={{float:"right"}}
+                    onClick={() => setThreeControl("orbit")}
+                    active={threeControl === "orbit"}>
+                    <BsGlobeAmericas />
+                </ToolbarButton>
+                <ToolbarButton
+                    style={{float:"right"}}
+                    onClick={() => setThreeControl("object")}
+                    active={threeControl === "object"}>
+                    <BsGeoAlt />
+                </ToolbarButton>
+                <ToolbarButton
+                    style={{float:"right"}}
+                    onClick={() => setThreeControl("trackball")}
+                    active={threeControl === "trackball"}>
+                    <BsArrowsFullscreen />
+                </ToolbarButton>
             </div>
             <div className="flex flex-row justify-around">
                 {
@@ -158,6 +189,7 @@ export default function Editor() {
                                         height={editorDimensions[1]}
                                         setItems={setItems}
                                         reference={reference}
+                                        threeControl={threeControl}
                         />
                     </div>
                 }

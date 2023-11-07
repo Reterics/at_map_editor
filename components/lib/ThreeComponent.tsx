@@ -3,11 +3,12 @@ import * as THREE from 'three';
 import {AssetObject, Circle, Line, Rectangle} from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import {Mesh} from "three";
-import {ref} from "firebase/storage";
+import {TrackballControls} from "three/examples/jsm/controls/TrackballControls";
+import {ThreeControlType} from "@/src/types/general";
 
 let camera: THREE.PerspectiveCamera,
     renderer: THREE.WebGLRenderer,
-    scene: THREE.Scene, controls: OrbitControls,
+    scene: THREE.Scene, controls: OrbitControls | TrackballControls,
     shadowObject: THREE.Mesh|null;
 
 export default function ThreeComponent({
@@ -16,14 +17,16 @@ export default function ThreeComponent({
     width,
     selected,
     setItems,
-    reference
+    reference,
+    threeControl
 }: {
     items: AssetObject[],
     selected?: AssetObject
     height: number,
     width: number,
     setItems:Function,
-    reference: AssetObject
+    reference: AssetObject,
+    threeControl: ThreeControlType
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [loaded, setLoaded] = useState(false);
@@ -36,11 +39,37 @@ export default function ThreeComponent({
 
             renderer.setSize(width, height);
 
-            const lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
+            let lookAt;
+            switch (threeControl) {
+                case "object":
+                    if (selected) {
+                        const mesh = getMeshForItem(selected);
+                        lookAt = mesh.position;
+                    } else {
+                        lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
+                    }
+                    break;
+                case "orbit":
+                case "trackball":
+                default:
+                    lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
+            }
             camera.position.copy(lookAt);
             camera.position.z = - Math.round(Math.max(height, width) * 3 / 4);
             controls.target.copy(lookAt);
             renderer.render(scene, camera);
+        }
+    };
+
+    const updateControls = () => {
+        switch (threeControl) {
+            case "trackball":
+                controls = new TrackballControls( camera, renderer.domElement );
+                break;
+            case "orbit":
+            case "object":
+            default:
+                controls = new OrbitControls( camera, renderer.domElement );
         }
     }
 
@@ -116,7 +145,7 @@ export default function ThreeComponent({
             refreshScene();
 
             renderer.render(scene, camera);
-            controls = new OrbitControls( camera, renderer.domElement );
+            updateControls();
 
             const animate = () => {
                 requestAnimationFrame(animate);
@@ -323,8 +352,14 @@ export default function ThreeComponent({
     if (loaded && camera && renderer && camera.aspect !== width / height) {
         camera.aspect = width / height;
         updateCameraPosition();
+    } else if (controls && threeControl) {
+        if ((threeControl === "trackball" && controls instanceof OrbitControls) ||
+            (threeControl === "orbit" && controls instanceof TrackballControls) ||
+            (threeControl === "object" && controls instanceof TrackballControls)) {
+            updateControls();
+            updateCameraPosition();
+        }
     }
-
     updateArrowHelper();
 
     function isCollisionDetected(object1: THREE.Object3D, object2: THREE.Object3D) {
@@ -333,7 +368,6 @@ export default function ThreeComponent({
 
         return box1.intersectsBox(box2);
     }
-
 
     const onMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         event.preventDefault();
