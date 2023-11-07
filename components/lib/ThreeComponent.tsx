@@ -135,6 +135,7 @@ export default function ThreeComponent({
                 window.AT_Editor.camera = camera;
                 window.AT_Editor.renderer = renderer;
             }
+            void addBasePlane();
             // Clean up the event listener when the component is unmounted
             return () => {};
         }
@@ -272,11 +273,38 @@ export default function ThreeComponent({
 
     };
 
+    const addBasePlane = () => {
+        return new Promise(resolve => {
+            if (!scene || scene.children.find(mesh => mesh.name === "plane")) {
+                return resolve(false);
+            }
+            const geometry = new THREE.PlaneGeometry( width, height );
+            const material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+            const loader = new THREE.TextureLoader();
+            loader.load( '/assets/textures/green-grass-textures.jpg',
+                function ( texture ) {
+                    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+                    texture.offset.set( 0, 0 );
+                    texture.repeat.set( 2, 2 );
+                    material.map = texture;
+                    material.needsUpdate = true;
+                    const plane = new THREE.Mesh( geometry, material );
+                    plane.name = "plane";
+                    scene.add( plane );
+                });
+
+        })
+
+    }
+
     if (scene) {
         arrowHelpers =
             scene.children.find(mesh => mesh instanceof THREE.Group &&
                 mesh.name === "arrows") as THREE.Group;
         if (arrowHelpers) {
+            helpersCount++;
+        }
+        if (scene.children.find(mesh => mesh.name === "plane")) {
             helpersCount++;
         }
     }
@@ -287,6 +315,7 @@ export default function ThreeComponent({
 
     if (scene && scene.children.length - helpersCount < items.length) {
         refreshScene();
+        void addBasePlane();
     }
 
     if (loaded && camera && renderer && camera.aspect !== width / height) {
