@@ -141,7 +141,7 @@ export default function ThreeComponent({
                 containerRef.current?.removeChild(containerRef.current?.childNodes[0]);
             }
             containerRef.current?.appendChild(renderer.domElement);
-            camera.up.set(0, -1, 0);
+            camera.up.set(0, 0, -1);
             refreshScene();
 
             renderer.render(scene, camera);
