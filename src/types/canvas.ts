@@ -35,3 +35,9 @@ export interface DrawInterface {
     lines: DrawLinesFunc
     rect: DrawRectFunc
 }
+
+export interface DrawOptions {
+    background?:string
+    backgroundColor?:string,
+    fillColor?:string
+}

@@ -1,35 +1,87 @@
-import {DrawInterface} from "@/src/types/canvas";
+import {DrawInterface, DrawOptions} from "@/src/types/canvas";
 import {Asset, Circle, Line, Point, Rectangle} from "@/src/types/assets";
 import {getContrastToHEX, interpolateColor} from "@/src/utils/general";
 import {degToRad} from "@/src/utils/math";
 
 export class Draw implements DrawInterface{
-    private context: CanvasRenderingContext2D | undefined;
-    private canvas: HTMLCanvasElement;
+    private context?: CanvasRenderingContext2D;
+    private readonly canvas: HTMLCanvasElement;
+
     private backgroundColor: string;
     private fillColor: string;
+    private background?: HTMLImageElement;
 
-    constructor(canvas: HTMLCanvasElement) {
+    private queue: ((resolve: Function) => {})[] = [];
+    private _execution?: boolean;
+
+    constructor(canvas: HTMLCanvasElement, options?: DrawOptions) {
+        const opt = options || {};
         this.canvas = canvas;
-        this.backgroundColor = "#ffffff";
-        this.fillColor = "#000000";
-        this.updateCanvas();
+        if (opt.background) {
+            this.background = new Image();
+            this.background.src = opt.background;
+            void this.pipeline((resolve: Function) => {
+                if (this.background) {
+                    this.background.onload = function () {
+                        resolve();
+                    };
+                } else {
+                    resolve();
+                }
+            });
+        }
+        this.backgroundColor = opt.backgroundColor || "#ffffff";
+        this.fillColor = opt.fillColor || "#000000";
+        void this.pipeline((resolve: Function) => {
+            this.updateCanvas();
+            resolve();
+        });
+    }
+
+    protected async pipeline(method?: (resolve: Function) => any) {
+        if (method) {
+            this.queue.push(method);
+        }
+        if (this._execution !== true) {
+            this._execution = true;
+        } else {
+            return;
+        }
+
+        while (this.queue.length) {
+            const current = this.queue.shift();
+            if (current) {
+                await (new Promise(current)).catch((e) => console.error(e));
+            }
+        }
+        this._execution = false;
     }
 
     getContext() {
         return this.context;
     }
 
-    updateCanvas () {
+    updateCanvas() {
         if (this.canvas) {
             const ctx = this.canvas.getContext('2d');
             if (ctx) {
                 this.context = ctx;
             }
             if (this.context) {
-                this.context.fillStyle = this.backgroundColor;
-                this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                if (this.background) {
+                    const pattern = this.context.createPattern(this.background, 'repeat');
+                    if (pattern) {
+                        this.context.fillStyle = pattern;
+                        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                    } else {
+                        this.context.drawImage(this.background, 0, 0, this.canvas.width, this.canvas.height);
+                    }
+                } else {
+                    this.context.fillStyle = this.backgroundColor;
+                    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                }
                 this.context.fillStyle = this.fillColor;
+
             }
         }
     }
@@ -159,5 +211,12 @@ export class Draw implements DrawInterface{
         }
     }
 
+    refresh(assets: Asset[]) {
+        void this.pipeline((resolve) => {
+            this.updateCanvas();
+            this.render(assets);
+            resolve();
+        });
+    }
 }
 

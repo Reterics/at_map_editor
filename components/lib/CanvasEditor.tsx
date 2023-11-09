@@ -13,13 +13,15 @@ export default function CanvasEditor({
     items,
     height,
     width,
-    setItems
+    setItems,
+    ground
 }: {
     reference: AssetObject,
     items: AssetObject[],
     height: number,
     width: number,
     setItems:Function,
+    ground: string
 }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [drawer, setDrawer] = useState<Draw|null>(null);
@@ -29,15 +31,14 @@ export default function CanvasEditor({
         if (drawer) {
             console.log('Render')
             if (canvasRef.current) {
-                drawer.updateCanvas();
-                drawer.render(items);
+                drawer.refresh(items);
             }
         }
     }
 
     useEffect(() => {
         if (canvasRef.current) {
-            setDrawer(new Draw(canvasRef.current));
+            setDrawer(new Draw(canvasRef.current, {background: ground}));
         }
     }, [canvasRef.current]);
 

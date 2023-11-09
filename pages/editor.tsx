@@ -47,6 +47,7 @@ export default function Editor() {
             "type": "line"
         },
     ]; // TODO: Make dynamic
+    const ground = '/assets/textures/green-grass-textures.jpg';
     const [items, setItems] = useState<AssetObject[]>([]);
     const [layout, setLayout] = useState<LayoutType>("normal");
     const [editorDimensions, setEditorDimensions] =
@@ -177,7 +178,9 @@ export default function Editor() {
                                       items={items}
                                       width={editorDimensions[0]}
                                       height={editorDimensions[1]}
-                                      setItems={setItems}/>
+                                      setItems={setItems}
+                                      ground={ground}
+                        />
                     </div>
                 }
                 {
@@ -190,6 +193,7 @@ export default function Editor() {
                                         setItems={setItems}
                                         reference={reference}
                                         threeControl={threeControl}
+                                        ground={ground}
                         />
                     </div>
                 }

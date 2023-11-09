@@ -18,7 +18,8 @@ export default function ThreeComponent({
     selected,
     setItems,
     reference,
-    threeControl
+    threeControl,
+    ground
 }: {
     items: AssetObject[],
     selected?: AssetObject
@@ -26,7 +27,8 @@ export default function ThreeComponent({
     width: number,
     setItems:Function,
     reference: AssetObject,
-    threeControl: ThreeControlType
+    threeControl: ThreeControlType,
+    ground: string
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [loaded, setLoaded] = useState(false);
@@ -56,6 +58,7 @@ export default function ThreeComponent({
             }
             camera.position.copy(lookAt);
             camera.position.z = - Math.round(Math.max(height, width) * 3 / 4);
+            camera.position.y = + Math.round(Math.max(height, width) * 3 / 4);
             controls.target.copy(lookAt);
             renderer.render(scene, camera);
         }
@@ -76,7 +79,7 @@ export default function ThreeComponent({
     const getMeshForItem = (item: AssetObject): THREE.Mesh => {
         let model;
         let material = new THREE.MeshBasicMaterial({ color: item.color ?
-                new THREE.Color(item.color) : 0xffffff });
+                new THREE.Color(item.color) : 0x000000 });
         let geometry;
         let position1, position2;
         switch (item.type) {
@@ -310,7 +313,7 @@ export default function ThreeComponent({
             const geometry = new THREE.PlaneGeometry( width, height );
             const material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
             const loader = new THREE.TextureLoader();
-            loader.load( '/assets/textures/green-grass-textures.jpg',
+            loader.load(ground ,
                 function ( texture ) {
                     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
                     texture.offset.set( 0, 0 );
@@ -320,6 +323,7 @@ export default function ThreeComponent({
                     const plane = new THREE.Mesh( geometry, material );
                     plane.position.setX(width / 2);
                     plane.position.setY(height / 2);
+                    plane.position.setZ(0);
                     plane.name = "plane";
                     scene.add( plane );
                 });
