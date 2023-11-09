@@ -8,7 +8,7 @@ Created in [Next.js](https://nextjs.org/).
 ## Features
 
  - Creating map/scene from assets putting them on a 2D Canvas on the left side, and see on the right side the final scene in 3D.
-![Map Editor](./public/screenshot3.png)
+![Map Editor](./public/screenshot4.png)
  - Manage assets by uploading them in the dashboard. Every asset is stored safely in Google Cloud Storage
 ![Assets Management](./public/screenshot2.png)
 
