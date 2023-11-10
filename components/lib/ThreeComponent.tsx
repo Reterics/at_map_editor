@@ -6,6 +6,7 @@ import {Mesh} from "three";
 import {TrackballControls} from "three/examples/jsm/controls/TrackballControls";
 import {ThreeControlType} from "@/src/types/general";
 import {Grass} from "@/src/utils/grass";
+import {renderEnvironment} from "@/src/utils/background";
 
 let camera: THREE.PerspectiveCamera,
     renderer: THREE.WebGLRenderer,
@@ -22,7 +23,8 @@ export default function ThreeComponent({
     reference,
     threeControl,
     ground,
-    grassEnabled
+    grassEnabled,
+    skyEnabled
 }: {
     items: AssetObject[],
     selected?: AssetObject
@@ -32,12 +34,14 @@ export default function ThreeComponent({
     reference: AssetObject,
     threeControl: ThreeControlType,
     ground: string,
-    grassEnabled?: boolean
+    grassEnabled?: boolean,
+    skyEnabled?: boolean
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [loaded, setLoaded] = useState(false);
     let arrowHelpers: THREE.Group;
     let helpersCount = 0;
+    const helperNames = ["sky", "light", "ambientLight", "grass", "arrows", "plane"];
 
     const updateCameraPosition = () => {
         if (camera && renderer) {
@@ -61,7 +65,7 @@ export default function ThreeComponent({
                     lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
             }
             camera.position.copy(lookAt);
-            camera.position.z = - Math.round(Math.max(height, width) * 3 / 4);
+            camera.position.z = + Math.round(Math.max(height, width) * 3 / 4);
             camera.position.y = + Math.round(Math.max(height, width) * 3 / 4);
             controls.target.copy(lookAt);
             renderer.render(scene, camera);
@@ -138,6 +142,8 @@ export default function ThreeComponent({
 
     const loadTHREEComponent = () => {
         if (typeof window !== 'undefined') {
+            THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
+
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 2000);
             renderer = new THREE.WebGLRenderer({
@@ -148,7 +154,7 @@ export default function ThreeComponent({
                 containerRef.current?.removeChild(containerRef.current?.childNodes[0]);
             }
             containerRef.current?.appendChild(renderer.domElement);
-            camera.up.set(0, 0, -1);
+            camera.up.set(0, 0, 1);
             refreshScene();
 
             renderer.render(scene, camera);
@@ -342,6 +348,9 @@ export default function ThreeComponent({
                         });
                         grass.addToScene();
                     }
+                    if (skyEnabled) {
+                        renderEnvironment(scene);
+                    }
                     resolve(plane);
                 });
         })
@@ -351,15 +360,12 @@ export default function ThreeComponent({
         arrowHelpers =
             scene.children.find(mesh => mesh instanceof THREE.Group &&
                 mesh.name === "arrows") as THREE.Group;
-        if (arrowHelpers) {
-            helpersCount++;
-        }
-        if (scene.children.find(mesh => mesh.name === "plane")) {
-            helpersCount++;
-        }
-        if (scene.children.find(mesh => mesh.name === "grass")) {
-            helpersCount++;
-        }
+
+        scene.children.forEach((mesh) => {
+            if (helperNames.includes(mesh.name)) {
+                helpersCount++;
+            }
+        });
     }
     if (shadowObject) {
         helpersCount++;

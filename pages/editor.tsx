@@ -195,6 +195,7 @@ export default function Editor() {
                                         threeControl={threeControl}
                                         ground={ground}
                                         grassEnabled={true}
+                                        skyEnabled={true}
                         />
                     </div>
                 }
