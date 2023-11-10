@@ -194,6 +194,7 @@ export default function Editor() {
                                         reference={reference}
                                         threeControl={threeControl}
                                         ground={ground}
+                                        grassEnabled={true}
                         />
                     </div>
                 }

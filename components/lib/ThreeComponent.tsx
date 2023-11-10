@@ -5,11 +5,13 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import {Mesh} from "three";
 import {TrackballControls} from "three/examples/jsm/controls/TrackballControls";
 import {ThreeControlType} from "@/src/types/general";
+import {Grass} from "@/src/utils/grass";
 
 let camera: THREE.PerspectiveCamera,
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene, controls: OrbitControls | TrackballControls,
-    shadowObject: THREE.Mesh|null;
+    shadowObject: THREE.Mesh|null,
+    grass: Grass;
 
 export default function ThreeComponent({
     items,
@@ -19,7 +21,8 @@ export default function ThreeComponent({
     setItems,
     reference,
     threeControl,
-    ground
+    ground,
+    grassEnabled
 }: {
     items: AssetObject[],
     selected?: AssetObject
@@ -28,7 +31,8 @@ export default function ThreeComponent({
     setItems:Function,
     reference: AssetObject,
     threeControl: ThreeControlType,
-    ground: string
+    ground: string,
+    grassEnabled?: boolean
 }) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [loaded, setLoaded] = useState(false);
@@ -151,8 +155,12 @@ export default function ThreeComponent({
             updateControls();
 
             const animate = () => {
+                if (grassEnabled && grass) {
+                    grass.refresh();
+                }
                 requestAnimationFrame(animate);
                 controls.update();
+
                 renderer.render(scene, camera);
             };
 
@@ -326,10 +334,17 @@ export default function ThreeComponent({
                     plane.position.setZ(0);
                     plane.name = "plane";
                     scene.add( plane );
+                    if (grassEnabled) {
+                        grass = new Grass(scene,{
+                            instances: 100000,
+                            width: width,
+                            height: height
+                        });
+                        grass.addToScene();
+                    }
+                    resolve(plane);
                 });
-
         })
-
     }
 
     if (scene) {
@@ -340,6 +355,9 @@ export default function ThreeComponent({
             helpersCount++;
         }
         if (scene.children.find(mesh => mesh.name === "plane")) {
+            helpersCount++;
+        }
+        if (scene.children.find(mesh => mesh.name === "grass")) {
             helpersCount++;
         }
     }

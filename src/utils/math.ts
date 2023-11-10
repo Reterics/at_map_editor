@@ -28,3 +28,8 @@ export const isPointInsideCircle = (x: number, y: number, centerX: number, cente
     const distance = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
     return distance < radius;
 };
+
+export const math = {
+    range: (a: number, b:number) => Math.random() * (b - a) + a,
+    rand: (a: number, b: number) => Math.round(math.range(a, b))
+}
