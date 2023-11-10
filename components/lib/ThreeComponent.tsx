@@ -259,7 +259,8 @@ export default function ThreeComponent({
 
             const rayCaster = new THREE.Raycaster();
             rayCaster.setFromCamera(mouse, camera);
-            return rayCaster.intersectObjects(scene.children, true);
+            return rayCaster.intersectObjects(scene.children.filter(mesh =>
+                mesh.name.startsWith("mesh") || mesh.name === "plane"), true);
         }
         return [];
     }

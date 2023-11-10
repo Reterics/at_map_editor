@@ -49,7 +49,7 @@ export default function Editor() {
     ]; // TODO: Make dynamic
     const ground = '/assets/textures/green-grass-textures.jpg';
     const [items, setItems] = useState<AssetObject[]>([]);
-    const [layout, setLayout] = useState<LayoutType>("normal");
+    const [layout, setLayout] = useState<LayoutType>("three");
     const [editorDimensions, setEditorDimensions] =
         useState([0, 0]);
     const [reference, setReference] = useState(assets[3]);
@@ -61,15 +61,16 @@ export default function Editor() {
     useEffect(() => {
         const padding = {
             top: 100,
-            left: 10,
-            right: 10,
+            left: 20,
+            right: 20,
+            bottom: 100
         };
         if (typeof window !== 'undefined') {
             setEditorDimensions([
                 (layout === "normal" ? window.innerWidth / 2 - padding.left - padding.right  :
                     window.innerWidth - padding.left - padding.right),
                 (layout === "normal" ? window.innerHeight / 1.5 - padding.top :
-                    window.innerHeight - padding.top)
+                    window.innerHeight - padding.top - padding.bottom)
             ])
         }
     }, [layout]);
@@ -173,7 +174,7 @@ export default function Editor() {
             <div className="flex flex-row justify-around">
                 {
                     (layout === "normal" || layout === "canvas") && <div className="relative overflow-x-auto shadow-md
-                    max-w-screen-xl m-auto w-full mt-2 p-0">
+                    m-auto w-full mt-2 p-0">
                         <CanvasEditor reference={reference}
                                       items={items}
                                       width={editorDimensions[0]}
@@ -185,7 +186,7 @@ export default function Editor() {
                 }
                 {
                     (layout === "normal" || layout === "three") && <div className="relative overflow-x-auto shadow-md
-                    max-w-screen-xl m-auto w-full mt-2 border-2 p-0">
+                   m-auto w-full mt-2 border-2 p-0">
                         <ThreeComponent items={items}
                                         selected={selected}
                                         width={editorDimensions[0]}
