@@ -394,8 +394,13 @@ export default function ThreeComponent({
             }
         });
     }
+
     if (shadowObject) {
         helpersCount++;
+        const inScene = scene.children.find(mesh=>mesh.name === "shadowObject");
+        if (!inScene) {
+            scene.add(shadowObject);
+        }
     }
     useEffect(loadTHREEComponent, [height, width]);
 
@@ -433,8 +438,8 @@ export default function ThreeComponent({
             return;
         }
         const justCreated = !shadowObject;
-
         const intersects = getMouseIntersects(event);
+
         if (intersects.length) {
             const intersect = intersects.find(object => {
                 return object.object.name !== "shadowObject" && object.object.isObject3D;
