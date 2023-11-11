@@ -39,26 +39,19 @@ export class Grass {
         return this.scene.children.find(mesh => mesh.name === 'grass');
     }
 
-    addToScene() {
-        const grass = this.getFromScene();
-        if (grass) {
-            this.scene.remove(grass);
+    regenerateGrassCoordinates() {
+        console.log('Regen grass ', this.width, this.height, !!this.instancedMesh);
+        if (!this.instancedMesh) {
+            return false;
         }
-
-        const geometry = new PlaneGeometry( 1, 10, 2, 4 );
-        geometry.translate( 0, 0.5, 0 );
-
-        this.instancedMesh = new InstancedMesh(geometry, this.leavesMaterial, this.instances);
-        this.instancedMesh.name = "grass";
-        this.scene.add(this.instancedMesh);
         const temp = new Object3D();
         const rotationMatrix = new Matrix4(); // Create a rotation matrix
 
         for ( let i=0 ; i< this.instances ; i++ ) {
             temp.position.set(
-                (Math.random()) * this.width ,
-                4,
-                (Math.random()) * -this.height
+                (Math.random()) * this.width - this.width / 2,
+                2,
+                (Math.random()) * this.height - this.height / 2
             );
 
             temp.scale.setScalar( 0.5 + Math.random() * 0.5 );
@@ -74,7 +67,22 @@ export class Grass {
             //temp.updateMatrix();
             this.instancedMesh.setMatrixAt( i, temp.matrix );
         }
+        this.instancedMesh.updateMatrix();
+    }
 
+    addToScene() {
+        const grass = this.getFromScene();
+        if (grass) {
+            this.scene.remove(grass);
+        }
+
+        const geometry = new PlaneGeometry( 1, 10, 2, 4 );
+        geometry.translate( 0, 0.5, 0 );
+
+        this.instancedMesh = new InstancedMesh(geometry, this.leavesMaterial, this.instances);
+        this.instancedMesh.name = "grass";
+        this.scene.add(this.instancedMesh);
+        this.regenerateGrassCoordinates();
     }
 
     refresh() {
@@ -85,6 +93,15 @@ export class Grass {
     destroy() {
         if (this.instancedMesh) {
             this.scene.remove(this.instancedMesh);
+        }
+    }
+
+    setDimensions(width: number, height: number) {
+        if (height && width && height !== this.height || width !== this.width) {
+            this.height = height;
+            this.width = width;
+
+            this.regenerateGrassCoordinates();
         }
     }
 }

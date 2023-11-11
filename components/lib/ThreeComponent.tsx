@@ -41,7 +41,14 @@ export default function ThreeComponent({
     const [loaded, setLoaded] = useState(false);
     let arrowHelpers: THREE.Group;
     let helpersCount = 0;
-    const helperNames = ["sky", "light", "ambientLight", "grass", "arrows", "plane"];
+    const helperNames = [
+        "sky",
+        "light",
+        "hemisphereLight",
+        "grass",
+        "arrows",
+        "plane"];
+    const planeSize = Math.max(width, height, 1000)*10;
 
     const updateCameraPosition = () => {
         if (camera && renderer) {
@@ -81,6 +88,7 @@ export default function ThreeComponent({
             case "object":
             default:
                 controls = new OrbitControls( camera, renderer.domElement );
+                controls.maxPolarAngle = Math.PI / 2;
         }
     }
 
@@ -145,10 +153,10 @@ export default function ThreeComponent({
 
     const loadTHREEComponent = () => {
         if (typeof window !== 'undefined') {
-            THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
+            THREE.Object3D.DEFAULT_UP.set(0, 0, -1);
 
             scene = scene || new THREE.Scene();
-            camera = camera || new THREE.PerspectiveCamera(75, width / height, 0.1, 2000);
+            camera = camera || new THREE.PerspectiveCamera(75, width / height, 0.1, 20001);
             renderer = renderer || new THREE.WebGLRenderer({
                 antialias: true
             });
@@ -188,6 +196,7 @@ export default function ThreeComponent({
                 window.AT_Editor.scene = scene;
                 window.AT_Editor.camera = camera;
                 window.AT_Editor.renderer = renderer;
+                window.AT_Editor.controls = controls;
             }
             void addBasePlane().then(() => setEnvironment())
             // Clean up the event listener when the component is unmounted
@@ -333,7 +342,7 @@ export default function ThreeComponent({
             if (!scene || scene.children.find(mesh => mesh.name === "plane")) {
                 return resolve(false);
             }
-            const geometry = new THREE.PlaneGeometry( width, height );
+            const geometry = new THREE.PlaneGeometry( planeSize, planeSize );
             const material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
             const loader = new THREE.TextureLoader();
             loader.load(ground ,
@@ -344,9 +353,9 @@ export default function ThreeComponent({
                     material.map = texture;
                     material.needsUpdate = true;
                     const plane = new THREE.Mesh( geometry, material );
-                    plane.position.setX(width / 2);
-                    plane.position.setY(height / 2);
-                    plane.position.setZ(0);
+                    //plane.position.setX(planeSize / 2);
+                    //plane.position.setY(planeSize / 2);
+                    plane.position.setZ(-1);
                     plane.name = "plane";
                     scene.add( plane );
                     resolve(plane);
@@ -360,11 +369,13 @@ export default function ThreeComponent({
                 grass.addToScene();
             } else if (!grass) {
                 grass = new Grass(scene,{
-                    instances: 100000,
-                    width: width,
-                    height: height
+                    instances: 1000000,
+                    width: planeSize,
+                    height: planeSize
                 });
                 grass.addToScene();
+            } else {
+                grass.setDimensions(planeSize, planeSize)
             }
         }
         if (skyEnabled) {
@@ -395,6 +406,9 @@ export default function ThreeComponent({
 
     if (loaded && camera && renderer && camera.aspect !== width / height) {
         camera.aspect = width / height;
+        if (grass) {
+            grass.setDimensions(planeSize, planeSize);
+        }
         updateCameraPosition();
     } else if (controls && threeControl) {
         if ((threeControl === "trackball" && controls instanceof OrbitControls) ||
