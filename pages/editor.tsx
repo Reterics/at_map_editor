@@ -173,7 +173,7 @@ export default function Editor() {
             </div>
             <div className="flex flex-row justify-around">
                 {
-                    (layout === "normal" || layout === "canvas") && <div className="relative overflow-x-auto shadow-md
+                    (layout === "normal" || layout === "canvas") && editorDimensions[0] && <div className="relative overflow-x-auto shadow-md
                     m-auto w-full mt-2 p-0">
                         <CanvasEditor reference={reference}
                                       items={items}
@@ -185,7 +185,7 @@ export default function Editor() {
                     </div>
                 }
                 {
-                    (layout === "normal" || layout === "three") && <div className="relative overflow-x-auto shadow-md
+                    (layout === "normal" || layout === "three") && editorDimensions[0] && <div className="relative overflow-x-auto shadow-md
                    m-auto w-full mt-2 border-2 p-0">
                         <ThreeComponent items={items}
                                         selected={selected}
