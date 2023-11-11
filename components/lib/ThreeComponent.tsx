@@ -126,9 +126,12 @@ export default function ThreeComponent({
         return model;
     };
 
-    const refreshScene = () => {
+    const refreshSceneItems = () => {
         if (scene) {
-            scene.clear();
+            scene.children
+                .filter(m=>m.name && m.name.startsWith('mesh_'))
+                .forEach((m)=>scene.remove(m));
+            //scene.clear();
         }
         items.forEach((item, index) => {
             const model = getMeshForItem(item);
@@ -144,18 +147,23 @@ export default function ThreeComponent({
         if (typeof window !== 'undefined') {
             THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
 
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 2000);
-            renderer = new THREE.WebGLRenderer({
+            scene = scene || new THREE.Scene();
+            camera = camera || new THREE.PerspectiveCamera(75, width / height, 0.1, 2000);
+            renderer = renderer || new THREE.WebGLRenderer({
                 antialias: true
             });
             renderer.setSize(width, height);
-            while (containerRef.current?.childNodes.length) {
-                containerRef.current?.removeChild(containerRef.current?.childNodes[0]);
+            if (containerRef.current && containerRef.current.childNodes.length > 1) {
+                while (containerRef.current?.childNodes.length) {
+                    containerRef.current?.removeChild(containerRef.current?.childNodes[0]);
+                }
+                containerRef.current?.appendChild(renderer.domElement);
+            } else if (containerRef.current && !containerRef.current.childNodes.length) {
+                containerRef.current?.appendChild(renderer.domElement);
             }
-            containerRef.current?.appendChild(renderer.domElement);
+
             camera.up.set(0, 0, 1);
-            refreshScene();
+            refreshSceneItems();
 
             renderer.render(scene, camera);
             updateControls();
@@ -181,7 +189,7 @@ export default function ThreeComponent({
                 window.AT_Editor.camera = camera;
                 window.AT_Editor.renderer = renderer;
             }
-            void addBasePlane();
+            void addBasePlane().then(() => setEnvironment())
             // Clean up the event listener when the component is unmounted
             return () => {};
         }
@@ -341,20 +349,27 @@ export default function ThreeComponent({
                     plane.position.setZ(0);
                     plane.name = "plane";
                     scene.add( plane );
-                    if (grassEnabled) {
-                        grass = new Grass(scene,{
-                            instances: 100000,
-                            width: width,
-                            height: height
-                        });
-                        grass.addToScene();
-                    }
-                    if (skyEnabled) {
-                        renderEnvironment(scene);
-                    }
                     resolve(plane);
                 });
-        })
+        });
+    };
+
+    const setEnvironment = () => {
+        if (grassEnabled) {
+            if (grass && !grass.getFromScene()) {
+                grass.addToScene();
+            } else if (!grass) {
+                grass = new Grass(scene,{
+                    instances: 100000,
+                    width: width,
+                    height: height
+                });
+                grass.addToScene();
+            }
+        }
+        if (skyEnabled) {
+            renderEnvironment(scene);
+        }
     }
 
     if (scene) {
@@ -374,8 +389,8 @@ export default function ThreeComponent({
     useEffect(loadTHREEComponent, [height, width]);
 
     if (scene && scene.children.length - helpersCount < items.length) {
-        refreshScene();
-        void addBasePlane();
+        refreshSceneItems();
+        void addBasePlane().then(() => setEnvironment())
     }
 
     if (loaded && camera && renderer && camera.aspect !== width / height) {

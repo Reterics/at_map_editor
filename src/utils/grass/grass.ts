@@ -35,8 +35,12 @@ export class Grass {
         });
     }
 
+    getFromScene() {
+        return this.scene.children.find(mesh => mesh.name === 'grass');
+    }
+
     addToScene() {
-        const grass = this.scene.children.find(mesh => mesh.name === 'grass');
+        const grass = this.getFromScene();
         if (grass) {
             this.scene.remove(grass);
         }
