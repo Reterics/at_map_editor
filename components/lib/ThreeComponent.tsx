@@ -5,7 +5,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import {Mesh} from "three";
 import {TrackballControls} from "three/examples/jsm/controls/TrackballControls";
 import {ThreeControlType} from "@/src/types/general";
-import {Grass} from "@/src/utils/grass";
+import {Grass} from "@/src/utils/grass/grass";
 import {renderEnvironment} from "@/src/utils/background";
 
 let camera: THREE.PerspectiveCamera,
