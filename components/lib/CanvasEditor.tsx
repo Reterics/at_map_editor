@@ -40,7 +40,7 @@ export default function CanvasEditor({
         if (canvasRef.current) {
             setDrawer(new Draw(canvasRef.current, {background: ground}));
         }
-    }, [canvasRef.current]);
+    }, [canvasRef, ground]);
 
     if (canvasRef && canvasRef.current && drawer) {
         void render();
