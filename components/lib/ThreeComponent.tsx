@@ -9,6 +9,8 @@ import {ThreeControlType} from "@/src/types/general";
 import {Grass} from "@/src/utils/grass/grass";
 import {renderEnvironment} from "@/src/utils/background";
 
+
+// TODO: Move this all to React.useMemo to preserve data over re-renders
 let camera: THREE.PerspectiveCamera,
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene, controls: OrbitControls | TrackballControls,
@@ -158,6 +160,7 @@ export default function ThreeComponent({
     const loadTHREEComponent = () => {
         console.log('Load');
 
+        // TODO: No need window check since we have them outside
         if (typeof window !== 'undefined') {
             THREE.Object3D.DEFAULT_UP.set(0, 0, -1);
 
@@ -198,6 +201,7 @@ export default function ThreeComponent({
             renderer.render(scene, camera);
             updateControls();
 
+            // TODO: Where the render should be placed if we are using Memos?
             const animate = () => {
                 if (grassEnabled && grass) {
                     grass.refresh();
