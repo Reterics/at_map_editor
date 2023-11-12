@@ -69,16 +69,6 @@ export default function ThreeComponent({
 
 
     const initializeThreeGlobals = () => {
-        // I am using globals, to keep THREE JS references intact. useMemo and useRef did not work properly in fast-render mode
-        window.AT_Editor = window.AT_Editor || {};
-        if (window.AT_Editor.scene && window.AT_Editor.camera && window.AT_Editor.renderer) {
-            return {
-                camera:window.AT_Editor.camera,
-                renderer: window.AT_Editor.renderer,
-                scene: window.AT_Editor.scene,
-                grass: window.AT_Editor.grass
-            }
-        }
         // Set Globals
         THREE.Object3D.DEFAULT_UP.set(0, 0, -1);
 
@@ -120,10 +110,6 @@ export default function ThreeComponent({
 
         const shadowObject = createShadowObject(reference);
         scene.add(shadowObject);
-        window.AT_Editor.scene = scene;
-        window.AT_Editor.camera = camera;
-        window.AT_Editor.renderer = renderer;
-        window.AT_Editor.grass = grass;
         return {camera, renderer, scene, grass}
     }
 
