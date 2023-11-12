@@ -1,18 +1,25 @@
-import React, {useRef, useEffect, useState} from 'react';
+"use client";
+import React, {useRef, useEffect, useMemo} from 'react';
 import * as THREE from 'three';
-import {AssetObject, Circle, Line, Rectangle} from "@/src/types/assets";
+import {AssetObject, Line, Rectangle } from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import {Mesh} from "three";
-import {TrackballControls} from "three/examples/jsm/controls/TrackballControls";
-import {ThreeControlType} from "@/src/types/general";
-import {Grass} from "@/src/utils/grass/grass";
-import {renderEnvironment} from "@/src/utils/background";
+import { Mesh, Scene } from "three";
+import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
+import { ThreeControlType } from "@/src/types/general";
+import { Grass } from "@/src/utils/grass/grass";
+import { renderEnvironment } from "@/src/utils/background";
+import {
+    createShadowObject,
+    getArrowHelper,
+    getControls,
+    getGroundPlane,
+    getMeshForItem,
+    setInitialCameraPosition
+} from "@/src/utils/model";
+import { Object3D } from "three/src/core/Object3D";
+import {useWindow} from "@/src/utils/react";
 
-let camera: THREE.PerspectiveCamera,
-    renderer: THREE.WebGLRenderer,
-    scene: THREE.Scene, controls: OrbitControls | TrackballControls,
-    shadowObject: THREE.Mesh|null,
-    grass: Grass;
+let animationID: number|undefined;
 
 export default function ThreeComponent({
     items,
@@ -37,18 +44,112 @@ export default function ThreeComponent({
     grassEnabled?: boolean,
     skyEnabled?: boolean
 }) {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [loaded, setLoaded] = useState(false);
-    let arrowHelpers: THREE.Group;
-    let helpersCount = 0;
-    const helperNames = [
-        "sky",
-        "light",
-        "hemisphereLight",
-        "grass",
-        "arrows",
-        "plane"];
-    const planeSize = Math.max(width, height, 1000)*10;
+    const containerRef = useRef<HTMLDivElement>(null),
+        planeSize = Math.max(width, height, 1000)*10,
+        helperNames = [
+            "sky",
+            "light",
+            "hemisphereLight",
+            "grass",
+            "arrows",
+            "plane",
+            "shadowObject"
+        ]
+
+    let arrowHelpers: THREE.Group,
+        helpersCount = 0;
+    const addBasePlane = async (scene: Scene) => {
+        if (!scene || scene.children.find(mesh => mesh.name === "plane")) {
+            return false;
+        }
+        const plane = await getGroundPlane(planeSize, planeSize, ground);
+        scene.add(plane);
+        return plane;
+    };
+
+
+    const initializeThreeGlobals = () => {
+        // I am using globals, to keep THREE JS references intact. useMemo and useRef did not work properly in fast-render mode
+        window.AT_Editor = window.AT_Editor || {};
+        if (window.AT_Editor.scene && window.AT_Editor.camera && window.AT_Editor.renderer) {
+            return {
+                camera:window.AT_Editor.camera,
+                renderer: window.AT_Editor.renderer,
+                scene: window.AT_Editor.scene,
+                grass: window.AT_Editor.grass
+            }
+        }
+        // Set Globals
+        THREE.Object3D.DEFAULT_UP.set(0, 0, -1);
+
+        const camera: THREE.PerspectiveCamera = new THREE.PerspectiveCamera(75, width / height, 0.1, 20001),
+            renderer: THREE.WebGLRenderer = new THREE.WebGLRenderer({
+                antialias: true
+            }),
+            context:  WebGLRenderingContext | WebGL2RenderingContext | undefined = renderer.getContext(),
+            scene: THREE.Scene = new THREE.Scene(),
+            grass: Grass|undefined = grassEnabled ? new Grass(scene,{
+                instances: 1000000,
+                width: planeSize,
+                height: planeSize
+            }) : undefined;
+
+        context.canvas.addEventListener("webglcontextlost", (e) => {
+            e.preventDefault();
+            console.warn("Context Lost, cancel rendering: ", animationID);
+            if (typeof animationID === "number") {
+                cancelAnimationFrame(animationID);
+            }
+        }, false);
+        context.canvas.addEventListener("webglcontextrestored", (e) => {
+            e.preventDefault();
+            console.warn("Context Restored");
+        }, false);
+
+        renderer.setSize(width, height);
+        camera.up.set(0, 0, 1);
+        if (grass) {
+            grass.addToScene();
+        }
+        if (skyEnabled) {
+            renderEnvironment(scene);
+        }
+        renderer.render(scene, camera);
+
+        void addBasePlane(scene);
+
+        const shadowObject = createShadowObject(reference);
+        scene.add(shadowObject);
+        window.AT_Editor.scene = scene;
+        window.AT_Editor.camera = camera;
+        window.AT_Editor.renderer = renderer;
+        window.AT_Editor.grass = grass;
+        return {camera, renderer, scene, grass}
+    }
+
+    const {
+        camera,
+        renderer,
+        scene,
+        grass
+    } = useWindow(initializeThreeGlobals, [
+        "camera",
+        "renderer",
+        "scene",
+        "grass"
+    ]);
+
+    const controls: TrackballControls | OrbitControls =
+        useWindow(function (this: TrackballControls | OrbitControls | undefined) {
+            if (this) {
+                this?.dispose();
+            }
+            return getControls(threeControl, camera, renderer);
+        },
+        "controls", threeControl);
+
+    const shadowObject: Mesh|null|undefined = scene.children.find((mesh: Object3D)=>
+        mesh.name === "shadowObject") as Mesh|undefined;
 
     const updateCameraPosition = () => {
         if (camera && renderer) {
@@ -79,66 +180,11 @@ export default function ThreeComponent({
         }
     };
 
-    const updateControls = () => {
-        switch (threeControl) {
-            case "trackball":
-                controls = new TrackballControls( camera, renderer.domElement );
-                break;
-            case "orbit":
-            case "object":
-            default:
-                controls = new OrbitControls( camera, renderer.domElement );
-                controls.maxPolarAngle = Math.PI / 2;
-        }
-    }
-
-    const getMeshForItem = (item: AssetObject): THREE.Mesh => {
-        let model;
-        let material = new THREE.MeshBasicMaterial({ color: item.color ?
-                new THREE.Color(item.color) : 0x000000 });
-        let geometry;
-        let position1, position2;
-        switch (item.type) {
-            case "rect":
-                const rect = item as Rectangle;
-                geometry = new THREE.BoxGeometry(rect.w, rect.h, Math.round((rect.w + rect.h) / 2));
-                break;
-            case "circle":
-                geometry = new THREE.SphereGeometry((item as Circle).radius, 32, 16 );
-                break;
-            case "line":
-                const line = item as Line;
-                position1 = new THREE.Vector3(line.x1, line.y1, 0);
-                position2 = new THREE.Vector3(line.x2, line.y2, 0);
-                const height = position1.distanceTo(position2);
-
-                geometry = new THREE.CylinderGeometry( 5, 5, height, 32 );
-        }
-        model = new THREE.Mesh(geometry, material);
-        if (model && position1 && position2) {
-            const positionMid = new THREE.Vector3();
-            positionMid.addVectors(position1, position2).multiplyScalar(0.5);
-            model.position.copy(positionMid);
-            const direction = new THREE.Vector3();
-            direction.subVectors(position2, position1).normalize();
-
-            const quaternion = new THREE.Quaternion();
-            quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
-            model.setRotationFromQuaternion(quaternion);
-        } else if (model && item.type === "rect") {
-            const rect = item as Rectangle;
-            model.position.set(rect.x + rect.w / 2, rect.y + rect.h / 2, rect.z || 0);
-        } else if (model && typeof item.x === 'number' && typeof item.y === "number") {
-            model.position.set(item.x, item.y, item.z || 0);
-        }
-        return model;
-    };
-
-    const refreshSceneItems = () => {
+    useEffect(()=> {
         if (scene) {
             scene.children
-                .filter(m=>m.name && m.name.startsWith('mesh_'))
-                .forEach((m)=>scene.remove(m));
+                .filter((m: Object3D)=>m.name && m.name.startsWith('mesh_'))
+                .forEach((m: Object3D)=>scene.remove(m));
             //scene.clear();
         }
         items.forEach((item, index) => {
@@ -149,92 +195,65 @@ export default function ThreeComponent({
                 scene.add(model);
             }
         });
-    };
+    }, [items, scene])
 
-    const loadTHREEComponent = () => {
-        if (typeof window !== 'undefined') {
-            THREE.Object3D.DEFAULT_UP.set(0, 0, -1);
 
-            scene = scene || new THREE.Scene();
-            camera = camera || new THREE.PerspectiveCamera(75, width / height, 0.1, 20001);
-            renderer = renderer || new THREE.WebGLRenderer({
-                antialias: true
-            });
-            renderer.setSize(width, height);
-            if (containerRef.current && containerRef.current.childNodes.length > 1) {
-                while (containerRef.current?.childNodes.length) {
-                    containerRef.current?.removeChild(containerRef.current?.childNodes[0]);
-                }
-                containerRef.current?.appendChild(renderer.domElement);
-            } else if (containerRef.current && !containerRef.current.childNodes.length) {
-                containerRef.current?.appendChild(renderer.domElement);
-            }
-
-            camera.up.set(0, 0, 1);
-            refreshSceneItems();
-
-            renderer.render(scene, camera);
-            updateControls();
-
-            const animate = () => {
-                if (grassEnabled && grass) {
-                    grass.refresh();
-                }
-                requestAnimationFrame(animate);
-                controls.update();
-
-                renderer.render(scene, camera);
-            };
-
-            updateCameraPosition();
-            animate();
-
-            setLoaded(true);
-
-            if (process.env.NODE_ENV === "development") {
-                window.AT_Editor = window.AT_Editor || {};
-                window.AT_Editor.scene = scene;
-                window.AT_Editor.camera = camera;
-                window.AT_Editor.renderer = renderer;
-                window.AT_Editor.controls = controls;
-            }
-            void addBasePlane().then(() => setEnvironment())
-            // Clean up the event listener when the component is unmounted
-            return () => {};
+    const cancelAnimation = () => {
+        if (typeof animationID === "number") {
+            console.log("Cancel old animation ", animationID);
+            cancelAnimationFrame(animationID);
+            animationID = undefined;
         }
     };
+
+    useEffect(() => {
+        if (containerRef.current && containerRef.current.childNodes.length > 1) {
+            while (containerRef.current?.childNodes.length) {
+                containerRef.current?.removeChild(containerRef.current?.childNodes[0]);
+            }
+            containerRef.current?.appendChild(renderer.domElement);
+        } else if (containerRef.current && !containerRef.current.childNodes.length) {
+            containerRef.current?.appendChild(renderer.domElement);
+        }
+        const animate = () => {
+            if (grass) {
+                grass.refresh();
+            }
+            controls.update();
+            renderer.render(scene, camera);
+            animationID = requestAnimationFrame(animate);
+        };
+
+        cancelAnimation();
+        animate();
+
+        // Clean up the event listener when the component is unmounted
+        return () => {};
+    }, [camera, controls, renderer, scene]);
+
+    useEffect(()=>{
+        setInitialCameraPosition(
+            camera,
+            renderer,
+            controls,
+            scene,
+            width,
+            height,
+            threeControl,
+            selected);
+    }, [camera, renderer, controls, threeControl])
 
     const addArrowHelper = ()=>{
-        const arrowGroup = new THREE.Group();
-        arrowGroup.name = "arrows";
-        const xAxisDirection = new THREE.Vector3(1, 0, 0);
-        const yAxisDirection = new THREE.Vector3(0, 1, 0);
-        const zAxisDirection = new THREE.Vector3(0, 0, 1);
-
-        const origin = new THREE.Vector3( 0, 0, 0 );
-        const length = 100;
-
-        const xAxisArrow = new THREE.ArrowHelper(xAxisDirection, origin, length, 0xff0000);
-        const yAxisArrow = new THREE.ArrowHelper(yAxisDirection, origin, length, 0x00ff00);
-        const zAxisArrow = new THREE.ArrowHelper(zAxisDirection, origin, length, 0x0000ff);
-
-        arrowGroup.add(xAxisArrow);
-        arrowGroup.add(yAxisArrow);
-        arrowGroup.add(zAxisArrow);
+        const arrowGroup = getArrowHelper();
 
         scene.add(arrowGroup);
-
-        if (process.env.NODE_ENV === "development") {
-            window.AT_Editor = window.AT_Editor || {};
-            window.AT_Editor.arrows = arrowGroup;
-        }
     }
 
     const updateArrowHelper = ()=>{
         if (scene && scene.children && selected) {
             if (!arrowHelpers) {
                 addArrowHelper();
-                arrowHelpers = scene.children.find(mesh => mesh instanceof THREE.Group &&
+                arrowHelpers = scene.children.find((mesh: Object3D) => mesh instanceof THREE.Group &&
                     mesh.name === "arrows") as THREE.Group
             }
             if (arrowHelpers) {
@@ -276,7 +295,7 @@ export default function ThreeComponent({
 
             const rayCaster = new THREE.Raycaster();
             rayCaster.setFromCamera(mouse, camera);
-            return rayCaster.intersectObjects(scene.children.filter(mesh =>
+            return rayCaster.intersectObjects(scene.children.filter((mesh: Object3D) =>
                 mesh.name.startsWith("mesh") || mesh.name === "plane"), true);
         }
         return [];
@@ -330,98 +349,31 @@ export default function ThreeComponent({
                             radius: (shadowObject.geometry as THREE.SphereGeometry).parameters.radius
                         }]);
                 }
-                scene.remove(shadowObject);
-                shadowObject = null;
+
+                shadowObject.position.z = -100;
+
             }
         }
-
     };
-
-    const addBasePlane = () => {
-        return new Promise(resolve => {
-            if (!scene || scene.children.find(mesh => mesh.name === "plane")) {
-                return resolve(false);
-            }
-            const geometry = new THREE.PlaneGeometry( planeSize, planeSize );
-            const material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-            const loader = new THREE.TextureLoader();
-            loader.load(ground ,
-                function ( texture ) {
-                    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-                    texture.offset.set( 0, 0 );
-                    texture.repeat.set( 2, 2 );
-                    material.map = texture;
-                    material.needsUpdate = true;
-                    const plane = new THREE.Mesh( geometry, material );
-                    //plane.position.setX(planeSize / 2);
-                    //plane.position.setY(planeSize / 2);
-                    plane.position.setZ(-1);
-                    plane.name = "plane";
-                    scene.add( plane );
-                    resolve(plane);
-                });
-        });
-    };
-
-    const setEnvironment = () => {
-        if (grassEnabled) {
-            if (grass && !grass.getFromScene()) {
-                grass.addToScene();
-            } else if (!grass) {
-                grass = new Grass(scene,{
-                    instances: 1000000,
-                    width: planeSize,
-                    height: planeSize
-                });
-                grass.addToScene();
-            } else {
-                grass.setDimensions(planeSize, planeSize)
-            }
-        }
-        if (skyEnabled) {
-            renderEnvironment(scene);
-        }
-    }
 
     if (scene) {
         arrowHelpers =
-            scene.children.find(mesh => mesh instanceof THREE.Group &&
+            scene.children.find((mesh: Object3D) => mesh instanceof THREE.Group &&
                 mesh.name === "arrows") as THREE.Group;
 
-        scene.children.forEach((mesh) => {
+        scene.children.forEach((mesh: Object3D) => {
             if (helperNames.includes(mesh.name)) {
                 helpersCount++;
             }
         });
     }
 
-    if (shadowObject) {
-        helpersCount++;
-        const inScene = scene.children.find(mesh=>mesh.name === "shadowObject");
-        if (!inScene) {
-            scene.add(shadowObject);
-        }
-    }
-    useEffect(loadTHREEComponent, [height, width]);
-
-    if (scene && scene.children.length - helpersCount < items.length) {
-        refreshSceneItems();
-        void addBasePlane().then(() => setEnvironment())
-    }
-
-    if (loaded && camera && renderer && camera.aspect !== width / height) {
+    if (camera && renderer && camera.aspect !== width / height) {
         camera.aspect = width / height;
         if (grass) {
             grass.setDimensions(planeSize, planeSize);
         }
         updateCameraPosition();
-    } else if (controls && threeControl) {
-        if ((threeControl === "trackball" && controls instanceof OrbitControls) ||
-            (threeControl === "orbit" && controls instanceof TrackballControls) ||
-            (threeControl === "object" && controls instanceof TrackballControls)) {
-            updateControls();
-            updateCameraPosition();
-        }
     }
     updateArrowHelper();
 
@@ -437,7 +389,6 @@ export default function ThreeComponent({
         if (reference.type === "cursor") {
             return;
         }
-        const justCreated = !shadowObject;
         const intersects = getMouseIntersects(event);
 
         if (intersects.length) {
@@ -447,31 +398,12 @@ export default function ThreeComponent({
             if (intersect) {
                 const point = intersect.point;
                 const mainObject = intersect.object as Mesh;
-                if (justCreated) {
-                    const config = {
-                        ...reference,
-                        color: "#3cffee",
-                    };
-                    switch (reference.type) {
-                        case "rect":
-                            (config as Rectangle).w = 50;
-                            (config as Rectangle).h = 50;
-                            break;
-                        case "circle":
-                            (config as Circle).radius = 25;
-                            break;
-                    }
-                    shadowObject = getMeshForItem(config);
-                    shadowObject.name = "shadowObject";
-                    (shadowObject.material as THREE.MeshBasicMaterial).opacity = 0.5;
-                    (shadowObject.material as THREE.MeshBasicMaterial).needsUpdate = true;
-                }
-
                 if (shadowObject) {
                     const movementSpeed = 3; // Adjust the speed as needed
                     shadowObject.position.copy(camera.position)
                     const direction = point.clone().sub(shadowObject.position);
                     direction.normalize();
+
 
                     const directionVector = direction.multiplyScalar(movementSpeed);
                     let i = 0;
@@ -482,10 +414,6 @@ export default function ThreeComponent({
                             break;
                         }
                     }
-
-                    if (justCreated) {
-                        scene.add(shadowObject);
-                    }
                 }
             }
         }
@@ -494,8 +422,7 @@ export default function ThreeComponent({
     const onMouseOut = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         event.preventDefault();
         if (shadowObject) {
-            scene.remove(shadowObject);
-            shadowObject = null;
+            shadowObject.position.z = -100;
         }
     };
 

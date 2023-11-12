@@ -4,7 +4,7 @@ import {getContrastToHEX, interpolateColor} from "@/src/utils/general";
 import {degToRad} from "@/src/utils/math";
 
 export class Draw implements DrawInterface{
-    private context?: CanvasRenderingContext2D;
+    private context?: CanvasRenderingContext2D | null;
     private readonly canvas: HTMLCanvasElement;
 
     private backgroundColor: string;
@@ -17,6 +17,7 @@ export class Draw implements DrawInterface{
     constructor(canvas: HTMLCanvasElement, options?: DrawOptions) {
         const opt = options || {};
         this.canvas = canvas;
+        this.context = this.canvas.getContext('2d');
         if (opt.background) {
             this.background = new Image();
             this.background.src = opt.background;
@@ -63,10 +64,10 @@ export class Draw implements DrawInterface{
 
     updateCanvas() {
         if (this.canvas) {
-            const ctx = this.canvas.getContext('2d');
-            if (ctx) {
-                this.context = ctx;
+            if(!this.context) {
+                this.context = this.canvas.getContext('2d');
             }
+            const ctx = this.context;
             if (this.context) {
                 if (this.background) {
                     const pattern = this.context.createPattern(this.background, 'repeat');
