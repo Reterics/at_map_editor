@@ -17,6 +17,7 @@ import {
     setInitialCameraPosition
 } from "@/src/utils/model";
 import { Object3D } from "three/src/core/Object3D";
+import {useWindow} from "@/src/utils/react";
 
 let animationID: number|undefined;
 
@@ -131,14 +132,21 @@ export default function ThreeComponent({
         renderer,
         scene,
         grass
-    } = useMemo(initializeThreeGlobals, []);
+    } = useWindow(initializeThreeGlobals, [
+        "camera",
+        "renderer",
+        "scene",
+        "grass"
+    ]);
 
-    const controls: TrackballControls | OrbitControls = useMemo(() => {
-        window.AT_Editor = window.AT_Editor || {};
-        window.AT_Editor.controls = window.AT_Editor.controls ||
-            getControls(threeControl, camera, renderer);
-        return window.AT_Editor.controls;
-    }, [threeControl, camera, renderer]);
+    const controls: TrackballControls | OrbitControls =
+        useWindow(function (this: TrackballControls | OrbitControls | undefined) {
+            if (this) {
+                this?.dispose();
+            }
+            return getControls(threeControl, camera, renderer);
+        },
+        "controls", threeControl);
 
     const shadowObject: Mesh|null|undefined = scene.children.find((mesh: Object3D)=>
         mesh.name === "shadowObject") as Mesh|undefined;
