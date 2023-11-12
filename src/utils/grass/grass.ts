@@ -40,7 +40,6 @@ export class Grass {
     }
 
     regenerateGrassCoordinates() {
-        console.log('Regen grass ', this.width, this.height, !!this.instancedMesh);
         if (!this.instancedMesh) {
             return false;
         }

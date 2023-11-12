@@ -8,7 +8,7 @@ import {
     MeshPhongMaterial,
     NormalBufferAttributes,
     Object3DEventMap,
-    PerspectiveCamera, Quaternion, SphereGeometry, Vector3
+    PerspectiveCamera, Quaternion, Scene, SphereGeometry, Vector3, WebGLRenderer
 } from "three";
 import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
@@ -18,6 +18,9 @@ import {STLLoader} from "three/examples/jsm/loaders/STLLoader";
 import * as THREE from "three";
 import {Object3D} from "three/src/core/Object3D";
 import {AssetObject, Circle, Line, Rectangle} from "@/src/types/assets";
+import {TrackballControls} from "three/examples/jsm/controls/TrackballControls";
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import {ThreeControlType} from "@/src/types/general";
 
 const genericLoader = (file: File, modelLoader: Loader) => {
     return new Promise(resolve => {
@@ -167,4 +170,75 @@ export const getGroundPlane = (width: number, height: number, texture?:string): 
                 resolve(plane);
             });
     });
+}
+
+
+export const getControls = (type: ThreeControlType, camera:PerspectiveCamera, renderer: WebGLRenderer) => {
+    switch (type) {
+        case "trackball":
+            return new TrackballControls( camera, renderer.domElement );
+        case "orbit":
+        case "object":
+        default:
+            const controls = new OrbitControls( camera, renderer.domElement );
+            controls.maxPolarAngle = Math.PI / 2;
+            return controls;
+    }
+}
+
+export const setInitialCameraPosition = (
+    camera:PerspectiveCamera,
+    renderer: WebGLRenderer,
+    controls: TrackballControls | OrbitControls,
+    scene: Scene,
+    width: number,
+    height: number,
+    threeControl: ThreeControlType,
+    selected?: AssetObject) => {
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(width, height);
+
+    let lookAt;
+    switch (threeControl) {
+        case "object":
+            if (selected) {
+                const mesh = getMeshForItem(selected);
+                lookAt = mesh.position;
+            } else {
+                lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
+            }
+            break;
+        case "orbit":
+        case "trackball":
+        default:
+            lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
+    }
+    camera.position.copy(lookAt);
+    camera.position.z = + Math.round(Math.max(height, width) * 3 / 4);
+    camera.position.y = + Math.round(Math.max(height, width) * 3 / 4);
+    controls.target.copy(lookAt);
+    renderer.render(scene, camera);
+}
+
+export const createShadowObject = (reference: AssetObject) => {
+    const config = {
+        ...reference,
+        color: "#3cffee",
+    };
+    switch (reference.type) {
+        case "rect":
+            (config as Rectangle).w = 50;
+            (config as Rectangle).h = 50;
+            break;
+        case "circle":
+            (config as Circle).radius = 25;
+            break;
+    }
+    const shadowObject = getMeshForItem(config);
+    shadowObject.name = "shadowObject";
+    (shadowObject.material as THREE.MeshBasicMaterial).opacity = 0.5;
+    (shadowObject.material as THREE.MeshBasicMaterial).needsUpdate = true;
+    shadowObject.position.z = -100;
+    return shadowObject;
 }
