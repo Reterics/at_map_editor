@@ -1,3 +1,4 @@
+"use client";
 import React, {useRef, useEffect, useState} from 'react';
 import * as THREE from 'three';
 import {AssetObject, Circle, Line, Rectangle} from "@/src/types/assets";
@@ -12,7 +13,9 @@ let camera: THREE.PerspectiveCamera,
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene, controls: OrbitControls | TrackballControls,
     shadowObject: THREE.Mesh|null,
-    grass: Grass;
+    grass: Grass,
+    animationID: number|undefined,
+    context:  WebGLRenderingContext | WebGL2RenderingContext | undefined;
 
 export default function ThreeComponent({
     items,
@@ -37,6 +40,7 @@ export default function ThreeComponent({
     grassEnabled?: boolean,
     skyEnabled?: boolean
 }) {
+    console.log('Window: ', typeof window);
     const containerRef = useRef<HTMLDivElement>(null);
     const [loaded, setLoaded] = useState(false);
     let arrowHelpers: THREE.Group;
@@ -152,14 +156,32 @@ export default function ThreeComponent({
     };
 
     const loadTHREEComponent = () => {
+        console.log('Load');
+
         if (typeof window !== 'undefined') {
             THREE.Object3D.DEFAULT_UP.set(0, 0, -1);
 
             scene = scene || new THREE.Scene();
             camera = camera || new THREE.PerspectiveCamera(75, width / height, 0.1, 20001);
-            renderer = renderer || new THREE.WebGLRenderer({
-                antialias: true
-            });
+            if (!renderer) {
+                renderer = new THREE.WebGLRenderer({
+                    antialias: true
+                });
+                context = renderer.getContext();
+
+                context.canvas.addEventListener("webglcontextlost", (e) => {
+                    e.preventDefault();
+                    console.warn("Context Lost, cancel rendering: ", animationID);
+                    if (typeof animationID === "number") {
+                        cancelAnimationFrame(animationID);
+                    }
+                }, false);
+                context.canvas.addEventListener("webglcontextrestored", (e) => {
+                    e.preventDefault();
+                    console.warn("Context Restored");
+                }, false);
+            }
+
             renderer.setSize(width, height);
             if (containerRef.current && containerRef.current.childNodes.length > 1) {
                 while (containerRef.current?.childNodes.length) {
@@ -180,13 +202,18 @@ export default function ThreeComponent({
                 if (grassEnabled && grass) {
                     grass.refresh();
                 }
-                requestAnimationFrame(animate);
                 controls.update();
-
                 renderer.render(scene, camera);
+                animationID = requestAnimationFrame(animate);
             };
 
             updateCameraPosition();
+
+            if (typeof animationID === "number") {
+                console.log("Cancel old animation ", animationID);
+                cancelAnimationFrame(animationID);
+                animationID = undefined;
+            }
             animate();
 
             setLoaded(true);
