@@ -23,7 +23,6 @@ export const useWindow = (method: WindowMethod, id: string|object, ref?: any) =>
         }, {} as AnyObj);
 
         if (!missing) {
-            console.log('Return cached data');
             return output;
         }
         const result = method.call(output);
@@ -39,7 +38,6 @@ export const useWindow = (method: WindowMethod, id: string|object, ref?: any) =>
     }
     if (window.AT_Editor.windowCache[id] &&
         (ref === undefined || window.AT_Editor.windowRefs[id] === ref)) {
-        console.log("Return cached id data");
         return window.AT_Editor.windowCache[id];
     }
     window.AT_Editor.windowRefs[id] = ref;
