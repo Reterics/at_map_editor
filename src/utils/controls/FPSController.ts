@@ -77,7 +77,7 @@ export class FPSController {
                 break;
 
             case 'Space':
-                if ( canJump ) velocity.y += 350;
+                if ( canJump ) velocity.z += 350;
                 canJump = false;
                 break;
 
