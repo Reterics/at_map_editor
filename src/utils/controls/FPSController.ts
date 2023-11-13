@@ -1,4 +1,4 @@
-import {Camera, Color, PerspectiveCamera, Raycaster, Scene, Vector3} from "three";
+import {PerspectiveCamera, Raycaster, Scene, Vector3} from "three";
 import {Object3D} from "three/src/core/Object3D";
 import {PointerLockControlsZ} from "@/src/utils/controls/PointerLockControlsZ";
 
@@ -7,29 +7,25 @@ let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
 let canJump = false;
+let sprint = false;
 
 let prevTime = performance.now();
 const velocity = new Vector3();
 const direction = new Vector3();
-const vertex = new Vector3();
-const color = new Color();
 
 export class FPSController {
     controls: PointerLockControlsZ;
     private scene: Scene;
     private items: Object3D[];
     private rayCaster: Raycaster;
-    private camera: Camera;
     target: null;
     constructor(camera: PerspectiveCamera, domElement: HTMLElement, scene: Scene) {
         this.controls =  new PointerLockControlsZ(camera, document.body);
 
         const obj = this.controls.getObject();
         obj.name = "camera";
-        this.camera = obj;
         this.target = null;
-        //obj.position.set( 0, 0, 0);
-        obj.up.set(0, 0, 1);
+        //obj.up.set(0, 0, 1);
 
         const cameraInScene = scene.children.find(m=>m.name === "camera");
         if (cameraInScene) {
@@ -81,11 +77,14 @@ export class FPSController {
                 canJump = false;
                 break;
 
+            case 'ShiftLeft':
+                if ( canJump ) sprint = true;
+                break;
+
         }
     }
 
     onKeyUp (event: KeyboardEvent) {
-        console.log("event");
         switch ( event.code ) {
 
             case 'ArrowUp':
@@ -108,6 +107,9 @@ export class FPSController {
                 moveRight = false;
                 break;
 
+            case 'ShiftLeft':
+                sprint = false;
+                break;
         }
     }
 
@@ -122,8 +124,9 @@ export class FPSController {
 
             const onObject = intersections.length > 0;
 
-            velocity.x -= velocity.x * 10.0 * delta;
-            velocity.y -= velocity.y * 10.0 * delta;
+            const movingVelocityMultiplier = sprint ? 5.0 : 10.0;
+            velocity.x -= velocity.x * movingVelocityMultiplier * delta;
+            velocity.y -= velocity.y * movingVelocityMultiplier * delta;
 
             velocity.z -= 9.8 * 100.0 * delta; // 100.0 = mass
 
