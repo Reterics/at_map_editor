@@ -4,7 +4,7 @@ declare global {
 
 
 export type LayoutType = 'normal'|'canvas'|'three';
-export type ThreeControlType = 'orbit'|'object'|'trackball';
+export type ThreeControlType = 'orbit'|'object'|'trackball'|'fps';
 
 export interface TextFile {
     value: string|ArrayBuffer|null,

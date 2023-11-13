@@ -18,6 +18,7 @@ import {
 } from "@/src/utils/model";
 import { Object3D } from "three/src/core/Object3D";
 import {useWindow} from "@/src/utils/react";
+import {FPSController} from "@/src/utils/controls/FPSController";
 
 let animationID: number|undefined;
 
@@ -54,7 +55,8 @@ export default function ThreeComponent({
             "arrows",
             "plane",
             "shadowObject"
-        ]
+        ],
+        clock = new THREE.Clock(true);
 
     let arrowHelpers: THREE.Group,
         helpersCount = 0;
@@ -125,12 +127,12 @@ export default function ThreeComponent({
         "grass"
     ]);
 
-    const controls: TrackballControls | OrbitControls =
-        useWindow(function (this: TrackballControls | OrbitControls | undefined) {
+    const controls: TrackballControls | OrbitControls | FPSController =
+        useWindow(function (this: TrackballControls | OrbitControls | FPSController | undefined) {
             if (this) {
                 this?.dispose();
             }
-            return getControls(threeControl, camera, renderer);
+            return getControls(threeControl, camera, renderer, scene);
         },
         "controls", threeControl);
 
@@ -153,15 +155,23 @@ export default function ThreeComponent({
                         lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
                     }
                     break;
+                case "fps":
                 case "orbit":
                 case "trackball":
                 default:
                     lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
             }
-            camera.position.copy(lookAt);
-            camera.position.z = + Math.round(Math.max(height, width) * 3 / 4);
-            camera.position.y = + Math.round(Math.max(height, width) * 3 / 4);
-            controls.target.copy(lookAt);
+            if (threeControl !== "fps") {
+                camera.position.copy(lookAt);
+                camera.position.z = +Math.round(Math.max(height, width) * 3 / 4);
+                camera.position.y = +Math.round(Math.max(height, width) * 3 / 4);
+                if (controls.target) {
+                    controls.target.copy(lookAt);
+                }
+            } else {
+                camera.position.z = 50;
+            }
+
             renderer.render(scene, camera);
         }
     };
@@ -205,7 +215,7 @@ export default function ThreeComponent({
             if (grass) {
                 grass.refresh();
             }
-            controls.update();
+            controls.update(clock.getDelta());
             renderer.render(scene, camera);
             animationID = requestAnimationFrame(animate);
         };
@@ -412,8 +422,15 @@ export default function ThreeComponent({
         }
     };
 
+    const lockIfNeeded = () => {
+        if (controls instanceof FPSController) {
+            controls.lock();
+        }
+        return true;
+    }
+
     return <div ref={containerRef}
-                onClick={(e)=> reference.type === "cursor" ? onMouseDown(e) : null}
+                onClick={(e)=> lockIfNeeded() && (reference.type === "cursor" ? onMouseDown(e) : null)}
                 onDoubleClick={onMouseDown}
                 onMouseOver={onMouseMove}
                 onMouseMove={onMouseMove}

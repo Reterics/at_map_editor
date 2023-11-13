@@ -1,26 +1,35 @@
 import {GLTF, GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
+import * as THREE from "three";
 import {
     ArrowHelper,
     BoxGeometry,
-    BufferGeometry, Color, CylinderGeometry,
+    BufferGeometry,
+    Color,
+    CylinderGeometry,
     Group,
-    Mesh, MeshBasicMaterial,
+    Mesh,
+    MeshBasicMaterial,
     MeshPhongMaterial,
     NormalBufferAttributes,
     Object3DEventMap,
-    PerspectiveCamera, Quaternion, Scene, SphereGeometry, Vector3, WebGLRenderer
+    PerspectiveCamera,
+    Quaternion,
+    Scene,
+    SphereGeometry,
+    Vector3,
+    WebGLRenderer
 } from "three";
 import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
 import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
 import {Loader} from "three/src/Three";
 import {ColladaLoader} from "three/examples/jsm/loaders/ColladaLoader";
 import {STLLoader} from "three/examples/jsm/loaders/STLLoader";
-import * as THREE from "three";
 import {Object3D} from "three/src/core/Object3D";
 import {AssetObject, Circle, Line, Rectangle} from "@/src/types/assets";
 import {TrackballControls} from "three/examples/jsm/controls/TrackballControls";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {ThreeControlType} from "@/src/types/general";
+import {FPSController} from "@/src/utils/controls/FPSController";
 
 const genericLoader = (file: File, modelLoader: Loader) => {
     return new Promise(resolve => {
@@ -173,14 +182,16 @@ export const getGroundPlane = (width: number, height: number, texture?:string): 
 }
 
 
-export const getControls = (type: ThreeControlType, camera:PerspectiveCamera, renderer: WebGLRenderer) => {
+export const getControls = (type: ThreeControlType, camera:PerspectiveCamera, renderer: WebGLRenderer, scene: Scene) => {
     switch (type) {
         case "trackball":
-            return new TrackballControls( camera, renderer.domElement );
+            return new TrackballControls(camera, renderer.domElement);
+        case "fps":
+            return new FPSController(camera, renderer.domElement, scene)
         case "orbit":
         case "object":
         default:
-            const controls = new OrbitControls( camera, renderer.domElement );
+            const controls = new OrbitControls(camera, renderer.domElement);
             controls.maxPolarAngle = Math.PI / 2;
             return controls;
     }
@@ -189,7 +200,7 @@ export const getControls = (type: ThreeControlType, camera:PerspectiveCamera, re
 export const setInitialCameraPosition = (
     camera:PerspectiveCamera,
     renderer: WebGLRenderer,
-    controls: TrackballControls | OrbitControls,
+    controls: TrackballControls | OrbitControls | FPSController,
     scene: Scene,
     width: number,
     height: number,
@@ -209,15 +220,23 @@ export const setInitialCameraPosition = (
                 lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
             }
             break;
+        case "fps":
         case "orbit":
         case "trackball":
         default:
             lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
     }
-    camera.position.copy(lookAt);
-    camera.position.z = + Math.round(Math.max(height, width) * 3 / 4);
-    camera.position.y = + Math.round(Math.max(height, width) * 3 / 4);
-    controls.target.copy(lookAt);
+    if (threeControl !== "fps") {
+        camera.position.copy(lookAt);
+        camera.position.z = +Math.round(Math.max(height, width) * 3 / 4);
+        camera.position.y = +Math.round(Math.max(height, width) * 3 / 4);
+        if (controls.target) {
+            controls.target.copy(lookAt);
+        }
+    } else {
+        camera.position.z = 50;
+    }
+
     renderer.render(scene, camera);
 }
 

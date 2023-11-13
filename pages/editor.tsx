@@ -16,7 +16,8 @@ import {
     BsFolder2Open,
     BsGeoAlt,
     BsGlobeAmericas,
-    BsArrowsFullscreen
+    BsArrowsFullscreen,
+    BsFillPinMapFill
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
 import {AssetObject} from "@/src/types/assets";
@@ -152,6 +153,12 @@ export default function Editor() {
                             </ToolbarButton>
                 }
 
+                <ToolbarButton
+                    style={{float:"right"}}
+                    onClick={() => setThreeControl("fps")}
+                    active={threeControl === "fps"}>
+                    <BsFillPinMapFill />
+                </ToolbarButton>
                 <ToolbarButton
                     style={{float:"right"}}
                     onClick={() => setThreeControl("orbit")}
