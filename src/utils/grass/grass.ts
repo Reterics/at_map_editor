@@ -50,7 +50,7 @@ export class Grass {
             temp.position.set(
                 (Math.random()) * this.width - this.width / 2,
                 2,
-                (Math.random()) * this.height - this.height / 2
+                (Math.random()) * this.height - this.height / 2,
             );
 
             temp.scale.setScalar( 0.5 + Math.random() * 0.5 );
@@ -58,9 +58,9 @@ export class Grass {
             //temp.rotation.z = Math.random() * Math.PI;
             temp.updateMatrix();
 
-            rotationMatrix.makeRotationX(Math.PI / 2); // Rotate around the X-axis
+            //rotationMatrix.makeRotationX(Math.PI / 2); // Rotate around the X-axis
 
-            temp.matrix.multiplyMatrices(rotationMatrix, temp.matrix);
+            //temp.matrix.multiplyMatrices(rotationMatrix, temp.matrix);
 
 
             //temp.updateMatrix();

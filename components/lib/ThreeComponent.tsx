@@ -1,9 +1,9 @@
 "use client";
-import React, {useRef, useEffect, useMemo} from 'react';
+import React, {useRef, useEffect} from 'react';
 import * as THREE from 'three';
 import {AssetObject, Line, Rectangle } from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { Mesh, Scene } from "three";
+import {Mesh, PerspectiveCamera, Scene, WebGLRenderer} from "three";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import { ThreeControlType } from "@/src/types/general";
 import { Grass } from "@/src/utils/grass/grass";
@@ -71,8 +71,6 @@ export default function ThreeComponent({
 
 
     const initializeThreeGlobals = () => {
-        // Set Globals
-        THREE.Object3D.DEFAULT_UP.set(0, 0, -1);
 
         const camera: THREE.PerspectiveCamera = new THREE.PerspectiveCamera(75, width / height, 0.1, 20001),
             renderer: THREE.WebGLRenderer = new THREE.WebGLRenderer({
@@ -99,7 +97,6 @@ export default function ThreeComponent({
         }, false);
 
         renderer.setSize(width, height);
-        camera.up.set(0, 0, 1);
         if (grass) {
             grass.addToScene();
         }
@@ -141,38 +138,14 @@ export default function ThreeComponent({
 
     const updateCameraPosition = () => {
         if (camera && renderer) {
-            camera.updateProjectionMatrix();
-
-            renderer.setSize(width, height);
-
-            let lookAt;
-            switch (threeControl) {
-                case "object":
-                    if (selected) {
-                        const mesh = getMeshForItem(selected);
-                        lookAt = mesh.position;
-                    } else {
-                        lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
-                    }
-                    break;
-                case "fps":
-                case "orbit":
-                case "trackball":
-                default:
-                    lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
-            }
-            if (threeControl !== "fps") {
-                camera.position.copy(lookAt);
-                camera.position.z = +Math.round(Math.max(height, width) * 3 / 4);
-                camera.position.y = +Math.round(Math.max(height, width) * 3 / 4);
-                if (controls.target) {
-                    controls.target.copy(lookAt);
-                }
-            } else {
-                camera.position.z = 50;
-            }
-
-            renderer.render(scene, camera);
+            setInitialCameraPosition(camera,
+                renderer,
+                controls,
+                scene,
+                width,
+                height,
+                threeControl,
+                selected);
         }
     };
 
@@ -326,27 +299,29 @@ export default function ThreeComponent({
                         boundingBox.getCenter(center);
                         const w = (shadowObject.geometry as THREE.BoxGeometry).parameters.width;
                         const h = (shadowObject.geometry as THREE.BoxGeometry).parameters.height;
-                        const x = shadowObject.position.x - w / 2;
-                        const y = shadowObject.position.y - h / 2;
+                        const x = center.x - w / 2;
+                        const y = center.z - h / 2;
+                        const z = center.y - Math.round((w + h) / 2) / 2;
 
                         setItems([...items, {...reference,
                             x: x,
                             y: y,
                             w: w,
                             h: h,
-                            z: shadowObject.position.z
+                            z: z
                         }]);
                         break;
                     case "circle":
+                        const radius = (shadowObject.geometry as THREE.SphereGeometry).parameters.radius || 50
                         setItems([...items, {...reference,
                             x: shadowObject.position.x,
-                            y: shadowObject.position.y,
-                            z: shadowObject.position.z,
-                            radius: (shadowObject.geometry as THREE.SphereGeometry).parameters.radius
+                            y: shadowObject.position.z,
+                            z: 1 + radius,
+                            radius: radius
                         }]);
                 }
 
-                shadowObject.position.z = -100;
+                shadowObject.position.y = -100;
 
             }
         }
@@ -400,7 +375,6 @@ export default function ThreeComponent({
                     const direction = point.clone().sub(shadowObject.position);
                     direction.normalize();
 
-
                     const directionVector = direction.multiplyScalar(movementSpeed);
                     let i = 0;
                     while (!isCollisionDetected(shadowObject, mainObject)) {
@@ -418,7 +392,7 @@ export default function ThreeComponent({
     const onMouseOut = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         event.preventDefault();
         if (shadowObject) {
-            shadowObject.position.z = -100;
+            shadowObject.position.y = -100;
         }
     };
 

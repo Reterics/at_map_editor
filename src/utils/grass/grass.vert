@@ -20,7 +20,7 @@ float smoothNoise( vec2 ip ){
     float tr = N( id + vec2( 1, 1 ));
     float t = mix( tl, tr, lv.x );
 
-    float strength = 2.0;
+    float strength = 1.0;
     return mix( b, t, lv.y ) * strength;
 }
 
@@ -38,14 +38,14 @@ void main() {
 
     // DISPLACEMENT
 
-    float noise = smoothNoise(mvPosition.xy * 0.5 + vec2(0., t));
+    float noise = smoothNoise(mvPosition.xz * 0.5 + vec2(0., t));
     noise = pow(noise * 0.5 + 0.5, 2.) * 2.;
 
     // here the displacement is made stronger on the blades tips.
     float dispPower = 1. - cos( uv.y * 3.1416 * 0.5 );
 
-    float displacement = noise * ( 0.5 * dispPower );
-    mvPosition.y -= displacement;
+    float displacement = noise * ( 0.3 * dispPower );
+    mvPosition.z -= displacement;
 
     vec4 modelViewPosition = modelViewMatrix * mvPosition;
     gl_Position = projectionMatrix * modelViewPosition;

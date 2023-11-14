@@ -1,6 +1,6 @@
 import {PerspectiveCamera, Raycaster, Scene, Vector3} from "three";
 import {Object3D} from "three/src/core/Object3D";
-import {PointerLockControlsZ} from "@/src/utils/controls/PointerLockControlsZ";
+import {PointerLockControls} from "three/examples/jsm/controls/PointerLockControls";
 
 let moveForward = false;
 let moveBackward = false;
@@ -14,13 +14,13 @@ const velocity = new Vector3();
 const direction = new Vector3();
 
 export class FPSController {
-    controls: PointerLockControlsZ;
+    controls: PointerLockControls;
     private scene: Scene;
     private items: Object3D[];
     private rayCaster: Raycaster;
     target: null;
     constructor(camera: PerspectiveCamera, domElement: HTMLElement, scene: Scene) {
-        this.controls =  new PointerLockControlsZ(camera, document.body);
+        this.controls =  new PointerLockControls(camera, document.body);
 
         const obj = this.controls.getObject();
         obj.name = "camera";
@@ -39,10 +39,8 @@ export class FPSController {
 
         this.rayCaster = new Raycaster( new Vector3(), new Vector3( 0, - 1, 0 ), 0, 10 );
         this.controls.lock();
-
         document.addEventListener( 'keydown', this.onKeyDown );
         document.addEventListener( 'keyup', this.onKeyUp );
-
     }
 
 
@@ -73,7 +71,7 @@ export class FPSController {
                 break;
 
             case 'Space':
-                if ( canJump ) velocity.z += 350;
+                if ( canJump ) velocity.y += 350;
                 canJump = false;
                 break;
 
@@ -126,30 +124,30 @@ export class FPSController {
 
             const movingVelocityMultiplier = sprint ? 5.0 : 10.0;
             velocity.x -= velocity.x * movingVelocityMultiplier * delta;
-            velocity.y -= velocity.y * movingVelocityMultiplier * delta;
+            velocity.z -= velocity.z * movingVelocityMultiplier * delta;
 
-            velocity.z -= 9.8 * 100.0 * delta; // 100.0 = mass
+            velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
 
-            direction.y = Number( moveForward ) - Number( moveBackward );
+            direction.z = Number( moveForward ) - Number( moveBackward );
             direction.x = Number( moveRight ) - Number( moveLeft );
             direction.normalize(); // this ensures consistent movements in all directions
 
-            if ( moveForward || moveBackward ) velocity.y -= direction.y * 400.0 * delta;
+            if ( moveForward || moveBackward ) velocity.z -= direction.z * 400.0 * delta;
             if ( moveLeft || moveRight ) velocity.x -= direction.x * 400.0 * delta;
 
             if ( onObject ) {
-                velocity.z = Math.max( 0, velocity.z );
+                velocity.y = Math.max( 0, velocity.y );
                 canJump = true;
             }
 
             this.controls.moveRight( - velocity.x * delta );
-            this.controls.moveForward( - velocity.y * delta );
+            this.controls.moveForward( - velocity.z * delta );
 
-            this.controls.getObject().position.z += ( velocity.z * delta ); // new behavior
+            this.controls.getObject().position.y += ( velocity.y * delta ); // new behavior
 
-            if ( this.controls.getObject().position.z < 10 ) {
-                velocity.z = 0;
-                this.controls.getObject().position.z = 10;
+            if ( this.controls.getObject().position.y < 10 ) {
+                velocity.y = 0;
+                this.controls.getObject().position.y = 10;
                 canJump = true;
             }
         }
