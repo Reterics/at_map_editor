@@ -175,7 +175,7 @@ export const getGroundPlane = (width: number, height: number, texture?:string): 
                 material.map = texture;
                 material.needsUpdate = true;
                 const plane = new THREE.Mesh( geometry, material );
-                plane.position.setY(1);
+                plane.position.setY(0);
                 plane.rotation.set(Math.PI / 2, 0, 0);
 
                 //plane.rotation.set(-Math.PI/2, Math.PI/2000, Math.PI);
@@ -196,7 +196,7 @@ export const getControls = (type: ThreeControlType, camera:PerspectiveCamera, re
         case "object":
         default:
             const controls = new OrbitControls(camera, renderer.domElement);
-            // controls.maxPolarAngle = Math.PI / 2;
+            controls.maxPolarAngle = Math.PI / 2;
             return controls;
     }
 }
