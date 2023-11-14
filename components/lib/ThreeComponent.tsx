@@ -3,7 +3,7 @@ import React, {useRef, useEffect} from 'react';
 import * as THREE from 'three';
 import {AssetObject, Line, Rectangle } from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import {Mesh, PerspectiveCamera, Scene, WebGLRenderer} from "three";
+import {Color, Mesh, MeshStandardMaterial, PerspectiveCamera, Scene, WebGLRenderer} from "three";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import { ThreeControlType } from "@/src/types/general";
 import { Grass } from "@/src/utils/grass/grass";
@@ -19,6 +19,7 @@ import {
 import { Object3D } from "three/src/core/Object3D";
 import {useWindow} from "@/src/utils/react";
 import {FPSController} from "@/src/utils/controls/FPSController";
+import {ref} from "firebase/storage";
 
 let animationID: number|undefined;
 
@@ -84,6 +85,9 @@ export default function ThreeComponent({
                 height: planeSize
             }) : undefined;
 
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
         context.canvas.addEventListener("webglcontextlost", (e) => {
             e.preventDefault();
             console.warn("Context Lost, cancel rendering: ", animationID);
@@ -135,6 +139,12 @@ export default function ThreeComponent({
 
     const shadowObject: Mesh|null|undefined = scene.children.find((mesh: Object3D)=>
         mesh.name === "shadowObject") as Mesh|undefined;
+    if (shadowObject) {
+        const shadowObjectMaterial = shadowObject.material as THREE.MeshBasicMaterial;
+        shadowObjectMaterial.color = new Color(reference.color || '#ffffff');
+        shadowObjectMaterial.opacity = 0.5;
+        shadowObjectMaterial.needsUpdate = true;
+    }
 
     const updateCameraPosition = () => {
         if (camera && renderer) {
