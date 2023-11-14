@@ -312,11 +312,12 @@ export default function ThreeComponent({
                         }]);
                         break;
                     case "circle":
+                        const radius = (shadowObject.geometry as THREE.SphereGeometry).parameters.radius || 50
                         setItems([...items, {...reference,
                             x: shadowObject.position.x,
                             y: shadowObject.position.z,
-                            z: shadowObject.position.y,
-                            radius: (shadowObject.geometry as THREE.SphereGeometry).parameters.radius
+                            z: 1 + radius,
+                            radius: radius
                         }]);
                 }
 
