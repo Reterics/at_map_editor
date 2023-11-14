@@ -107,20 +107,20 @@ export const getMeshForItem = (item: AssetObject): THREE.Mesh => {
     switch (item.type) {
         case "rect":
             const rect = item as Rectangle;
-            geometry = new BoxGeometry(rect.w, rect.h, Math.round((rect.w + rect.h) / 2));
+            geometry = new BoxGeometry(rect.w, Math.round((rect.w + rect.h) / 2), rect.h);
             break;
         case "circle":
             geometry = new SphereGeometry((item as Circle).radius, 32, 16 );
             break;
         case "line":
             const line = item as Line;
-            position1 = new Vector3(line.x1, line.y1, 0);
-            position2 = new Vector3(line.x2, line.y2, 0);
+            position1 = new Vector3(line.x1, 0, line.y1);
+            position2 = new Vector3(line.x2, 0, line.y2);
             const height = position1.distanceTo(position2);
-
             geometry = new CylinderGeometry( 5, 5, height, 32 );
     }
     model = new Mesh(geometry, material);
+    // Position must be ZYX instead of ZXY
     if (model && position1 && position2) {
         const positionMid = new Vector3();
         positionMid.addVectors(position1, position2).multiplyScalar(0.5);
@@ -133,9 +133,10 @@ export const getMeshForItem = (item: AssetObject): THREE.Mesh => {
         model.setRotationFromQuaternion(quaternion);
     } else if (model && item.type === "rect") {
         const rect = item as Rectangle;
-        model.position.set(rect.x + rect.w / 2, rect.y + rect.h / 2, rect.z || 0);
+        const z = rect.z || 0;
+        model.position.set(rect.x + rect.w / 2, z + Math.round((rect.w + rect.h) / 2) / 2, rect.y + rect.h / 2);
     } else if (model && typeof item.x === 'number' && typeof item.y === "number") {
-        model.position.set(item.x, item.y, item.z || 0);
+        model.position.set(item.x, item.z || 0, item.y);
     }
     return model;
 };
@@ -174,7 +175,10 @@ export const getGroundPlane = (width: number, height: number, texture?:string): 
                 material.map = texture;
                 material.needsUpdate = true;
                 const plane = new THREE.Mesh( geometry, material );
-                plane.position.setZ(-1);
+                plane.position.setY(1);
+                plane.rotation.set(Math.PI / 2, 0, 0);
+
+                //plane.rotation.set(-Math.PI/2, Math.PI/2000, Math.PI);
                 plane.name = "plane";
                 resolve(plane);
             });
@@ -192,7 +196,7 @@ export const getControls = (type: ThreeControlType, camera:PerspectiveCamera, re
         case "object":
         default:
             const controls = new OrbitControls(camera, renderer.domElement);
-            controls.maxPolarAngle = Math.PI / 2;
+            // controls.maxPolarAngle = Math.PI / 2;
             return controls;
     }
 }
@@ -217,24 +221,24 @@ export const setInitialCameraPosition = (
                 const mesh = getMeshForItem(selected);
                 lookAt = mesh.position;
             } else {
-                lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
+                lookAt = new THREE.Vector3(Math.round(width/2), 0, Math.round(height/2));
             }
             break;
         case "fps":
         case "orbit":
         case "trackball":
         default:
-            lookAt = new THREE.Vector3(Math.round(width/2), Math.round(height/2), 0);
+            lookAt = new THREE.Vector3(Math.round(width/2), 0, Math.round(height/2));
     }
     if (threeControl !== "fps") {
         camera.position.copy(lookAt);
-        camera.position.z = +Math.round(Math.max(height, width) * 3 / 4);
+        camera.position.x = +Math.round(Math.max(height, width) * 3 / 4);
         camera.position.y = +Math.round(Math.max(height, width) * 3 / 4);
         if (controls.target) {
             controls.target.copy(lookAt);
         }
     } else {
-        camera.position.z = 50;
+        camera.position.y = 50;
     }
 
     renderer.render(scene, camera);
@@ -258,6 +262,6 @@ export const createShadowObject = (reference: AssetObject) => {
     shadowObject.name = "shadowObject";
     (shadowObject.material as THREE.MeshBasicMaterial).opacity = 0.5;
     (shadowObject.material as THREE.MeshBasicMaterial).needsUpdate = true;
-    shadowObject.position.z = -100;
+    shadowObject.position.y = -100;
     return shadowObject;
 }
