@@ -1,7 +1,7 @@
-import {DrawInterface, DrawOptions} from "@/src/types/canvas";
-import {Asset, Circle, Line, Point, Rectangle} from "@/src/types/assets";
-import {getContrastToHEX, interpolateColor} from "@/src/utils/general";
-import {degToRad} from "@/src/utils/math";
+import { DrawInterface, DrawOptions } from "@/src/types/canvas";
+import { Asset, Circle, Line, Point, Rectangle } from "@/src/types/assets";
+import { getContrastToHEX, interpolateColor } from "@/src/utils/general";
+import { degToRad } from "@/src/utils/math";
 
 export class Draw implements DrawInterface{
     private context?: CanvasRenderingContext2D | null;
@@ -58,16 +58,11 @@ export class Draw implements DrawInterface{
         this._execution = false;
     }
 
-    getContext() {
-        return this.context;
-    }
-
     updateCanvas() {
         if (this.canvas) {
-            if(!this.context) {
+            if (!this.context) {
                 this.context = this.canvas.getContext('2d');
             }
-            const ctx = this.context;
             if (this.context) {
                 if (this.background) {
                     const pattern = this.context.createPattern(this.background, 'repeat');

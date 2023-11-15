@@ -1,6 +1,6 @@
-import {Clock, DoubleSide, InstancedMesh, Matrix4, PlaneGeometry, Scene, ShaderMaterial} from "three";
-import {Object3D} from "three/src/core/Object3D";
-import {GrassOptions} from "@/src/types/grass";
+import { Clock, DoubleSide, InstancedMesh, Matrix4, PlaneGeometry, Scene, ShaderMaterial } from "three";
+import { Object3D } from "three/src/core/Object3D";
+import { GrassOptions } from "@/src/types/grass";
 
 import vertexShader from "./grass.vert";
 import fragmentShader from "./grass.frag";
@@ -44,27 +44,18 @@ export class Grass {
             return false;
         }
         const temp = new Object3D();
-        const rotationMatrix = new Matrix4(); // Create a rotation matrix
 
-        for ( let i=0 ; i< this.instances ; i++ ) {
+        for (let i=0 ; i< this.instances ; i++) {
             temp.position.set(
                 (Math.random()) * this.width - this.width / 2,
                 2,
                 (Math.random()) * this.height - this.height / 2,
             );
 
-            temp.scale.setScalar( 0.5 + Math.random() * 0.5 );
+            temp.scale.setScalar(0.5 + Math.random() * 0.5);
             temp.rotation.y = Math.random() * Math.PI;
-            //temp.rotation.z = Math.random() * Math.PI;
             temp.updateMatrix();
-
-            //rotationMatrix.makeRotationX(Math.PI / 2); // Rotate around the X-axis
-
-            //temp.matrix.multiplyMatrices(rotationMatrix, temp.matrix);
-
-
-            //temp.updateMatrix();
-            this.instancedMesh.setMatrixAt( i, temp.matrix );
+            this.instancedMesh.setMatrixAt(i, temp.matrix);
         }
         this.instancedMesh.updateMatrix();
     }
@@ -75,9 +66,8 @@ export class Grass {
             this.scene.remove(grass);
         }
 
-        const geometry = new PlaneGeometry( 1, 10, 2, 4 );
-        geometry.translate( 0, 0.5, 0 );
-
+        const geometry = new PlaneGeometry(1, 10, 2, 4);
+        geometry.translate(0, 0.5, 0);
 
         this.instancedMesh = new InstancedMesh(geometry, this.leavesMaterial, this.instances);
         this.instancedMesh.castShadow = true;

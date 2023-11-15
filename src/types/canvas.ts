@@ -1,4 +1,4 @@
-import {Point} from "@/src/types/assets";
+import { Point } from "@/src/types/assets";
 
 
 export interface DrawCircleFunc {

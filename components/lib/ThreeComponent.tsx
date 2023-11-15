@@ -1,9 +1,9 @@
 "use client";
-import React, {useRef, useEffect} from 'react';
+import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import {AssetObject, Line, Rectangle } from "@/src/types/assets";
+import { AssetObject, Line, Rectangle } from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import {Color, Mesh, MeshStandardMaterial, PerspectiveCamera, Scene, WebGLRenderer} from "three";
+import { Color, Mesh, Scene } from "three";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import { ThreeControlType } from "@/src/types/general";
 import { Grass } from "@/src/utils/grass/grass";
@@ -17,9 +17,8 @@ import {
     setInitialCameraPosition
 } from "@/src/utils/model";
 import { Object3D } from "three/src/core/Object3D";
-import {useWindow} from "@/src/utils/react";
-import {FPSController} from "@/src/utils/controls/FPSController";
-import {ref} from "firebase/storage";
+import { useWindow } from "@/src/utils/react";
+import { FPSController } from "@/src/utils/controls/FPSController";
 
 let animationID: number|undefined;
 
@@ -113,7 +112,7 @@ export default function ThreeComponent({
 
         const shadowObject = createShadowObject(reference);
         scene.add(shadowObject);
-        return {camera, renderer, scene, grass}
+        return { camera, renderer, scene, grass }
     }
 
     const {
@@ -313,7 +312,7 @@ export default function ThreeComponent({
                         const y = center.z - h / 2;
                         const z = center.y - Math.round((w + h) / 2) / 2;
 
-                        setItems([...items, {...reference,
+                        setItems([...items, { ...reference,
                             x: x,
                             y: y,
                             w: w,
@@ -323,7 +322,7 @@ export default function ThreeComponent({
                         break;
                     case "circle":
                         const radius = (shadowObject.geometry as THREE.SphereGeometry).parameters.radius || 50
-                        setItems([...items, {...reference,
+                        setItems([...items, { ...reference,
                             x: shadowObject.position.x,
                             y: shadowObject.position.z,
                             z: 1 + radius,

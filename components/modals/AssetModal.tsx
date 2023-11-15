@@ -1,13 +1,12 @@
-import {AssetObject} from "@/src/types/assets";
+import { AssetObject } from "@/src/types/assets";
 import StyledFile from "@/components/form/StyledFile";
 import StyledInput from "@/components/form/StyledInput";
-import {ChangeEvent, useRef, useState} from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import * as THREE from "three";
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import {loadModel, lookAtObject} from "@/src/utils/model";
-import {uploadFile, uploadFileDataURL} from "@/src/firebase/storage";
-import {Sky} from "three/examples/jsm/objects/Sky";
-import {getSky} from "@/src/utils/background";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { loadModel, lookAtObject } from "@/src/utils/model";
+import { uploadFile, uploadFileDataURL } from "@/src/firebase/storage";
+import { getSky } from "@/src/utils/background";
 
 let camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer, scene: THREE.Scene;
 
@@ -50,7 +49,7 @@ export default function AssetModal({
                     containerRef.current?.removeChild(containerRef.current?.childNodes[0]);
                 }
                 containerRef.current?.appendChild(renderer.domElement);
-                const controls = new OrbitControls( camera, renderer.domElement );
+                const controls = new OrbitControls(camera, renderer.domElement);
                 const animate = () => {
                     requestAnimationFrame(animate);
                     controls.update();
@@ -66,7 +65,7 @@ export default function AssetModal({
             scene.add(light);
 
             const sky = getSky();
-            scene.add( sky );
+            scene.add(sky);
 
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.3)
             scene.add(ambientLight)
@@ -96,7 +95,7 @@ export default function AssetModal({
     const changeType = (e: ChangeEvent<HTMLInputElement>, key: string) => {
         const value = e.target.value;
         setCurrentAsset((currentAsset: AssetObject) => {
-            const obj = {...currentAsset};
+            const obj = { ...currentAsset };
             // @ts-ignore
             obj[key] = value;
             return obj;

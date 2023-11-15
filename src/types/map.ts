@@ -1,5 +1,4 @@
-import {AssetObject} from "@/src/types/assets";
-
+import { AssetObject } from "@/src/types/assets";
 
 export interface ATMap {
     created: number;

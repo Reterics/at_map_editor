@@ -1,9 +1,9 @@
-import {StyledSelectArgs, StyledSelectOption} from "@/src/types/inputs";
+import { StyledSelectArgs, StyledSelectOption } from "@/src/types/inputs";
 import React from "react";
 
 export const textToOptions = (strings: string[], names: string[]|undefined):  StyledSelectOption[] => {
     return strings.map((string, index) => {
-        return {value: string, name: names ? names[index] : string}
+        return { value: string, name: names ? names[index] : string }
     });
 }
 

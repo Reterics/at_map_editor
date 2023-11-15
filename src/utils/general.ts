@@ -1,4 +1,4 @@
-import {TextFile} from "@/src/types/general";
+import { TextFile } from "@/src/types/general";
 
 export const colorNameToHex = (colorName: string) => {
     const colorNames:{[keys: string]:string} = {
@@ -68,7 +68,7 @@ export const downloadAsFile = (name: string, body: string, fileType = 'text/plai
         name = Math.floor(new Date().getTime() / 360000) + ".json";
     }
     try {
-        let textToSaveAsBlob = new Blob([body], {type: fileType});
+        let textToSaveAsBlob = new Blob([body], { type: fileType });
         let textToSaveAsURL = URL.createObjectURL(textToSaveAsBlob);
         let fileNameToSaveAs = name;
 

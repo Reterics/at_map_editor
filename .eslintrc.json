@@ -1,3 +1,11 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": [
+    "next/core-web-vitals"
+  ],
+  "plugins": ["@stylistic/ts"],
+  "rules": {
+    "object-curly-spacing": ["warn", "always"],
+    "space-in-parens": ["warn", "never"],
+    "keyword-spacing": ["warn", {"before": true, "after": true}]
+  }
 }

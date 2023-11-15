@@ -1,4 +1,4 @@
-import {GLTF, GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import * as THREE from "three";
 import {
     ArrowHelper,
@@ -8,7 +8,6 @@ import {
     CylinderGeometry,
     Group,
     Mesh,
-    MeshBasicMaterial,
     MeshPhongMaterial, MeshStandardMaterial,
     NormalBufferAttributes,
     Object3DEventMap,
@@ -19,17 +18,17 @@ import {
     Vector3,
     WebGLRenderer
 } from "three";
-import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
-import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
-import {Loader} from "three/src/Three";
-import {ColladaLoader} from "three/examples/jsm/loaders/ColladaLoader";
-import {STLLoader} from "three/examples/jsm/loaders/STLLoader";
-import {Object3D} from "three/src/core/Object3D";
-import {AssetObject, Circle, Line, Rectangle} from "@/src/types/assets";
-import {TrackballControls} from "three/examples/jsm/controls/TrackballControls";
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import {ThreeControlType} from "@/src/types/general";
-import {FPSController} from "@/src/utils/controls/FPSController";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+import { Loader } from "three/src/Three";
+import { ColladaLoader } from "three/examples/jsm/loaders/ColladaLoader";
+import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
+import { Object3D } from "three/src/core/Object3D";
+import { AssetObject, Circle, Line, Rectangle } from "@/src/types/assets";
+import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { ThreeControlType } from "@/src/types/general";
+import { FPSController } from "@/src/utils/controls/FPSController";
 
 const genericLoader = (file: File, modelLoader: Loader) => {
     return new Promise(resolve => {
@@ -74,8 +73,8 @@ export const loadModel = {
         null> => {
         const geometry = await genericLoader(file, new STLLoader());
         if (geometry) {
-            const material = new MeshPhongMaterial( { color: 0xff9c7c, specular: 0x494949, shininess: 200 } );
-            return new Mesh( geometry as BufferGeometry, material );
+            const material = new MeshPhongMaterial({ color: 0xff9c7c, specular: 0x494949, shininess: 200 });
+            return new Mesh(geometry as BufferGeometry, material);
         }
         return null;
     }
@@ -110,14 +109,14 @@ export const getMeshForItem = (item: AssetObject): THREE.Mesh => {
             geometry = new BoxGeometry(rect.w, Math.round((rect.w + rect.h) / 2), rect.h);
             break;
         case "circle":
-            geometry = new SphereGeometry((item as Circle).radius, 32, 16 );
+            geometry = new SphereGeometry((item as Circle).radius, 32, 16);
             break;
         case "line":
             const line = item as Line;
             position1 = new Vector3(line.x1, 0, line.y1);
             position2 = new Vector3(line.x2, 0, line.y2);
             const height = position1.distanceTo(position2);
-            geometry = new CylinderGeometry( 5, 5, height, 32 );
+            geometry = new CylinderGeometry(5, 5, height, 32);
     }
     model = new Mesh(geometry, material);
     model.castShadow = true; //default is false
@@ -150,7 +149,7 @@ export const getArrowHelper = (): Group => {
     const yAxisDirection = new Vector3(0, 1, 0);
     const zAxisDirection = new Vector3(0, 0, 1);
 
-    const origin = new Vector3( 0, 0, 0 );
+    const origin = new Vector3(0, 0, 0);
     const length = 100;
 
     const xAxisArrow = new ArrowHelper(xAxisDirection, origin, length, 0xff0000);
@@ -167,16 +166,16 @@ export const getArrowHelper = (): Group => {
 export const getGroundPlane = (width: number, height: number, texture?:string): Promise<Mesh<THREE.PlaneGeometry, MeshStandardMaterial, Object3DEventMap>> => {
     return new Promise(resolve => {
         const geometry = new THREE.PlaneGeometry(width, height);
-        const material = new THREE.MeshStandardMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+        const material = new THREE.MeshStandardMaterial({ color: 0xffff00, side: THREE.DoubleSide });
         const loader = new THREE.TextureLoader();
         loader.load(texture || '/assets/textures/green-grass-textures.jpg',
-            function ( texture ) {
+            function (texture) {
                 texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-                texture.offset.set( 0, 0 );
-                texture.repeat.set( 2, 2 );
+                texture.offset.set(0, 0);
+                texture.repeat.set(2, 2);
                 material.map = texture;
                 material.needsUpdate = true;
-                const plane = new THREE.Mesh( geometry, material );
+                const plane = new THREE.Mesh(geometry, material);
                 plane.position.setY(0);
                 plane.receiveShadow = true;
                 plane.rotation.set(Math.PI / 2, 0, 0);

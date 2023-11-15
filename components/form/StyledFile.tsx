@@ -1,5 +1,4 @@
-import {ChangeEvent} from "react";
-
+import { ChangeEvent } from "react";
 
 export default function StyledFile({
     name,

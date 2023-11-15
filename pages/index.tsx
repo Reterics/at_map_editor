@@ -1,14 +1,14 @@
 import Layout from "@/components/layout";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
     BsPencilSquare,
     BsFillTrashFill
 } from "react-icons/bs";
-import {ATMap} from "@/src/types/map";
-import {db, firebaseCollections, getCollection} from "@/src/firebase/config";
-import {doc} from "firebase/firestore";
-import {deleteDoc} from "@firebase/firestore";
+import { ATMap } from "@/src/types/map";
+import { db, firebaseCollections, getCollection } from "@/src/firebase/config";
+import { doc } from "firebase/firestore";
+import { deleteDoc } from "@firebase/firestore";
 
 
 export default function Home() {

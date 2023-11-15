@@ -1,18 +1,18 @@
 import Layout from "@/components/layout";
-import {BsFillTrashFill, BsPencilSquare} from "react-icons/bs";
-import React, {useEffect, useState} from "react";
-import {AssetObject, AssetType} from "@/src/types/assets";
-import {db, firebaseCollections, getCollection} from "@/src/firebase/config";
+import { BsFillTrashFill, BsPencilSquare } from "react-icons/bs";
+import React, { useEffect, useState } from "react";
+import { AssetObject } from "@/src/types/assets";
+import { db, firebaseCollections, getCollection } from "@/src/firebase/config";
 import AssetModal from "@/components/modals/AssetModal";
-import {collection, doc, setDoc} from "firebase/firestore";
-import {getFileURL} from "@/src/firebase/storage";
+import { collection, doc, setDoc } from "firebase/firestore";
+import { getFileURL } from "@/src/firebase/storage";
 import Image from 'next/image'
 
 
 export default function Assets() {
     const [assets, setAssets] = useState([] as AssetObject[]);
     const [currentAsset, setCurrentAsset] =
-        useState({type: "model"} as AssetObject);
+        useState({ type: "model" } as AssetObject);
     const [showNewAsset, setShowNewAsset] = useState(false);
 
     const deleteAsset = async (id: string|undefined) => {
@@ -27,15 +27,15 @@ export default function Assets() {
 
     const saveAsset = async () => {
         const modelRef = doc(collection(db, firebaseCollections.assets))
-        await setDoc(modelRef, currentAsset, {merge: true});
+        await setDoc(modelRef, currentAsset, { merge: true });
         setShowNewAsset(false);
-        setCurrentAsset({type: "model"});
+        setCurrentAsset({ type: "model" });
         await refreshAssets();
     };
 
     const refreshAssets = async () => {
         const assets = (await getCollection(firebaseCollections.assets)) as AssetObject[];
-        for(let i = 0; i < assets.length; i++) {
+        for (let i = 0; i < assets.length; i++) {
             if (assets[i].name && !assets[i].image) {
                 assets[i].image = await getFileURL('screenshots/' + assets[i].name + '.png');
             }

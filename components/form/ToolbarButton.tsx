@@ -1,4 +1,4 @@
-import {CSSProperties, MouseEventHandler} from "react";
+import { CSSProperties, MouseEventHandler } from "react";
 
 export default function ToolbarButton({
     children,

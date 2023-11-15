@@ -1,8 +1,8 @@
 "use client";
-import {useEffect, useRef, useState} from "react";
-import {Asset, AssetObject, Point, Line, Rectangle, Circle} from "@/src/types/assets";
-import {getDistance, isPointInRectangle, isPointInsideCircle, isPointOnLine} from "@/src/utils/math";
-import {Draw} from "@/src/utils/draw";
+import { useEffect, useRef, useState } from "react";
+import { Asset, AssetObject, Point, Line, Rectangle, Circle } from "@/src/types/assets";
+import { getDistance, isPointInRectangle, isPointInsideCircle, isPointOnLine } from "@/src/utils/math";
+import { Draw } from "@/src/utils/draw";
 
 let isDrawing = false; // Track if the mouse is being held down
 let startX: number,
@@ -38,7 +38,7 @@ export default function CanvasEditor({
 
     useEffect(() => {
         if (canvasRef.current) {
-            setDrawer(new Draw(canvasRef.current, {background: ground}));
+            setDrawer(new Draw(canvasRef.current, { background: ground }));
         }
     }, [canvasRef, ground]);
 
@@ -67,16 +67,18 @@ export default function CanvasEditor({
                     case "rect":
                         item.selected = isPointInRectangle(currentPoint, item as Rectangle);
                         break;
-                    case "line":
+                    case "line": {
                         const line = item as Line;
                         item.selected = isPointOnLine(currentPoint.x, currentPoint.y, line.x1, line.y1, line.x2,
                             line.y2);
                         break;
-                    case "circle":
+                    }
+                    case "circle": {
                         const circle = item as Circle;
                         item.selected = isPointInsideCircle(currentPoint.x, currentPoint.y, circle.x, circle.y,
                             circle.radius);
                         break;
+                    }
                     default:
                         item.selected = false;
                 }
@@ -146,7 +148,7 @@ export default function CanvasEditor({
     };
 
     const onMouseUp = (e: MouseEvent) => {
-        if (startX && startY ) {
+        if (startX && startY) {
             const mousePoint = getPointInCanvas(e);
             if (canvasRef.current && mousePoint) {
                 const asset = getCurrentAsset(mousePoint);

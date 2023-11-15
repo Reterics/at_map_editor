@@ -1,6 +1,5 @@
 import React from "react";
-import {StyledInputArgs} from "@/src/types/inputs";
-import {className} from "postcss-selector-parser";
+import { StyledInputArgs } from "@/src/types/inputs";
 
 export default function StyledInput({
                                         value,

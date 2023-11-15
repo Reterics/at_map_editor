@@ -1,11 +1,11 @@
 import * as THREE from "three";
-import {Scene} from "three";
-import {Sky} from "three/examples/jsm/objects/Sky";
+import { Scene } from "three";
+import { Sky } from "three/examples/jsm/objects/Sky";
 
 
 export function getSky() {
     const sky = new Sky();
-    sky.scale.setScalar( 450000 );
+    sky.scale.setScalar(450000);
     sky.name = "sky";
 
     const sun = new THREE.Vector3();
@@ -15,22 +15,22 @@ export function getSky() {
     uniforms[ 'mieCoefficient' ].value = 0.005;
     uniforms[ 'mieDirectionalG' ].value = 0.7;
 
-    const phi = THREE.MathUtils.degToRad( 90 - 2 );
-    const theta = THREE.MathUtils.degToRad( 180 );
+    const phi = THREE.MathUtils.degToRad(90 - 2);
+    const theta = THREE.MathUtils.degToRad(180);
 
-    sun.setFromSphericalCoords( 1, phi, theta );
+    sun.setFromSphericalCoords(1, phi, theta);
 
-    uniforms[ 'sunPosition' ].value.copy( sun );
+    uniforms[ 'sunPosition' ].value.copy(sun);
     return sky;
 }
 
 export function renderEnvironment(scene: Scene) {
     if (!scene.children.find(m => m.name === "sky")) {
         const sky = getSky();
-        scene.add( sky );
+        scene.add(sky);
 
         if (!scene.children.find(m => m.name === "light")) {
-            const light = new THREE.DirectionalLight( 0xffffff, 6.2 );
+            const light = new THREE.DirectionalLight(0xffffff, 6.2);
             light.name = "light";
             //light.position.set( 0, 20, -300 );
             light.castShadow = true;
@@ -43,7 +43,7 @@ export function renderEnvironment(scene: Scene) {
                 sky.material.uniforms['sunPosition'] && sky.material.uniforms['sunPosition'].value) {
                 light.position.copy(sky.material.uniforms['sunPosition'].value);
             }
-            scene.add( light );
+            scene.add(light);
         }
     }
 

@@ -1,6 +1,6 @@
 "use client";
 import Layout from "@/components/layout";
-import {useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     BsFillGrid1X2Fill,
     BsBadge3DFill,
@@ -21,17 +21,17 @@ import {
     BsFillPinMapFill
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
-import {AssetObject} from "@/src/types/assets";
-import {degToRad} from "@/src/utils/math";
+import { AssetObject } from "@/src/types/assets";
+import { degToRad } from "@/src/utils/math";
 import ThreeComponent from "@/components/lib/ThreeComponent";
-import {LayoutType, ThreeControlType} from "@/src/types/general";
-import {downloadAsFile, readTextFile} from "@/src/utils/general";
+import { LayoutType, ThreeControlType } from "@/src/types/general";
+import { downloadAsFile, readTextFile } from "@/src/utils/general";
 import ToolbarButton from "@/components/form/ToolbarButton";
-import {useSearchParams} from 'next/navigation';
-import {db, firebaseCollections, getById} from "@/src/firebase/config";
-import {ATMap} from "@/src/types/map";
+import { useSearchParams } from 'next/navigation';
+import { db, firebaseCollections, getById } from "@/src/firebase/config";
+import { ATMap } from "@/src/types/map";
 import StyledInput from "@/components/form/StyledInput";
-import {collection, doc, setDoc, updateDoc} from "firebase/firestore";
+import { collection, doc, setDoc, updateDoc } from "firebase/firestore";
 
 export const emptyATMap = {
     created: new Date().getTime(),
@@ -66,12 +66,12 @@ export default function Editor() {
     const id = searchParams && searchParams.get('id') ?  searchParams.get('id') : undefined;
 
     const ground = '/assets/textures/green-grass-textures.jpg';
-    const [map, setMap] = useState<ATMap>({...emptyATMap} as ATMap);
+    const [map, setMap] = useState<ATMap>({ ...emptyATMap } as ATMap);
 
     // TODO: Remove this porting
     const items = map.items || [];
     const setItems = (items: AssetObject[]) => {
-        setMap({...map, items: items});
+        setMap({ ...map, items: items });
     };
     // const [items, setItems] = useState<AssetObject[]>([]);
     const [layout, setLayout] = useState<LayoutType>("three");
@@ -86,7 +86,7 @@ export default function Editor() {
     const updateMapFromCloud = async (id: string) => {
         const map = await getById(id, firebaseCollections.maps);
         if (map) {
-            setMap({id: id, ...map} as ATMap);
+            setMap({ id: id, ...map } as ATMap);
         }
     };
     useEffect(() => {
@@ -112,7 +112,7 @@ export default function Editor() {
                 ...map,
                 created: now
             });
-            setMap({...map, id: useRef.id});
+            setMap({ ...map, id: useRef.id });
             alert("Map saved.");
         } else {
             alert("Name must be given");
@@ -202,9 +202,9 @@ export default function Editor() {
                 </ToolbarButton>
 
                 <ToolbarButton onClick={()=>colorRef.current && (colorRef.current as HTMLInputElement).click()}
-                                style={{backgroundColor: reference.color || '#000000'}}>
+                                style={{ backgroundColor: reference.color || '#000000' }}>
                     <input ref={colorRef} type="color" className="hidden" value={reference.color || '#000000'}
-                           onChange={(e) => setReference({...reference, color: e.target.value})}/>
+                           onChange={(e) => setReference({ ...reference, color: e.target.value })}/>
                     <BsPaintBucket />
                 </ToolbarButton>
 
@@ -220,29 +220,29 @@ export default function Editor() {
                         className={"relative z-0 w-full group m-1"}
                         placeholder={"Map Name"}
                         value={map.name}
-                        onChange={(e)=>setMap({...map, name: e.target.value})} />
+                        onChange={(e)=>setMap({ ...map, name: e.target.value })} />
                 </div>
 
                 <ToolbarButton
-                    style={{float:"right"}}
+                    style={{ float:"right" }}
                     onClick={() => setThreeControl("fps")}
                     active={threeControl === "fps"}>
                     <BsFillPinMapFill />
                 </ToolbarButton>
                 <ToolbarButton
-                    style={{float:"right"}}
+                    style={{ float:"right" }}
                     onClick={() => setThreeControl("orbit")}
                     active={threeControl === "orbit"}>
                     <BsGlobeAmericas />
                 </ToolbarButton>
                 <ToolbarButton
-                    style={{float:"right"}}
+                    style={{ float:"right" }}
                     onClick={() => setThreeControl("object")}
                     active={threeControl === "object"}>
                     <BsGeoAlt />
                 </ToolbarButton>
                 <ToolbarButton
-                    style={{float:"right"}}
+                    style={{ float:"right" }}
                     onClick={() => setThreeControl("trackball")}
                     active={threeControl === "trackball"}>
                     <BsArrowsFullscreen />

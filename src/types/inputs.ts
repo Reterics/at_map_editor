@@ -1,4 +1,4 @@
-import {ChangeEventHandler, ReactEventHandler} from "react";
+import { ChangeEventHandler, ReactEventHandler } from "react";
 
 export interface StyledInputArgs {
     value?: string | number | readonly string[]
@@ -14,10 +14,12 @@ export interface StyledInputArgs {
     step?: string,
     className?: string
 }
+
 export interface StyledSelectOption {
     name: string,
     value: string
 }
+
 export interface StyledSelectArgs {
     value?: string | number | readonly string[]
     onSelect?: ReactEventHandler<HTMLSelectElement> | undefined,

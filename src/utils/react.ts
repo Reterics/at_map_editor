@@ -1,7 +1,7 @@
 /**
  * React Overrides/Replacement methods
  */
-import {AnyObj, WindowMethod} from "@/src/types/react";
+import { AnyObj, WindowMethod } from "@/src/types/react";
 
 
 export const useWindow = (method: WindowMethod, id: string|object, ref?: any) => {
