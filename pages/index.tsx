@@ -6,6 +6,9 @@ import {
     BsFillTrashFill
 } from "react-icons/bs";
 import {ATMap} from "@/src/types/map";
+import {db, firebaseCollections, getCollection} from "@/src/firebase/config";
+import {doc} from "firebase/firestore";
+import {deleteDoc} from "@firebase/firestore";
 
 
 export default function Home() {
@@ -15,16 +18,16 @@ export default function Home() {
     const deleteMap = async (id: string|undefined) => {
         if (id && window.confirm('Are you sure you wish to delete this Map?')) {
             alert('Method is not implemented');
+            await deleteDoc(doc(db, firebaseCollections.maps, id));
         }
     };
 
     const openMap = (map: ATMap) => {
         router.push('/editor?id=' + map.id);
-
     };
 
     const refreshMaps = async () => {
-        // TODO: Load the maps here
+        getCollection(firebaseCollections.maps).then((maps) => setMaps(maps as ATMap[]));
     };
     useEffect(() => {
         void refreshMaps();
@@ -74,15 +77,15 @@ export default function Home() {
                             </th>
                             <th scope="row"
                                 className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {map.name}
+                                {map.name || "No name defined"}
                             </th>
                             <th scope="row"
                                 className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {map.author}
+                                {map.author || "You"}
                             </th>
                             <th scope="row"
                                 className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {map.created}
+                                {map.created ? new Date(map.created).toISOString().replace(/[TZ]/g, ' ').split('.')[0] : ''}
                             </th>
                             <td className="px-6 py-4 flex flex-row text-lg">
                                 <BsPencilSquare className="cursor-pointer ml-2" onClick={() => openMap(map)}/>
