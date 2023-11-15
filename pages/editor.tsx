@@ -63,7 +63,7 @@ export default function Editor() {
 
 
     const searchParams = useSearchParams()
-    const id = searchParams && searchParams.get('id') ?  searchParams.get('id') : null;
+    const id = searchParams && searchParams.get('id') ?  searchParams.get('id') : undefined;
 
     const ground = '/assets/textures/green-grass-textures.jpg';
     const [map, setMap] = useState<ATMap>({...emptyATMap} as ATMap);
@@ -86,7 +86,7 @@ export default function Editor() {
     const updateMapFromCloud = async (id: string) => {
         const map = await getById(id, firebaseCollections.maps);
         if (map) {
-            setMap(map as ATMap);
+            setMap({id: id, ...map} as ATMap);
         }
     };
     useEffect(() => {
