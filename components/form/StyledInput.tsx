@@ -1,5 +1,6 @@
 import React from "react";
 import {StyledInputArgs} from "@/src/types/inputs";
+import {className} from "postcss-selector-parser";
 
 export default function StyledInput({
                                         value,
@@ -11,7 +12,8 @@ export default function StyledInput({
                                         pattern,
                                         maxLength,
                                         min,
-                                        max
+                                        max,
+                                        className
                                     }: StyledInputArgs) {
     // TODO: Pattern validation
 
@@ -26,7 +28,7 @@ export default function StyledInput({
 
     };
     return (
-        <div className="relative z-0 w-full group mt-3">
+        <div className={className||"relative z-0 w-full group mt-3"}>
             <input type={type} name={name}
                    id={name}
                    value={value === undefined ? '' : value}

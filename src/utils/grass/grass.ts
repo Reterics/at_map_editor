@@ -78,7 +78,9 @@ export class Grass {
         const geometry = new PlaneGeometry( 1, 10, 2, 4 );
         geometry.translate( 0, 0.5, 0 );
 
+
         this.instancedMesh = new InstancedMesh(geometry, this.leavesMaterial, this.instances);
+        this.instancedMesh.castShadow = true;
         this.instancedMesh.name = "grass";
         this.scene.add(this.instancedMesh);
         this.regenerateGrassCoordinates();

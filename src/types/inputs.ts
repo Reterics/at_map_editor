@@ -12,6 +12,7 @@ export interface StyledInputArgs {
     min?: string,
     max?: string,
     step?: string,
+    className?: string
 }
 export interface StyledSelectOption {
     name: string,

@@ -9,7 +9,7 @@ import {
     Group,
     Mesh,
     MeshBasicMaterial,
-    MeshPhongMaterial,
+    MeshPhongMaterial, MeshStandardMaterial,
     NormalBufferAttributes,
     Object3DEventMap,
     PerspectiveCamera,
@@ -100,7 +100,7 @@ export const lookAtObject = (models: Object3D, camera: PerspectiveCamera): void 
 
 export const getMeshForItem = (item: AssetObject): THREE.Mesh => {
     let model;
-    let material = new MeshBasicMaterial({ color: item.color ?
+    let material = new MeshStandardMaterial({ color: item.color ?
             new Color(item.color) : 0x000000 });
     let geometry;
     let position1, position2;
@@ -120,6 +120,8 @@ export const getMeshForItem = (item: AssetObject): THREE.Mesh => {
             geometry = new CylinderGeometry( 5, 5, height, 32 );
     }
     model = new Mesh(geometry, material);
+    model.castShadow = true; //default is false
+    model.receiveShadow = false; //default
     // Position must be ZYX instead of ZXY
     if (model && position1 && position2) {
         const positionMid = new Vector3();
@@ -162,10 +164,10 @@ export const getArrowHelper = (): Group => {
     return arrowGroup;
 }
 
-export const getGroundPlane = (width: number, height: number, texture?:string): Promise<Mesh<THREE.PlaneGeometry, MeshBasicMaterial, Object3DEventMap>> => {
+export const getGroundPlane = (width: number, height: number, texture?:string): Promise<Mesh<THREE.PlaneGeometry, MeshStandardMaterial, Object3DEventMap>> => {
     return new Promise(resolve => {
         const geometry = new THREE.PlaneGeometry(width, height);
-        const material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+        const material = new THREE.MeshStandardMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
         const loader = new THREE.TextureLoader();
         loader.load(texture || '/assets/textures/green-grass-textures.jpg',
             function ( texture ) {
@@ -176,6 +178,7 @@ export const getGroundPlane = (width: number, height: number, texture?:string): 
                 material.needsUpdate = true;
                 const plane = new THREE.Mesh( geometry, material );
                 plane.position.setY(0);
+                plane.receiveShadow = true;
                 plane.rotation.set(Math.PI / 2, 0, 0);
 
                 //plane.rotation.set(-Math.PI/2, Math.PI/2000, Math.PI);
