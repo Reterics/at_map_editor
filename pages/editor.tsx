@@ -17,6 +17,7 @@ import {
     BsGeoAlt,
     BsGlobeAmericas,
     BsArrowsFullscreen,
+    BsFloppy,
     BsFillPinMapFill
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
@@ -26,7 +27,18 @@ import ThreeComponent from "@/components/lib/ThreeComponent";
 import {LayoutType, ThreeControlType} from "@/src/types/general";
 import {downloadAsFile, readTextFile} from "@/src/utils/general";
 import ToolbarButton from "@/components/form/ToolbarButton";
+import {useSearchParams} from 'next/navigation';
+import {db, firebaseCollections, getById} from "@/src/firebase/config";
+import {ATMap} from "@/src/types/map";
+import StyledInput from "@/components/form/StyledInput";
+import {collection, doc, setDoc, updateDoc} from "firebase/firestore";
 
+export const emptyATMap = {
+    created: new Date().getTime(),
+    author: "",
+    name: "",
+    items: []
+}
 
 export default function Editor() {
     const assets: AssetObject[] = [
@@ -48,8 +60,20 @@ export default function Editor() {
             "type": "line"
         },
     ]; // TODO: Make dynamic
+
+
+    const searchParams = useSearchParams()
+    const id = searchParams && searchParams.get('id') ?  searchParams.get('id') : null;
+
     const ground = '/assets/textures/green-grass-textures.jpg';
-    const [items, setItems] = useState<AssetObject[]>([]);
+    const [map, setMap] = useState<ATMap>({...emptyATMap} as ATMap);
+
+    // TODO: Remove this porting
+    const items = map.items || [];
+    const setItems = (items: AssetObject[]) => {
+        setMap({...map, items: items});
+    };
+    // const [items, setItems] = useState<AssetObject[]>([]);
     const [layout, setLayout] = useState<LayoutType>("three");
     const [editorDimensions, setEditorDimensions] =
         useState([0, 0]);
@@ -58,6 +82,42 @@ export default function Editor() {
     const colorRef = useRef(null);
 
     const selected = items.find(item=>item.selected);
+
+    const updateMapFromCloud = async (id: string) => {
+        const map = await getById(id, firebaseCollections.maps);
+        if (map) {
+            setMap(map as ATMap);
+        }
+    };
+    useEffect(() => {
+        if (id) {
+            void updateMapFromCloud(id);
+        }
+    }, [id]);
+
+    const saveMap = async () => {
+        const now = new Date().getTime();
+        if (map.id) {
+
+            const useRef = doc(db, firebaseCollections.maps, map.id);
+            await updateDoc(useRef, {
+                ...map,
+                modified: now
+            });
+            alert("Map saved.");
+        } else if (map.name) {
+            const useRef = doc(collection(db, firebaseCollections.maps));
+            await setDoc(useRef, {
+                id: useRef.id,
+                ...map,
+                created: now
+            });
+            setMap({...map, id: useRef.id});
+            alert("Map saved.");
+        } else {
+            alert("Name must be given");
+        }
+    }
 
     useEffect(() => {
         const padding = {
@@ -152,6 +212,16 @@ export default function Editor() {
                                 <BsEraserFill />
                             </ToolbarButton>
                 }
+                <ToolbarButton onClick={()=>saveMap()}>
+                    <BsFloppy />
+                </ToolbarButton>
+                <div className="w-[150px] inline-block">
+                    <StyledInput
+                        className={"relative z-0 w-full group m-1"}
+                        placeholder={"Map Name"}
+                        value={map.name}
+                        onChange={(e)=>setMap({...map, name: e.target.value})} />
+                </div>
 
                 <ToolbarButton
                     style={{float:"right"}}
