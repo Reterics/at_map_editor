@@ -13,7 +13,7 @@ import {
     getArrowHelper,
     getControls,
     getGroundPlane,
-    getMeshForItem,
+    getMeshForItem, isCollisionDetected,
     setInitialCameraPosition
 } from "@/src/utils/model";
 import { Object3D } from "three/src/core/Object3D";
@@ -356,13 +356,6 @@ export default function ThreeComponent({
         updateCameraPosition();
     }
     updateArrowHelper();
-
-    function isCollisionDetected(object1: THREE.Object3D, object2: THREE.Object3D) {
-        const box1 = new THREE.Box3().setFromObject(object1);
-        const box2 = new THREE.Box3().setFromObject(object2);
-
-        return box1.intersectsBox(box2);
-    }
 
     const onMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         event.preventDefault();

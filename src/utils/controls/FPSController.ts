@@ -2,6 +2,7 @@ import { PerspectiveCamera, Raycaster, Scene, Vector3 } from "three";
 import { Object3D } from "three/src/core/Object3D";
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
+import { isCollisionDetected } from "@/src/utils/model";
 
 let moveForward = false;
 let moveBackward = false;
@@ -42,6 +43,7 @@ export class FPSController {
         this.controls.lock();
         document.addEventListener('keydown', this.onKeyDown);
         document.addEventListener('keyup', this.onKeyUp);
+        document.addEventListener('dblclick', this.onDblClick.bind(this))
     }
 
 
@@ -146,10 +148,56 @@ export class FPSController {
 
             this.controls.getObject().position.y += (velocity.y * delta); // new behavior
 
-            if (this.controls.getObject().position.y < 10) {
+            if (this.controls.getObject().position.y < 35) {
                 velocity.y = 0;
-                this.controls.getObject().position.y = 10;
+                this.controls.getObject().position.y = 35;
                 canJump = true;
+            }
+        }
+    }
+    onDblClick (event: MouseEvent) {
+        const shadowObject = this.scene.children
+            .find(m => m.name === "shadowObject");
+        if (shadowObject) {
+            const movementSpeed = 3;
+            const bulletObject = shadowObject.clone();
+            const camera = this.controls.camera;
+            bulletObject.position.copy(camera.position);
+            this.scene.add(bulletObject);
+
+            const rect = this.controls.domElement.getBoundingClientRect();
+            const mouse = new THREE.Vector2();
+
+            mouse.x = ((rect.width / 2) / rect.width) * 2 - 1;
+            mouse.y = -((rect.height / 2) / rect.height) * 2 + 1;
+            const rayCaster = new THREE.Raycaster();
+            rayCaster.setFromCamera(mouse, camera);
+            const intersectObjects = this.scene.children.filter((mesh: Object3D) =>
+                mesh.name.startsWith("mesh") || mesh.name === "plane");
+            const intersect = rayCaster.intersectObjects(intersectObjects, true)[0];
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+
+            if (intersect) {
+                const direction = intersect.point.clone().sub(shadowObject.position);
+                direction.normalize();
+                const directionVector = forward.multiplyScalar(movementSpeed);
+                rayCaster.set(bulletObject.position, forward);
+
+                const intersects = rayCaster.intersectObjects(intersectObjects,
+                    true);
+                const objectsInPath = intersects.map(o=>o.object);
+
+                let i = 0;
+                let interval = setInterval(() => {
+                    bulletObject.position.add(directionVector);
+                    // const anyDistanceLow = intersects.find(o => o.point.distanceTo(bulletObject.position) <= 50)
+                    i++;
+                    if (i >= 100 ||
+                        objectsInPath.find(o=> isCollisionDetected(o, bulletObject))) {
+                        clearInterval(interval);
+                        bulletObject.name = "mesh_bullet_brick";
+                    }
+                }, 14);
             }
         }
     }
@@ -157,6 +205,7 @@ export class FPSController {
     dispose() {
         document.removeEventListener('keydown', this.onKeyDown);
         document.removeEventListener('keyup', this.onKeyUp);
+        document.removeEventListener('dblclick', this.onDblClick.bind(this));
         this.controls.dispose();
     }
 

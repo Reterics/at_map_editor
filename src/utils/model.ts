@@ -267,3 +267,10 @@ export const createShadowObject = (reference: AssetObject) => {
     shadowObject.position.y = -100;
     return shadowObject;
 }
+
+export const isCollisionDetected = (object1: THREE.Object3D, object2: THREE.Object3D) => {
+    const box1 = new THREE.Box3().setFromObject(object1);
+    const box2 = new THREE.Box3().setFromObject(object2);
+
+    return box1.intersectsBox(box2);
+}
