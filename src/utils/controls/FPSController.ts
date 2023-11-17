@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Raycaster, Scene, Vector3 } from "three";
+import {Mesh, PerspectiveCamera, Raycaster, Scene, Vector3} from "three";
 import { Object3D } from "three/src/core/Object3D";
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
@@ -21,6 +21,7 @@ export class FPSController {
     private items: Object3D[];
     private rayCaster: Raycaster;
     target: null;
+    private shadowObject: Object3D | undefined;
     constructor(camera: PerspectiveCamera, domElement: HTMLElement, scene: Scene) {
         this.controls =  new PointerLockControls(camera, document.body);
 
@@ -44,6 +45,7 @@ export class FPSController {
         document.addEventListener('keydown', this.onKeyDown);
         document.addEventListener('keyup', this.onKeyUp);
         document.addEventListener('dblclick', this.onDblClick.bind(this))
+        document.addEventListener('mousemove', this.onMouseMove.bind(this))
     }
 
 
@@ -155,9 +157,62 @@ export class FPSController {
             }
         }
     }
-    onDblClick (event: MouseEvent) {
-        const shadowObject = this.scene.children
+
+    getCursorPosition() {
+        const rect = this.controls.domElement.getBoundingClientRect();
+        const mouse = new THREE.Vector2();
+
+        mouse.x = ((rect.width / 2) / rect.width) * 2 - 1;
+        mouse.y = -((rect.height / 2) / rect.height) * 2 + 1;
+        return mouse;
+    }
+
+    getShadowObject() {
+        this.shadowObject = this.shadowObject || this.scene.children
             .find(m => m.name === "shadowObject");
+        return this.shadowObject;
+    }
+    onMouseMove (event: MouseEvent) {
+        event.preventDefault();
+
+        const mouse = this.getCursorPosition(),
+            rayCaster = new THREE.Raycaster(),
+            camera = this.controls.camera,
+            scene = this.scene;
+
+        rayCaster.setFromCamera(mouse, camera);
+        const intersects = rayCaster.intersectObjects(scene.children.filter((mesh: Object3D) =>
+            mesh.name.startsWith("mesh") || mesh.name === "plane"), true);
+        const shadowObject = this.getShadowObject();
+        if (shadowObject && intersects) {
+            const intersect = intersects.find(object => {
+                return object.object.name !== "shadowObject" && object.object.isObject3D;
+            });
+            if (intersect) {
+                // TODO: Remove code duplication -> ThreeCompinent.tsx 376
+                const point = intersect.point;
+                const mainObject = intersect.object as Mesh;
+                const movementSpeed = 3; // Adjust the speed as needed
+                shadowObject.position.copy(camera.position)
+                const direction = point.clone().sub(shadowObject.position);
+                direction.normalize();
+
+                const directionVector = direction.multiplyScalar(movementSpeed);
+                let i = 0;
+                while (!isCollisionDetected(shadowObject, mainObject)) {
+                    shadowObject.position.add(directionVector);
+                    i++;
+                    if (i >= 1000) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    onDblClick (event: MouseEvent) {
+
+        const shadowObject = this.getShadowObject();
         if (shadowObject) {
             const movementSpeed = 3;
             const bulletObject = shadowObject.clone();
@@ -165,40 +220,30 @@ export class FPSController {
             bulletObject.position.copy(camera.position);
             this.scene.add(bulletObject);
 
-            const rect = this.controls.domElement.getBoundingClientRect();
-            const mouse = new THREE.Vector2();
-
-            mouse.x = ((rect.width / 2) / rect.width) * 2 - 1;
-            mouse.y = -((rect.height / 2) / rect.height) * 2 + 1;
+            const mouse = this.getCursorPosition();
             const rayCaster = new THREE.Raycaster();
             rayCaster.setFromCamera(mouse, camera);
             const intersectObjects = this.scene.children.filter((mesh: Object3D) =>
                 mesh.name.startsWith("mesh") || mesh.name === "plane");
-            const intersect = rayCaster.intersectObjects(intersectObjects, true)[0];
             const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
 
-            if (intersect) {
-                const direction = intersect.point.clone().sub(shadowObject.position);
-                direction.normalize();
-                const directionVector = forward.multiplyScalar(movementSpeed);
-                rayCaster.set(bulletObject.position, forward);
+            const directionVector = forward.multiplyScalar(movementSpeed);
+            rayCaster.set(bulletObject.position, forward);
 
-                const intersects = rayCaster.intersectObjects(intersectObjects,
-                    true);
-                const objectsInPath = intersects.map(o=>o.object);
+            const intersects = rayCaster.intersectObjects(intersectObjects,
+                true);
+            const objectsInPath = intersects.map(o=>o.object);
 
-                let i = 0;
-                let interval = setInterval(() => {
-                    bulletObject.position.add(directionVector);
-                    // const anyDistanceLow = intersects.find(o => o.point.distanceTo(bulletObject.position) <= 50)
-                    i++;
-                    if (i >= 100 ||
-                        objectsInPath.find(o=> isCollisionDetected(o, bulletObject))) {
-                        clearInterval(interval);
-                        bulletObject.name = "mesh_bullet_brick";
-                    }
-                }, 14);
-            }
+            let i = 0;
+            let interval = setInterval(() => {
+                bulletObject.position.add(directionVector);
+                i++;
+                if (i >= 100 ||
+                    objectsInPath.find(o=> isCollisionDetected(o, bulletObject))) {
+                    clearInterval(interval);
+                    bulletObject.name = "mesh_bullet_brick";
+                }
+            }, 14);
         }
     }
 
@@ -206,6 +251,7 @@ export class FPSController {
         document.removeEventListener('keydown', this.onKeyDown);
         document.removeEventListener('keyup', this.onKeyUp);
         document.removeEventListener('dblclick', this.onDblClick.bind(this));
+        document.removeEventListener('mousemove', this.onMouseMove.bind(this));
         this.controls.dispose();
     }
 
