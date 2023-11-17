@@ -22,6 +22,7 @@ export class FPSController {
     private rayCaster: Raycaster;
     target: null;
     private shadowObject: Object3D | undefined;
+    far: number;
     constructor(camera: PerspectiveCamera, domElement: HTMLElement, scene: Scene) {
         this.controls =  new PointerLockControls(camera, document.body);
 
@@ -38,6 +39,7 @@ export class FPSController {
         scene.add(obj);
         this.scene = scene;
         this.items = [];
+        this.far = 100;
         this.updateItems();
 
         this.rayCaster = new Raycaster(new Vector3(), new Vector3(0, - 1, 0), 0, 10);
@@ -46,6 +48,7 @@ export class FPSController {
         document.addEventListener('keyup', this.onKeyUp);
         document.addEventListener('dblclick', this.onDblClick.bind(this))
         document.addEventListener('mousemove', this.onMouseMove.bind(this))
+        document.addEventListener('wheel', this.onScroll.bind(this))
     }
 
 
@@ -172,53 +175,12 @@ export class FPSController {
             .find(m => m.name === "shadowObject");
         return this.shadowObject;
     }
-    onMouseMove (event: MouseEvent) {
-        event.preventDefault();
 
-        const mouse = this.getCursorPosition(),
-            rayCaster = new THREE.Raycaster(),
-            camera = this.controls.camera,
-            scene = this.scene;
-
-        rayCaster.setFromCamera(mouse, camera);
-        const intersects = rayCaster.intersectObjects(scene.children.filter((mesh: Object3D) =>
-            mesh.name.startsWith("mesh") || mesh.name === "plane"), true);
-        const shadowObject = this.getShadowObject();
-        if (shadowObject && intersects) {
-            const intersect = intersects.find(object => {
-                return object.object.name !== "shadowObject" && object.object.isObject3D;
-            });
-            if (intersect) {
-                // TODO: Remove code duplication -> ThreeCompinent.tsx 376
-                const point = intersect.point;
-                const mainObject = intersect.object as Mesh;
-                const movementSpeed = 3; // Adjust the speed as needed
-                shadowObject.position.copy(camera.position)
-                const direction = point.clone().sub(shadowObject.position);
-                direction.normalize();
-
-                const directionVector = direction.multiplyScalar(movementSpeed);
-                let i = 0;
-                while (!isCollisionDetected(shadowObject, mainObject)) {
-                    shadowObject.position.add(directionVector);
-                    i++;
-                    if (i >= 1000) {
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    onDblClick (event: MouseEvent) {
-
-        const shadowObject = this.getShadowObject();
-        if (shadowObject) {
-            const movementSpeed = 3;
-            const bulletObject = shadowObject.clone();
+    dropObject (object: Object3D|undefined) {
+        if (object) {
             const camera = this.controls.camera;
-            bulletObject.position.copy(camera.position);
-            this.scene.add(bulletObject);
+            const movementSpeed = 3; // Adjust the speed as needed
+            object.position.copy(camera.position)
 
             const mouse = this.getCursorPosition();
             const rayCaster = new THREE.Raycaster();
@@ -228,23 +190,48 @@ export class FPSController {
             const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
 
             const directionVector = forward.multiplyScalar(movementSpeed);
-            rayCaster.set(bulletObject.position, forward);
-
+            rayCaster.set(object.position, forward);
             const intersects = rayCaster.intersectObjects(intersectObjects,
                 true);
             const objectsInPath = intersects.map(o=>o.object);
 
+
             let i = 0;
-            let interval = setInterval(() => {
-                bulletObject.position.add(directionVector);
+            while (!objectsInPath.find(o=> isCollisionDetected(o, object))) {
+                object.position.add(directionVector);
                 i++;
-                if (i >= 100 ||
-                    objectsInPath.find(o=> isCollisionDetected(o, bulletObject))) {
-                    clearInterval(interval);
-                    bulletObject.name = "mesh_bullet_brick";
+                if (i >= this.far) {
+                    break;
                 }
-            }, 14);
+            }
         }
+    }
+
+    onMouseMove (event: MouseEvent) {
+        event.preventDefault();
+        const shadowObject = this.getShadowObject();
+        this.dropObject(shadowObject);
+    }
+
+    onDblClick (event: MouseEvent) {
+
+        const shadowObject = this.getShadowObject();
+        if (shadowObject) {
+            const bulletObject = shadowObject.clone();
+            this.scene.add(bulletObject);
+            this.dropObject(bulletObject);
+            bulletObject.name = "mesh_bullet_brick";
+        }
+    }
+
+    onScroll (event: WheelEvent) {
+        // Normalize wheel delta across different browsers
+        // @ts-ignore
+        const delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
+
+        this.far += delta * 10;
+        const shadowObject = this.getShadowObject();
+        this.dropObject(shadowObject);
     }
 
     dispose() {
@@ -252,6 +239,7 @@ export class FPSController {
         document.removeEventListener('keyup', this.onKeyUp);
         document.removeEventListener('dblclick', this.onDblClick.bind(this));
         document.removeEventListener('mousemove', this.onMouseMove.bind(this));
+        document.removeEventListener('wheel', this.onScroll.bind(this));
         this.controls.dispose();
     }
 
