@@ -10,7 +10,8 @@ export interface Asset {
     y?: number,
     z?: number,
     color?: string,
-    selected?:boolean
+    selected?:boolean,
+    texture?:string
 }
 
 export interface Point extends Asset {

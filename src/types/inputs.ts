@@ -26,5 +26,6 @@ export interface StyledSelectArgs {
     type?: string,
     name?: string,
     label?: string|number,
-    options: StyledSelectOption[]
+    options: StyledSelectOption[],
+    className?: string
 }

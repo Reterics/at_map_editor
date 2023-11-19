@@ -8,13 +8,15 @@ import {
     CylinderGeometry,
     Group,
     Mesh,
-    MeshPhongMaterial, MeshStandardMaterial,
+    MeshPhongMaterial,
+    MeshStandardMaterial,
     NormalBufferAttributes,
     Object3DEventMap,
     PerspectiveCamera,
     Quaternion,
     Scene,
     SphereGeometry,
+    TextureLoader,
     Vector3,
     WebGLRenderer
 } from "three";
@@ -99,8 +101,23 @@ export const lookAtObject = (models: Object3D, camera: PerspectiveCamera): void 
 
 export const getMeshForItem = (item: AssetObject): THREE.Mesh => {
     let model;
-    let material = new MeshStandardMaterial({ color: item.color ?
-            new Color(item.color) : 0x000000 });
+
+    let material;
+    if (item.texture) {
+        const textureLoader = new TextureLoader();
+        const texture = textureLoader.load(
+            item.texture
+        );
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        material = new MeshStandardMaterial({
+            map: texture,
+        });
+        material.needsUpdate = true;
+    } else {
+        material = new MeshStandardMaterial({ color: item.color ?
+                new Color(item.color) : 0x000000 })
+    }
     let geometry;
     let position1, position2;
     switch (item.type) {

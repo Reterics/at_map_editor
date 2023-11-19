@@ -1,4 +1,4 @@
-import {Mesh, PerspectiveCamera, Raycaster, Scene, Vector3} from "three";
+import { PerspectiveCamera, Raycaster, Scene, Vector3 } from "three";
 import { Object3D } from "three/src/core/Object3D";
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
