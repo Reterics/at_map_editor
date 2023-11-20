@@ -51,6 +51,6 @@ export function renderEnvironment(scene: Scene) {
     if (!scene.children.find(m => m.name === "ambientLight")) {
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.3)
         ambientLight.name = "ambientLight";
-        //scene.add(ambientLight)
+        scene.add(ambientLight)
     }
 }

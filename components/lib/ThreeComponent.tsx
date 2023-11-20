@@ -50,7 +50,7 @@ export default function ThreeComponent({
         helperNames = [
             "sky",
             "light",
-            "hemisphereLight",
+            "ambientLight",
             "grass",
             "arrows",
             "plane",
