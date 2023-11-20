@@ -312,21 +312,23 @@ export default function ThreeComponent({
                         const y = center.z - h / 2;
                         const z = center.y - Math.round((w + h) / 2) / 2;
 
-                        setItems([...items, { ...reference,
+                        setItems([...items.map(i=> {i.selected = false; return i}), { ...reference,
                             x: x,
                             y: y,
                             w: w,
                             h: h,
-                            z: z
+                            z: z,
+                            selected: true
                         }]);
                         break;
                     case "circle":
                         const radius = (shadowObject.geometry as THREE.SphereGeometry).parameters.radius || 50
-                        setItems([...items, { ...reference,
+                        setItems([...items.map(i=> {i.selected = false; return i}), { ...reference,
                             x: shadowObject.position.x,
                             y: shadowObject.position.z,
                             z: 1 + radius,
-                            radius: radius
+                            radius: radius,
+                            selected: true
                         }]);
                 }
 

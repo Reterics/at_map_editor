@@ -156,6 +156,11 @@ export default function Editor() {
     const setReferenceType = (type: string) => {
         const asset = assets.find(a=>a.type === type);
         setReference(Object.assign({}, asset));
+        if (type !== "cursor" && selected) {
+            setItems([...items.map(i=> {
+                i.selected = false; return i;
+            })]);
+        }
     }
 
     const exportData = () => {
