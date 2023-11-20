@@ -237,8 +237,8 @@ export default function ThreeComponent({
             if (arrowHelpers) {
                 if (selected.type === "line") {
                     const line = selected as Line,
-                        position1 = new THREE.Vector3(line.x1, line.y1, 0),
-                        position2 = new THREE.Vector3(line.x2, line.y2, 0);
+                        position1 = new THREE.Vector3(line.x1, 0, line.y1),
+                        position2 = new THREE.Vector3(line.x2, 0, line.y2);
                     const positionMid = new THREE.Vector3();
                     positionMid.addVectors(position1, position2).multiplyScalar(0.5);
                     arrowHelpers.position.copy(positionMid);
@@ -246,11 +246,15 @@ export default function ThreeComponent({
 
                 } else if (selected.type === "rect") {
                     const rect = selected as Rectangle;
-                    arrowHelpers.position.set(rect.x + rect.w / 2, rect.y + rect.h / 2, rect.z || 0);
+                    const z = rect.z || 0;
+                    arrowHelpers.position.set(
+                        rect.x + rect.w / 2,
+                        z + Math.round((rect.w + rect.h) / 2) / 2,
+                        rect.y + rect.h / 2);
                     arrowHelpers.visible = true;
 
                 } else if (typeof selected.x === "number" && typeof selected.y === "number") {
-                    arrowHelpers.position.set(selected.x, selected.y, selected.z || 0);
+                    arrowHelpers.position.set(selected.x, selected.z || 0, selected.y);
                     arrowHelpers.visible = true;
 
                 } else {
