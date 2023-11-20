@@ -8,19 +8,26 @@ export const textToOptions = (strings: string[], names: string[]|undefined):  St
 }
 
 export default function StyledSelect({ value, onSelect, name, label, options, className }: StyledSelectArgs) {
+    const defaultOption = options.find(option=>!option.value) || {
+        name: "Please Select",
+        value: ""
+    }
+
     return (
         <div className={className||"relative z-0 w-full group mt-4"}>
             <select name={name}
                     id={name}
                     value={value}
                     onChange={onSelect}
-                    className="block py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0
+                    className="block pl-2 py-1.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0
                                    border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600
                                    dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600
                                    dark:bg-gray-800 dark:placeholder-gray-400 peer"
                     placeholder=" " required >
-                <option defaultChecked={true}>Please Select</option>
-                {options.map((option, index) =>
+                <option defaultChecked={true} value={defaultOption.value}>{defaultOption.name}</option>
+                {options
+                    .filter(option => option && option.value)
+                    .map((option, index) =>
                     <option key={name + '_' + option.value + '_' + index} value={option.value}>{option.name}</option>
                 )}
             </select>

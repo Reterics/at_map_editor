@@ -34,6 +34,7 @@ import StyledInput from "@/components/form/StyledInput";
 import { collection, doc, setDoc, updateDoc } from "firebase/firestore";
 import StyledSelect from "@/components/form/StyledSelect";
 import { StyledSelectOption } from "@/src/types/inputs";
+import CustomizeTools from "@/components/lib/CustomizeTools";
 
 export const emptyATMap = {
     created: new Date().getTime(),
@@ -43,13 +44,6 @@ export const emptyATMap = {
 }
 
 export default function Editor() {
-    const textureOptions: StyledSelectOption[] = ["b30", "carton", "osb", "plastic", "wall"].map((key)=>{
-        return {
-            "name": key,
-            "value": "/assets/textures/attributed_" + key + ".jpg"
-        } as StyledSelectOption
-    }).concat([{ "name": "Select Texture", "value": "" }]);
-
     const assets: AssetObject[] = [
         {
             "type": "cursor"
@@ -164,10 +158,6 @@ export default function Editor() {
         setReference(Object.assign({}, asset));
     }
 
-    const deleteSelected = (): void => {
-        setItems([...items.filter((item) => !item.selected)]);
-    };
-
     const exportData = () => {
         const name = "map-" + new Date().toISOString() + ".json";
         downloadAsFile(name, JSON.stringify(items), 'application/json');
@@ -190,17 +180,6 @@ export default function Editor() {
         }
     }
 
-    const changeSelectedTexture = (event: SyntheticEvent<HTMLSelectElement, Event>) => {
-        const target = event.target as HTMLSelectElement;
-        const texture = target.value;
-        setItems([...items.map((item) => {
-            if (item.selected) {
-                item.texture = texture;
-            }
-            return item;
-        })]);
-    };
-
     return (
         <Layout>
             <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full mt-2">
@@ -221,26 +200,10 @@ export default function Editor() {
                         (<BsFillMapFill />)}
                 </ToolbarButton>
 
-                <ToolbarButton onClick={()=>colorRef.current && (colorRef.current as HTMLInputElement).click()}
-                                style={{ backgroundColor: reference.color || '#000000' }}>
-                    <input ref={colorRef} type="color" className="hidden" value={reference.color || '#000000'}
-                           onChange={(e) => setReference({ ...reference, color: e.target.value })}/>
-                    <BsPaintBucket />
-                </ToolbarButton>
 
-                {selected && <ToolbarButton onClick={()=>deleteSelected()}>
-                                <BsEraserFill />
-                            </ToolbarButton> && <div className="w-[100px] inline-block">
-                    <StyledSelect
-                        className={"relative z-0 w-full group m-1 pr-3"}
-                        type="text" name="texture"
-                        options={textureOptions}
-                        value={selected.texture ? selected.texture : ''}
-                        onSelect={changeSelectedTexture}
-                        label=""
-                    />
-                </div>
-                }
+
+
+
                 <ToolbarButton onClick={()=>saveMap()}>
                     <BsFloppy />
                 </ToolbarButton>
@@ -251,6 +214,14 @@ export default function Editor() {
                         value={map.name}
                         onChange={(e)=>setMap({ ...map, name: e.target.value })} />
                 </div>
+
+                <CustomizeTools
+                    reference={reference}
+                    setItems={setItems}
+                    selected={selected}
+                    items={items}
+                    setReference={setReference}
+                />
 
                 <ToolbarButton
                     style={{ float:"right" }}
