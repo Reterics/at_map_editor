@@ -215,7 +215,7 @@ export const getControls = (type: ThreeControlType, camera:PerspectiveCamera, re
         case "object":
         default:
             const controls = new OrbitControls(camera, renderer.domElement);
-            controls.maxPolarAngle = Math.PI / 2;
+            //controls.maxPolarAngle = Math.PI / 2;
             return controls;
     }
 }

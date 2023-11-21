@@ -1,8 +1,9 @@
-import { PerspectiveCamera, Raycaster, Scene, Vector3 } from "three";
+import {Mesh, PerspectiveCamera, Raycaster, Scene, Vector3} from "three";
 import { Object3D } from "three/src/core/Object3D";
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
 import { isCollisionDetected } from "@/src/utils/model";
+import {Active3DMode} from "@/src/types/three";
 
 let moveForward = false;
 let moveBackward = false;
@@ -23,6 +24,7 @@ export class FPSController {
     target: null;
     private shadowObject: Object3D | undefined;
     far: number;
+    active: Active3DMode;
     constructor(camera: PerspectiveCamera, domElement: HTMLElement, scene: Scene) {
         this.controls =  new PointerLockControls(camera, document.body);
 
@@ -40,12 +42,13 @@ export class FPSController {
         this.scene = scene;
         this.items = [];
         this.far = 100;
+        this.active = 'far';
         this.updateItems();
 
         this.rayCaster = new Raycaster(new Vector3(), new Vector3(0, - 1, 0), 0, 10);
         this.controls.lock();
         document.addEventListener('keydown', this.onKeyDown);
-        document.addEventListener('keyup', this.onKeyUp);
+        document.addEventListener('keyup', this.onKeyUp.bind(this));
         document.addEventListener('dblclick', this.onDblClick.bind(this))
         document.addEventListener('mousemove', this.onMouseMove.bind(this))
         document.addEventListener('wheel', this.onScroll.bind(this))
@@ -115,6 +118,14 @@ export class FPSController {
 
             case 'ShiftLeft':
                 sprint = false;
+                break;
+
+            case 'KeyR':
+                if (this.active === 'far') {
+                    this.active = 'size';
+                } else if (this.active === 'size') {
+                    this.active = 'far';
+                }
                 break;
         }
     }
@@ -229,14 +240,26 @@ export class FPSController {
         // @ts-ignore
         const delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
 
-        this.far += delta * 10;
-        const shadowObject = this.getShadowObject();
-        this.dropObject(shadowObject);
+        if (this.active === 'far') {
+            this.far += delta * 10;
+            const shadowObject = this.getShadowObject();
+            this.dropObject(shadowObject);
+        } else if (this.active === 'size') {
+            const shadowObject = this.getShadowObject();
+            const currentScale = (shadowObject as Mesh).scale.x;
+            // Calculate the new scale based on the wheel delta
+            const newScale = currentScale + delta * 0.010;
+            // Clamp the new scale to prevent it from becoming too small or too large
+            const clampedScale = Math.max(0.1, Math.min(newScale, 3));
+
+            (shadowObject as Mesh).scale.set(clampedScale, clampedScale, clampedScale);
+        }
+
     }
 
     dispose() {
         document.removeEventListener('keydown', this.onKeyDown);
-        document.removeEventListener('keyup', this.onKeyUp);
+        document.removeEventListener('keyup', this.onKeyUp.bind(this));
         document.removeEventListener('dblclick', this.onDblClick.bind(this));
         document.removeEventListener('mousemove', this.onMouseMove.bind(this));
         document.removeEventListener('wheel', this.onScroll.bind(this));
