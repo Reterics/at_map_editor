@@ -245,14 +245,14 @@ export class FPSController {
             const shadowObject = this.getShadowObject();
             this.dropObject(shadowObject);
         } else if (this.active === 'size') {
-            const shadowObject = this.getShadowObject();
-            const currentScale = (shadowObject as Mesh).scale.x;
-            // Calculate the new scale based on the wheel delta
-            const newScale = currentScale + delta * 0.010;
-            // Clamp the new scale to prevent it from becoming too small or too large
-            const clampedScale = Math.max(0.1, Math.min(newScale, 3));
+            const shadowObject: Mesh = this.getShadowObject() as Mesh;
+            const currentScale = [shadowObject.scale.x, shadowObject.scale.y, shadowObject.scale.z];
+            // Calculate the new scale based on the wheel delta && Clamp the new scale to prevent it from becoming too
+            // small or too large
+            const clampedScale = currentScale.map(scale => Math.max(0.1,
+                Math.min(scale + delta * 0.010, 3)));
 
-            (shadowObject as Mesh).scale.set(clampedScale, clampedScale, clampedScale);
+            shadowObject.scale.set(clampedScale[0], clampedScale[1], clampedScale[2]);
         }
 
     }
