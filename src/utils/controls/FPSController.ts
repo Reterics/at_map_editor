@@ -1,9 +1,10 @@
-import {Mesh, PerspectiveCamera, Raycaster, Scene, Vector3} from "three";
+import { Mesh, PerspectiveCamera, Raycaster, Scene, Vector3 } from "three";
 import { Object3D } from "three/src/core/Object3D";
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
 import { isCollisionDetected } from "@/src/utils/model";
-import {Active3DMode} from "@/src/types/three";
+import { Active3DMode } from "@/src/types/three";
+import { roundToPrecision } from "@/src/utils/math";
 
 let moveForward = false;
 let moveBackward = false;
@@ -24,6 +25,7 @@ export class FPSController {
     target: null;
     private shadowObject: Object3D | undefined;
     far: number;
+    precision: number;
     active: Active3DMode;
     constructor(camera: PerspectiveCamera, domElement: HTMLElement, scene: Scene) {
         this.controls =  new PointerLockControls(camera, document.body);
@@ -43,6 +45,7 @@ export class FPSController {
         this.items = [];
         this.far = 100;
         this.active = 'far';
+        this.precision = 10;
         this.updateItems();
 
         this.rayCaster = new Raycaster(new Vector3(), new Vector3(0, - 1, 0), 0, 10);
@@ -124,6 +127,8 @@ export class FPSController {
                 if (this.active === 'far') {
                     this.active = 'size';
                 } else if (this.active === 'size') {
+                    this.active = 'precision';
+                } else if (this.active === 'precision') {
                     this.active = 'far';
                 }
                 break;
@@ -215,6 +220,10 @@ export class FPSController {
                     break;
                 }
             }
+
+            object.position.x = roundToPrecision(object.position.x, this.precision);
+            object.position.y = roundToPrecision(object.position.y, this.precision);
+            object.position.z = roundToPrecision(object.position.z, this.precision);
         }
     }
 
@@ -253,6 +262,8 @@ export class FPSController {
                 Math.min(scale + delta * 0.010, 3)));
 
             shadowObject.scale.set(clampedScale[0], clampedScale[1], clampedScale[2]);
+        } else if (this.active === 'precision') {
+            this.precision += delta;
         }
 
     }

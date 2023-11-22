@@ -1,3 +1,3 @@
 
 
-export type Active3DMode = 'far'|'size'
+export type Active3DMode = 'far'|'size'|'precision'

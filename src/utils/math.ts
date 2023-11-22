@@ -33,3 +33,8 @@ export const math = {
     range: (a: number, b:number) => Math.random() * (b - a) + a,
     rand: (a: number, b: number) => Math.round(math.range(a, b))
 }
+
+export const roundToPrecision = (value: number, precision: number) => {
+    const multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
+}
