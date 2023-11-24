@@ -1,4 +1,4 @@
-import { ChangeEventHandler, ReactEventHandler } from "react";
+import { ChangeEventHandler, CSSProperties, ReactEventHandler } from "react";
 
 export interface StyledInputArgs {
     value?: string | number | readonly string[]
@@ -27,5 +27,6 @@ export interface StyledSelectArgs {
     name?: string,
     label?: string|number,
     options: StyledSelectOption[],
-    className?: string
+    className?: string,
+    style?: CSSProperties
 }

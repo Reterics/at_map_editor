@@ -1,3 +1,4 @@
+import {Mesh} from "three";
 
 export type AssetType = 'cursor'|'point'|'circle'|'rect'|'line'|'model';
 
@@ -47,3 +48,7 @@ export interface Line extends Asset {
 }
 
 export type AssetObject = Asset|Rectangle|Circle|Line|Point;
+
+export interface ShadowType extends Mesh {
+    refType?: string
+}

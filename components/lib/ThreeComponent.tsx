@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import { AssetObject, Line, Rectangle } from "@/src/types/assets";
+import {AssetObject, Line, Rectangle, ShadowType} from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Color, Mesh, Scene } from "three";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
@@ -136,8 +136,25 @@ export default function ThreeComponent({
         },
         "controls", threeControl);
 
-    const shadowObject: Mesh|null|undefined = scene.children.find((mesh: Object3D)=>
-        mesh.name === "shadowObject") as Mesh|undefined;
+    const updateShadowReference = (shadowObject?: ShadowType) => {
+        if (shadowObject && shadowObject.refType !== reference.type) {
+            // Remove ShadowObject and Recreate it
+            scene.remove(shadowObject);
+            scene.add(createShadowObject(reference));
+            return scene.children.find((mesh: Object3D)=>
+                mesh.name === "shadowObject") as ShadowType|undefined;
+        } else if (!shadowObject) {
+            scene.add(createShadowObject(reference));
+            return scene.children.find((mesh: Object3D)=>
+                mesh.name === "shadowObject") as ShadowType|undefined;
+        }
+        return shadowObject;
+    }
+
+    let shadowObject: ShadowType|undefined = scene.children.find((mesh: Object3D)=>
+        mesh.name === "shadowObject") as ShadowType|undefined;
+    shadowObject = updateShadowReference(shadowObject);
+
     if (shadowObject) {
         const shadowObjectMaterial = shadowObject.material as THREE.MeshBasicMaterial;
         shadowObjectMaterial.color = new Color(reference.color || '#ffffff');
@@ -173,7 +190,7 @@ export default function ThreeComponent({
                 scene.add(model);
             }
         });
-    }, [items, scene])
+    }, [items, scene]);
 
 
     const cancelAnimation = () => {

@@ -5,8 +5,8 @@ import { AssetObject } from "@/src/types/assets";
 import { db, firebaseCollections, getCollection } from "@/src/firebase/config";
 import AssetModal from "@/components/modals/AssetModal";
 import { collection, doc, setDoc } from "firebase/firestore";
-import { getFileURL } from "@/src/firebase/storage";
 import Image from 'next/image'
+import { refreshAssets } from "@/src/utils/assets";
 
 
 export default function Assets() {
@@ -30,20 +30,12 @@ export default function Assets() {
         await setDoc(modelRef, currentAsset, { merge: true });
         setShowNewAsset(false);
         setCurrentAsset({ type: "model" });
-        await refreshAssets();
+        await refreshAssets(setAssets);
     };
 
-    const refreshAssets = async () => {
-        const assets = (await getCollection(firebaseCollections.assets)) as AssetObject[];
-        for (let i = 0; i < assets.length; i++) {
-            if (assets[i].name && !assets[i].image) {
-                assets[i].image = await getFileURL('screenshots/' + assets[i].name + '.png');
-            }
-        }
-        setAssets(assets as AssetObject[]);
-    };
+
     useEffect(() => {
-        void refreshAssets();
+        void refreshAssets(setAssets);
     }, []);
 
     return (

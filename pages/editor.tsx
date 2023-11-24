@@ -1,6 +1,6 @@
 "use client";
 import Layout from "@/components/layout";
-import { SyntheticEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     BsFillGrid1X2Fill,
     BsBadge3DFill,
@@ -8,9 +8,7 @@ import {
     BsFillSquareFill,
     BsFillCircleFill,
     BsSlashLg,
-    BsPaintBucket,
     BsFillCursorFill,
-    BsEraserFill,
     BsDownload,
     BsFileEarmark,
     BsFolder2Open,
@@ -35,6 +33,7 @@ import { collection, doc, setDoc, updateDoc } from "firebase/firestore";
 import StyledSelect from "@/components/form/StyledSelect";
 import { StyledSelectOption } from "@/src/types/inputs";
 import CustomizeTools from "@/components/lib/CustomizeTools";
+import { refreshAssets } from "@/src/utils/assets";
 
 export const emptyATMap = {
     created: new Date().getTime(),
@@ -43,27 +42,30 @@ export const emptyATMap = {
     items: []
 }
 
-export default function Editor() {
-    const assets: AssetObject[] = [
-        {
-            "type": "cursor"
-        },
-        {
-            "type": "point"
-        },{
-            "type": "circle",
-            "radius": 2,
-            "startAngle": degToRad(0),
-            "endAngle": degToRad(360)
-        },{
-            "type": "rect",
-            "w": 3,
-            "h": 3
-        },{
-            "type": "line"
-        },
-    ]; // TODO: Make dynamic
+export const defaultAssets: AssetObject[] = [
+    {
+        "type": "cursor"
+    },
+    {
+        "type": "point"
+    },{
+        "type": "circle",
+        "radius": 2,
+        "startAngle": degToRad(0),
+        "endAngle": degToRad(360)
+    },{
+        "type": "rect",
+        "w": 3,
+        "h": 3
+    },{
+        "type": "line"
+    },
+]; // TODO: Make dynamic
 
+export default function Editor() {
+
+
+    const [ assets, setAssets ] = useState<AssetObject[]>(defaultAssets);
 
     const searchParams = useSearchParams()
     const id = searchParams && searchParams.get('id') ?  searchParams.get('id') : undefined;
@@ -82,7 +84,6 @@ export default function Editor() {
         useState([0, 0]);
     const [reference, setReference] = useState(assets[3]);
     const [threeControl, setThreeControl] = useState<ThreeControlType>("orbit");
-    const colorRef = useRef(null);
 
     const selected = items.find(item=>item.selected);
 
@@ -139,6 +140,10 @@ export default function Editor() {
         }
     }, [layout]);
 
+    useEffect(() => {
+        void refreshAssets((externalAssets: AssetObject[]) => setAssets(defaultAssets.concat(externalAssets)));
+    }, []);
+
     const switchUI = () => {
         switch (layout) {
             case "normal":
@@ -155,8 +160,14 @@ export default function Editor() {
 
     const setReferenceType = (type: string) => {
         const asset = assets.find(a=>a.type === type);
+        if (asset) {
+            selectedModel(asset);
+        }
+    }
+
+    const selectedModel = (asset: AssetObject) => {
         setReference(Object.assign({}, asset));
-        if (type !== "cursor" && selected) {
+        if (asset.type !== "cursor" && selected) {
             setItems([...items.map(i=> {
                 i.selected = false; return i;
             })]);
@@ -204,9 +215,6 @@ export default function Editor() {
                     {layout === "normal" ? (<BsFillGrid1X2Fill />) : layout === "three" ? (<BsBadge3DFill />) :
                         (<BsFillMapFill />)}
                 </ToolbarButton>
-
-
-
 
 
                 <ToolbarButton onClick={()=>saveMap()}>
@@ -307,6 +315,32 @@ export default function Editor() {
                                 active={reference.type === "line"}>
                     <BsSlashLg />
                 </ToolbarButton>
+
+                <div className="w-[115px] inline-block">
+                    <StyledSelect
+                        style={{ borderColor: reference.type === "model" ? "white" : "gray" }}
+                        className={"relative z-0 w-full group m-1 pr-3"}
+                        type="text" name="texture"
+                        options={assets
+                            .filter(a=>a.id)
+                            .map((a, index)=> {
+                            return {
+                                name: a.name || a.id,
+                                value: a.id
+                            } as StyledSelectOption
+                        })}
+                        value={reference.id || ''}
+                        onSelect={(event) => {
+                            const node = event.target as HTMLSelectElement;
+                            const id = node.value;
+                            const asset = assets.find(a => a.id === id);
+                            if (asset) {
+                                selectedModel(asset);
+                            }
+                        }}
+                        label=""
+                    />
+                </div>
 
                 {
                     (layout === "normal" || layout === "canvas") && <div className="flex flex-row flex-wrap mt-4 overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full">

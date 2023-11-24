@@ -26,7 +26,7 @@ import { Loader } from "three/src/Three";
 import { ColladaLoader } from "three/examples/jsm/loaders/ColladaLoader";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 import { Object3D } from "three/src/core/Object3D";
-import { AssetObject, Circle, Line, Rectangle } from "@/src/types/assets";
+import {AssetObject, Circle, Line, Rectangle, ShadowType} from "@/src/types/assets";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { ThreeControlType } from "@/src/types/general";
@@ -263,7 +263,7 @@ export const setInitialCameraPosition = (
     renderer.render(scene, camera);
 }
 
-export const createShadowObject = (reference: AssetObject) => {
+export const createShadowObject = (reference: AssetObject): ShadowType => {
     const config = {
         ...reference,
         color: "#3cffee",
@@ -277,7 +277,8 @@ export const createShadowObject = (reference: AssetObject) => {
             (config as Circle).radius = 25;
             break;
     }
-    const shadowObject = getMeshForItem(config);
+    const shadowObject = getMeshForItem(config) as ShadowType;
+    shadowObject.refType = reference.type;
     shadowObject.name = "shadowObject";
     (shadowObject.material as THREE.MeshBasicMaterial).opacity = 0.5;
     (shadowObject.material as THREE.MeshBasicMaterial).needsUpdate = true;

@@ -52,9 +52,10 @@ export class FPSController {
         this.controls.lock();
         document.addEventListener('keydown', this.onKeyDown);
         document.addEventListener('keyup', this.onKeyUp.bind(this));
-        document.addEventListener('dblclick', this.onDblClick.bind(this))
-        document.addEventListener('mousemove', this.onMouseMove.bind(this))
-        document.addEventListener('wheel', this.onScroll.bind(this))
+        document.addEventListener('dblclick', this.onDblClick.bind(this));
+        document.addEventListener('mousemove', this.onMouseMove.bind(this));
+        document.addEventListener('wheel', this.onScroll.bind(this));
+        this.controls.addEventListener('lock', this.updateShadowObject.bind(this));
     }
 
 
@@ -192,6 +193,11 @@ export class FPSController {
         return this.shadowObject;
     }
 
+    updateShadowObject() {
+        this.shadowObject = this.scene.children
+            .find(m => m.name === "shadowObject");
+    }
+
     dropObject (object: Object3D|undefined) {
         if (object) {
             const camera = this.controls.camera;
@@ -274,6 +280,7 @@ export class FPSController {
         document.removeEventListener('dblclick', this.onDblClick.bind(this));
         document.removeEventListener('mousemove', this.onMouseMove.bind(this));
         document.removeEventListener('wheel', this.onScroll.bind(this));
+        this.controls.removeEventListener('lock', this.updateShadowObject.bind(this));
         this.controls.dispose();
     }
 

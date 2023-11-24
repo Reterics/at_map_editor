@@ -7,14 +7,14 @@ export const textToOptions = (strings: string[], names: string[]|undefined):  St
     });
 }
 
-export default function StyledSelect({ value, onSelect, name, label, options, className }: StyledSelectArgs) {
+export default function StyledSelect({ value, onSelect, name, label, options, className, style }: StyledSelectArgs) {
     const defaultOption = options.find(option=>!option.value) || {
         name: "Please Select",
         value: ""
     }
 
     return (
-        <div className={className||"relative z-0 w-full group mt-4"}>
+        <div className={className||"relative z-0 w-full group mt-4"} style={style}>
             <select name={name}
                     id={name}
                     value={value}
