@@ -11,6 +11,8 @@ Created in [Next.js](https://nextjs.org/).
 ![Map Editor](./public/screenshot6.png)
  - Manage assets by uploading them in the dashboard. Every asset is stored safely in Google Cloud Storage
 ![Assets Management](./public/screenshot2.png)
+ - Full Screen First Person Mode to test and edit the map making creative work fun
+![FPS Mode](./public/screenshot7.png)
 
 ## Install
 
