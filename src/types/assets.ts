@@ -1,4 +1,4 @@
-import {Mesh} from "three";
+import { Mesh } from "three";
 
 export type AssetType = 'cursor'|'point'|'circle'|'rect'|'line'|'model';
 
@@ -12,7 +12,9 @@ export interface Asset {
     z?: number,
     color?: string,
     selected?:boolean,
-    texture?:string
+    texture?:string,
+    path?:string,
+    screenshot?:string
 }
 
 export interface Point extends Asset {

@@ -134,6 +134,8 @@ export const getMeshForItem = (item: AssetObject): THREE.Mesh => {
             position2 = new Vector3(line.x2, 0, line.y2);
             const height = position1.distanceTo(position2);
             geometry = new CylinderGeometry(5, 5, height, 32);
+        case "model":
+            console.log(item);
     }
     model = new Mesh(geometry, material);
     model.castShadow = true; //default is false

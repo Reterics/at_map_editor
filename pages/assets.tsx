@@ -2,7 +2,7 @@ import Layout from "@/components/layout";
 import { BsFillTrashFill, BsPencilSquare } from "react-icons/bs";
 import React, { useEffect, useState } from "react";
 import { AssetObject } from "@/src/types/assets";
-import { db, firebaseCollections, getCollection } from "@/src/firebase/config";
+import { db, firebaseCollections } from "@/src/firebase/config";
 import AssetModal from "@/components/modals/AssetModal";
 import { collection, doc, setDoc } from "firebase/firestore";
 import Image from 'next/image'
@@ -25,9 +25,9 @@ export default function Assets() {
         alert('Method is not implemented');
     }
 
-    const saveAsset = async () => {
+    const saveAsset = async (asset: AssetObject) => {
         const modelRef = doc(collection(db, firebaseCollections.assets))
-        await setDoc(modelRef, currentAsset, { merge: true });
+        await setDoc(modelRef, asset, { merge: true });
         setShowNewAsset(false);
         setCurrentAsset({ type: "model" });
         await refreshAssets(setAssets);
@@ -111,7 +111,7 @@ export default function Assets() {
             <AssetModal
                 visible={showNewAsset}
                 onClose={() => setShowNewAsset(false)}
-                onSave={() => saveAsset()}
+                onSave={(asset: AssetObject) => saveAsset(asset)}
                 currentAsset={currentAsset}
                 setCurrentAsset={setCurrentAsset}
             />

@@ -114,9 +114,16 @@ export default function AssetModal({
         const extension = file.name.substring(file.name.lastIndexOf('.'));
         renderer.render(scene,camera);
         const screenshot = renderer.domElement.toDataURL("image/png");
-        await uploadFileDataURL('screenshots/' + currentAsset.name + '.png', screenshot);
-        await uploadFile('files/' + currentAsset.name + extension, file);
-        onSave()
+        const assetToSave = {
+            ...currentAsset,
+            extension: extension,
+            path: 'files/' + currentAsset.name + extension,
+            screenshot: 'screenshots/' + currentAsset.name + '.png'
+        };
+
+        await uploadFileDataURL(assetToSave.screenshot, screenshot);
+        await uploadFile(assetToSave.path, file);
+        onSave(assetToSave);
     };
 
 
