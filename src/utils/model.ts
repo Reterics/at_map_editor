@@ -26,23 +26,27 @@ import { Loader } from "three/src/Three";
 import { ColladaLoader } from "three/examples/jsm/loaders/ColladaLoader";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 import { Object3D } from "three/src/core/Object3D";
-import {AssetObject, Circle, Line, Rectangle, ShadowType} from "@/src/types/assets";
+import { AssetObject, Circle, Line, Rectangle, ShadowType } from "@/src/types/assets";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { ThreeControlType } from "@/src/types/general";
 import { FPSController } from "@/src/utils/controls/FPSController";
+import { getFileURL } from "@/src/firebase/storage";
 
-const genericLoader = (file: File, modelLoader: Loader) => {
+const genericLoader = (file: File|string, modelLoader: Loader) => {
     return new Promise(resolve => {
         if (file) {
-            return modelLoader.load(URL.createObjectURL(file), resolve);
+            modelLoader.crossOrigin = '';
+            console.log(modelLoader.requestHeader);
+            return modelLoader.load(typeof file === "string" ?
+                file : URL.createObjectURL(file), resolve);
         }
         return resolve(null);
     });
 };
 
 export const loadModel = {
-    gltf: async (file: File): Promise<Group<Object3DEventMap> | null> => {
+    gltf: async (file: File|string): Promise<Group<Object3DEventMap> | null> => {
         const object = await genericLoader(file, new GLTFLoader());
         if (object) {
             const gltf = object as GLTF;
@@ -50,28 +54,28 @@ export const loadModel = {
         }
         return null;
     },
-    fbx: async (file: File): Promise<Group<Object3DEventMap>|null> => {
+    fbx: async (file: File|string): Promise<Group<Object3DEventMap>|null> => {
         const object = await genericLoader(file, new FBXLoader());
         if (object) {
             return object as Group<Object3DEventMap>;
         }
         return null;
     },
-    obj: async (file: File): Promise<Group<Object3DEventMap>|null> => {
+    obj: async (file: File|string): Promise<Group<Object3DEventMap>|null> => {
         const object = await genericLoader(file, new OBJLoader());
         if (object) {
             return object as Group<Object3DEventMap>;
         }
         return null;
     },
-    collada: async (file: File): Promise<Group<Object3DEventMap>|null> => {
+    collada: async (file: File|string): Promise<Group<Object3DEventMap>|null> => {
         const object = await genericLoader(file, new ColladaLoader());
         if (object) {
             return object as Group<Object3DEventMap>;
         }
         return null;
     },
-    stl: async (file: File): Promise<Mesh<BufferGeometry<NormalBufferAttributes>, MeshPhongMaterial, Object3DEventMap>|
+    stl: async (file: File|string): Promise<Mesh<BufferGeometry<NormalBufferAttributes>, MeshPhongMaterial, Object3DEventMap>|
         null> => {
         const geometry = await genericLoader(file, new STLLoader());
         if (geometry) {
@@ -99,7 +103,7 @@ export const lookAtObject = (models: Object3D, camera: PerspectiveCamera): void 
     camera.lookAt(boundingBoxCenter);
 }
 
-export const getMeshForItem = (item: AssetObject): THREE.Mesh => {
+export const getMeshForItem = async (item: AssetObject): Promise<Mesh|Group> => {
     let model;
 
     let material;
@@ -136,6 +140,18 @@ export const getMeshForItem = (item: AssetObject): THREE.Mesh => {
             geometry = new CylinderGeometry(5, 5, height, 32);
         case "model":
             console.log(item);
+            if (item.path && item.path.endsWith(".gltf")) {
+                const url = "http://localhost:3000/api/storage/?url=" + encodeURIComponent(await getFileURL(item.path));
+                const group = await loadModel.gltf(url);
+                if (group) {
+                    const rect = item as Rectangle;
+                    const z = rect.z || 0;
+                    group.position.set(rect.x + rect.w / 2, z + Math.round((rect.w + rect.h) / 2) / 2,
+                        rect.y + rect.h / 2);
+                    return group;
+                }
+
+            }
     }
     model = new Mesh(geometry, material);
     model.castShadow = true; //default is false
@@ -222,7 +238,7 @@ export const getControls = (type: ThreeControlType, camera:PerspectiveCamera, re
     }
 }
 
-export const setInitialCameraPosition = (
+export const setInitialCameraPosition = async (
     camera:PerspectiveCamera,
     renderer: WebGLRenderer,
     controls: TrackballControls | OrbitControls | FPSController,
@@ -239,7 +255,7 @@ export const setInitialCameraPosition = (
     switch (threeControl) {
         case "object":
             if (selected) {
-                const mesh = getMeshForItem(selected);
+                const mesh = await getMeshForItem(selected);
                 lookAt = mesh.position;
             } else {
                 lookAt = new THREE.Vector3(Math.round(width/2), 0, Math.round(height/2));
@@ -265,7 +281,7 @@ export const setInitialCameraPosition = (
     renderer.render(scene, camera);
 }
 
-export const createShadowObject = (reference: AssetObject): ShadowType => {
+export const createShadowObject = async (reference: AssetObject): Promise<ShadowType> => {
     const config = {
         ...reference,
         color: "#3cffee",
@@ -279,11 +295,13 @@ export const createShadowObject = (reference: AssetObject): ShadowType => {
             (config as Circle).radius = 25;
             break;
     }
-    const shadowObject = getMeshForItem(config) as ShadowType;
+    const shadowObject = await getMeshForItem(config) as ShadowType;
     shadowObject.refType = reference.type;
     shadowObject.name = "shadowObject";
-    (shadowObject.material as THREE.MeshBasicMaterial).opacity = 0.5;
-    (shadowObject.material as THREE.MeshBasicMaterial).needsUpdate = true;
+    if (shadowObject.material) {
+        (shadowObject.material as THREE.MeshBasicMaterial).opacity = 0.5;
+        (shadowObject.material as THREE.MeshBasicMaterial).needsUpdate = true;
+    }
     shadowObject.position.y = -100;
     return shadowObject;
 }

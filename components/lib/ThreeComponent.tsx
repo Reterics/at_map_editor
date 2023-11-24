@@ -109,9 +109,6 @@ export default function ThreeComponent({
         renderer.render(scene, camera);
 
         void addBasePlane(scene);
-
-        const shadowObject = createShadowObject(reference);
-        scene.add(shadowObject);
         return { camera, renderer, scene, grass }
     }
 
@@ -136,35 +133,40 @@ export default function ThreeComponent({
         },
         "controls", threeControl);
 
-    const updateShadowReference = (shadowObject?: ShadowType) => {
+
+    let shadowObject: ShadowType|undefined = scene.children.find((mesh: Object3D)=>
+        mesh.name === "shadowObject") as ShadowType|undefined;
+
+    const updateShadowReference = async () => {
         if (shadowObject && shadowObject.refType !== reference.type) {
             // Remove ShadowObject and Recreate it
             scene.remove(shadowObject);
-            scene.add(createShadowObject(reference));
-            return scene.children.find((mesh: Object3D)=>
+            const mesh = await createShadowObject(reference);
+            scene.add(mesh);
+            shadowObject = scene.children.find((mesh: Object3D)=>
                 mesh.name === "shadowObject") as ShadowType|undefined;
         } else if (!shadowObject) {
-            scene.add(createShadowObject(reference));
-            return scene.children.find((mesh: Object3D)=>
+            const mesh = await createShadowObject(reference);
+            scene.add(mesh);
+            shadowObject = scene.children.find((mesh: Object3D)=>
                 mesh.name === "shadowObject") as ShadowType|undefined;
+        }
+
+        if (shadowObject && shadowObject.material) {
+            const shadowObjectMaterial = shadowObject.material as THREE.MeshBasicMaterial;
+            shadowObjectMaterial.color = new Color(reference.color || '#ffffff');
+            shadowObjectMaterial.opacity = 0.5;
+            shadowObjectMaterial.needsUpdate = true;
         }
         return shadowObject;
     }
 
-    let shadowObject: ShadowType|undefined = scene.children.find((mesh: Object3D)=>
-        mesh.name === "shadowObject") as ShadowType|undefined;
-    shadowObject = updateShadowReference(shadowObject);
+    void updateShadowReference();
 
-    if (shadowObject) {
-        const shadowObjectMaterial = shadowObject.material as THREE.MeshBasicMaterial;
-        shadowObjectMaterial.color = new Color(reference.color || '#ffffff');
-        shadowObjectMaterial.opacity = 0.5;
-        shadowObjectMaterial.needsUpdate = true;
-    }
 
     const updateCameraPosition = () => {
         if (camera && renderer) {
-            setInitialCameraPosition(camera,
+            void setInitialCameraPosition(camera,
                 renderer,
                 controls,
                 scene,
@@ -175,21 +177,25 @@ export default function ThreeComponent({
         }
     };
 
-    useEffect(()=> {
+    const reloadMeshes = async () => {
         if (scene) {
             scene.children
                 .filter((m: Object3D)=>m.name && m.name.startsWith('mesh_'))
                 .forEach((m: Object3D)=>scene.remove(m));
             //scene.clear();
         }
-        items.forEach((item, index) => {
-            const model = getMeshForItem(item);
+        for (const item of items) {
+            const index = items.indexOf(item);
+            const model = await getMeshForItem(item);
 
             model.name = "mesh_" + index;
             if (model && scene) {
                 scene.add(model);
             }
-        });
+        }
+    };
+    useEffect(()=> {
+        void reloadMeshes();
     }, [items, scene]);
 
 
@@ -227,7 +233,7 @@ export default function ThreeComponent({
     }, [camera, controls, renderer, scene]);
 
     useEffect(()=>{
-        setInitialCameraPosition(
+        void setInitialCameraPosition(
             camera,
             renderer,
             controls,
