@@ -228,7 +228,7 @@ export const getControls = (type: ThreeControlType, camera:PerspectiveCamera, re
         case "trackball":
             return new TrackballControls(camera, renderer.domElement);
         case "fps":
-            return new FPSController(camera, renderer.domElement, scene)
+            return new FPSController(camera, renderer.domElement.parentElement || renderer.domElement, scene)
         case "orbit":
         case "object":
         default:

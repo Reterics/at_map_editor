@@ -5,6 +5,7 @@ import { PointerLockControls } from "three/examples/jsm/controls/PointerLockCont
 import { isCollisionDetected } from "@/src/utils/model";
 import { Active3DMode } from "@/src/types/three";
 import { roundToPrecision } from "@/src/utils/math";
+import { HUD } from "@/src/utils/controls/HUD";
 
 let moveForward = false;
 let moveBackward = false;
@@ -27,6 +28,7 @@ export class FPSController {
     far: number;
     precision: number;
     active: Active3DMode;
+    private hud: HUD;
     constructor(camera: PerspectiveCamera, domElement: HTMLElement, scene: Scene) {
         this.controls =  new PointerLockControls(camera, document.body);
 
@@ -50,12 +52,17 @@ export class FPSController {
 
         this.rayCaster = new Raycaster(new Vector3(), new Vector3(0, - 1, 0), 0, 10);
         this.controls.lock();
-        document.addEventListener('keydown', this.onKeyDown);
+        document.addEventListener('keydown', this.onKeyDown.bind(this));
         document.addEventListener('keyup', this.onKeyUp.bind(this));
         document.addEventListener('dblclick', this.onDblClick.bind(this));
         document.addEventListener('mousemove', this.onMouseMove.bind(this));
         document.addEventListener('wheel', this.onScroll.bind(this));
         this.controls.addEventListener('lock', this.updateShadowObject.bind(this));
+
+        
+        const parent = domElement && domElement.parentElement ?
+            domElement.parentElement : document.body;
+        this.hud = new HUD(scene, camera, parent);
     }
 
 
@@ -93,8 +100,11 @@ export class FPSController {
             case 'ShiftLeft':
                 if (canJump) sprint = true;
                 break;
-
+            default:
+                return;
         }
+
+        this.hud.updatePosition();
     }
 
     onKeyUp (event: KeyboardEvent) {
@@ -175,6 +185,9 @@ export class FPSController {
                 this.controls.getObject().position.y = 35;
                 canJump = true;
             }
+
+            this.hud.updatePosition();
+            this.hud.update(delta);
         }
     }
 
@@ -237,10 +250,10 @@ export class FPSController {
         event.preventDefault();
         const shadowObject = this.getShadowObject();
         this.dropObject(shadowObject);
+        this.hud.updatePosition();
     }
 
     onDblClick (event: MouseEvent) {
-
         const shadowObject = this.getShadowObject();
         if (shadowObject) {
             const bulletObject = shadowObject.clone();
@@ -275,7 +288,7 @@ export class FPSController {
     }
 
     dispose() {
-        document.removeEventListener('keydown', this.onKeyDown);
+        document.removeEventListener('keydown', this.onKeyDown.bind(this));
         document.removeEventListener('keyup', this.onKeyUp.bind(this));
         document.removeEventListener('dblclick', this.onDblClick.bind(this));
         document.removeEventListener('mousemove', this.onMouseMove.bind(this));

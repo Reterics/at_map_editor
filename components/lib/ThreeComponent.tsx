@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import {AssetObject, Line, Rectangle, ShadowType} from "@/src/types/assets";
+import { AssetObject, Line, Rectangle, ShadowType } from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Color, Mesh, Scene } from "three";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
