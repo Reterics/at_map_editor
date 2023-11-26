@@ -62,7 +62,7 @@ export class FPSController {
         
         const parent = domElement && domElement.parentElement ?
             domElement.parentElement : document.body;
-        this.hud = new HUD(scene, camera, parent);
+        this.hud = new HUD(scene, camera, parent, this);
     }
 
 
@@ -142,6 +142,7 @@ export class FPSController {
                 } else if (this.active === 'precision') {
                     this.active = 'far';
                 }
+                this.hud.update(null, this);
                 break;
         }
     }
@@ -187,7 +188,7 @@ export class FPSController {
             }
 
             this.hud.updatePosition();
-            this.hud.update(delta);
+            this.hud.update(delta, this);
         }
     }
 
@@ -281,10 +282,11 @@ export class FPSController {
                 Math.min(scale + delta * 0.010, 3)));
 
             shadowObject.scale.set(clampedScale[0], clampedScale[1], clampedScale[2]);
+            return; // preventDefault
         } else if (this.active === 'precision') {
             this.precision += delta;
         }
-
+        this.hud.update(null, this);
     }
 
     dispose() {

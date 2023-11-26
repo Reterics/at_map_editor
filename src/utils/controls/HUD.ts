@@ -1,6 +1,7 @@
 import { Camera, Scene } from "three";
 import { CSS2DObject, CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
 import * as THREE from "three";
+import {FPSController} from "@/src/utils/controls/FPSController";
 
 
 export class HUD {
@@ -11,8 +12,9 @@ export class HUD {
     element: HTMLElement;
     private updatePeriod: number;
     private _elapsed: number;
+    _preDelta: number;
 
-    constructor(scene: Scene, camera: Camera, parentElement: HTMLElement) {
+    constructor(scene: Scene, camera: Camera, parentElement: HTMLElement, controller?: FPSController) {
         // Create a new CSS2DRenderer
         const cssRef = parentElement.querySelector('canvas') || parentElement;
         this.css2DRenderer = new CSS2DRenderer();
@@ -30,6 +32,7 @@ export class HUD {
         hudElement.className = 'hud-element';
         hudElement.style.height = '100%';
         hudElement.style.width = '100%';
+        hudElement.style.paddingLeft = '3px';
         hudElement.textContent = 'HUD is loading...';
         this.element = hudElement;
 
@@ -43,10 +46,19 @@ export class HUD {
 
         this.updatePeriod = 1;
         this._elapsed = 0;
+        this._preDelta = 0;
+
+        if (controller) {
+            this.update(null, controller);
+        }
     }
 
     updateText (string: string|number) {
         this.element.innerHTML = String(string);
+    }
+
+    updateLines (string: (string|number)[]) {
+        this.updateText(string.join('<br>'));
     }
 
     updatePosition () {
@@ -55,20 +67,35 @@ export class HUD {
         this.object.position.add(forward);
     }
 
-    update (delta: number) {
+    update (delta: number|null, controller: FPSController) {
         this.css2DRenderer.render(this.scene, this.camera);
-        this._elapsed += delta;
+        const d = delta || this._preDelta;
+        this._elapsed += d;
+        if (delta !== null) {
+            this._preDelta = delta;
+        }
 
-        if (this._elapsed >= this.updatePeriod) {
+        if (this._elapsed >= this.updatePeriod || delta === null) {
             this._elapsed = 0;
 
-            const FPS = Math.round(1 / delta);
-            // @ts-ignore
-            const memory = window.performance.memory;
-            const memoryStats = memory ? Math.round(memory.usedJSHeapSize / 1048576) + " / "
-                + Math.round(memory.jsHeapSizeLimit / 1048576) + " (MB Memory)" : "";
+            const tableData = [
+                Math.round(1 / d) + " FPS"
+            ];
 
-            this.updateText(FPS + ' FPS<br \>' + memoryStats);
+            // @ts-ignore
+            if (window.performance && window.performance.memory) {
+                // @ts-ignore
+                const memory = window.performance.memory;
+                tableData.push(Math.round(memory.usedJSHeapSize / 1048576) + " / "
+                    + Math.round(memory.jsHeapSizeLimit / 1048576) + " (MB Memory)");
+            }
+
+            tableData.push("Far: " + controller.far);
+            tableData.push("Mode: " + controller.active + " (KeyR)");
+            tableData.push("Precision: " + controller.precision);
+
+
+            this.updateLines(tableData);
         }
 
     }
