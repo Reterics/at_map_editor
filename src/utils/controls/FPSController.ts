@@ -285,6 +285,9 @@ export class FPSController {
             return; // preventDefault
         } else if (this.active === 'precision') {
             this.precision += delta;
+            if (this.precision < 0) {
+                this.precision = 0;
+            }
         }
         this.hud.update(null, this);
     }
