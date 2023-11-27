@@ -34,6 +34,7 @@ import StyledSelect from "@/components/form/StyledSelect";
 import { StyledSelectOption } from "@/src/types/inputs";
 import CustomizeTools from "@/components/lib/CustomizeTools";
 import { refreshAssets } from "@/src/utils/assets";
+import {debounce} from "@/src/utils/react";
 
 export const emptyATMap = {
     created: new Date().getTime(),
@@ -143,6 +144,32 @@ export default function Editor() {
     useEffect(() => {
         void refreshAssets((externalAssets: AssetObject[]) => setAssets(defaultAssets.concat(externalAssets)));
     }, []);
+
+    useEffect(() => {
+
+        const debouncedResize = debounce(function () {
+            // TODO: Remove code duplication
+            const padding = {
+                top: 100,
+                left: 20,
+                right: 20,
+                bottom: 100
+            };
+            if (typeof window !== 'undefined') {
+                setEditorDimensions([
+                    (layout === "normal" ? window.innerWidth / 2 - padding.left - padding.right  :
+                        window.innerWidth - padding.left - padding.right),
+                    (layout === "normal" ? window.innerHeight / 1.5 - padding.top :
+                        window.innerHeight - padding.top - padding.bottom)
+                ])
+            }
+        }, 1000)
+        window.addEventListener('resize', debouncedResize)
+
+        return () => {
+            window.removeEventListener('resize', debouncedResize)
+        };
+    });
 
     const switchUI = () => {
         switch (layout) {

@@ -44,3 +44,18 @@ export const useWindow = (method: WindowMethod, id: string|object, ref?: any) =>
     window.AT_Editor.windowCache[id] = method.call(window.AT_Editor.windowCache[id]);
     return window.AT_Editor.windowCache[id];
 }
+
+
+export const debounce = function (this: any, fn: Function, ms: number) {
+    let timer: number|null;
+    const args = arguments;
+    return () => {
+        if (timer) {
+            clearTimeout(timer)
+        }
+        timer = setTimeout(() => {
+            timer = null
+            fn.apply(this, args)
+        }, ms) as unknown as number;
+    };
+}
