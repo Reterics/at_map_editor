@@ -135,13 +135,18 @@ export class FPSController {
                 break;
 
             case 'KeyR':
+                const shadow = this.getShadowObject() || {} as Object3D;
                 if (this.active === 'far') {
                     this.active = 'size';
                 } else if (this.active === 'size') {
                     this.active = 'precision';
                 } else if (this.active === 'precision') {
+                    this.active = 'pointer';
+
+                } else if (this.active === 'pointer') {
                     this.active = 'far';
                 }
+                shadow.visible = this.active !== 'pointer';
                 this.hud.update(null, this);
                 break;
         }
