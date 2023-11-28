@@ -1,4 +1,4 @@
-import { Mesh, PerspectiveCamera, Raycaster, Scene, Vector3 } from "three";
+import {BoxGeometry, Mesh, PerspectiveCamera, Raycaster, Scene, Vector3} from "three";
 import { Object3D } from "three/src/core/Object3D";
 import * as THREE from "three";
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js";
@@ -6,6 +6,7 @@ import { isCollisionDetected } from "@/src/utils/model";
 import { Active3DMode } from "@/src/types/three";
 import { roundToPrecision } from "@/src/utils/math";
 import { HUD } from "@/src/utils/controls/HUD";
+import {query} from "firebase/firestore";
 
 let moveForward = false;
 let moveBackward = false;
@@ -17,6 +18,27 @@ let sprint = false;
 let prevTime = performance.now();
 const velocity = new Vector3();
 const direction = new Vector3();
+
+function getFaceCenterWithOffset (intersection: THREE.Intersection, offset: number) {
+    // Assuming the rectangle is a BoxGeometry
+    const geometry = (intersection.object as Mesh).geometry as BoxGeometry;
+    const face = intersection.face || {
+        normal: new Vector3(0,0,0)
+    }
+
+    // Assuming the rectangle is centered at the origin
+    const centerX = (geometry.parameters.width * (face.normal.x + 1)) / 2;
+    const centerY = (geometry.parameters.height * (face.normal.y + 1)) / 2;
+    const centerZ = (geometry.parameters.depth * (face.normal.z + 1)) / 2;
+
+    const center = new THREE.Vector3(centerX, centerY, centerZ);
+    center.applyMatrix4(intersection.object.matrixWorld);
+
+    // Move the center along the normal direction by the specified offset
+    center.addScaledVector(face.normal, offset);
+
+    return center;
+}
 
 export class FPSController {
     controls: PointerLockControls;
@@ -142,8 +164,9 @@ export class FPSController {
                     this.active = 'precision';
                 } else if (this.active === 'precision') {
                     this.active = 'pointer';
-
                 } else if (this.active === 'pointer') {
+                    this.active = 'neighbor';
+                } else if (this.active === 'neighbor') {
                     this.active = 'far';
                 }
                 shadow.visible = this.active !== 'pointer';
@@ -234,7 +257,8 @@ export class FPSController {
             rayCaster.set(object.position, forward);
             const intersects = rayCaster.intersectObjects(intersectObjects,
                 true);
-            const objectsInPath = intersects.map(o=>o.object);
+            const objectsInPath = intersects.map(i=>
+                i.object);
 
 
             let i = 0;
@@ -246,9 +270,28 @@ export class FPSController {
                 }
             }
 
+            const offsetDistance = 2;
+
+
+
+
             object.position.x = roundToPrecision(object.position.x, this.precision);
             object.position.y = roundToPrecision(object.position.y, this.precision);
             object.position.z = roundToPrecision(object.position.z, this.precision);
+
+            if (this.active === 'neighbor') {
+                const objectInPath = objectsInPath
+                    .find(o=> isCollisionDetected(o, object));
+                if (objectInPath && objectInPath.name.startsWith('mesh_')) {
+                    const objectIntersection = intersects
+                        .find(i => i.object === objectInPath);
+                    if (objectIntersection) {
+                        const faceCenter = getFaceCenterWithOffset(objectIntersection, offsetDistance);
+                        object.position.copy(faceCenter);
+                    }
+                    console.log(objectIntersection);
+                }
+            }
         }
     }
 
