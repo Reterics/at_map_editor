@@ -54,7 +54,8 @@ export default function ThreeComponent({
             "grass",
             "arrows",
             "plane",
-            "shadowObject"
+            "shadowObject",
+            "hud-2d"
         ],
         clock = new THREE.Clock(true);
 

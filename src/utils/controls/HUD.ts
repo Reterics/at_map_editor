@@ -27,19 +27,20 @@ export class HUD {
         this.scene = scene;
         this.camera = camera;
 
-        // Add an example HTML element to the HUD
-        const hudElement = document.createElement('div');
-        hudElement.className = 'hud-element';
-        hudElement.style.height = '100%';
-        hudElement.style.width = '100%';
-        hudElement.style.paddingLeft = '3px';
-        hudElement.textContent = 'HUD is loading...';
-        this.element = hudElement;
+        this.element = this.getHUDElement();
 
         // Create a CSS2DObject and assign the HTML element to it
-        const hudObject = new CSS2DObject(hudElement);
+        const hudObject = new CSS2DObject(this.element);
+        hudObject.name = "hud-2d";
         hudObject.position.set(10, 10, 0); // Set the position in 3D space
         this.object = hudObject;
+
+        const oldHUDObject = this.scene.children
+            .find(child => child instanceof CSS2DObject && child.name === 'hud-2d');
+
+        if (oldHUDObject) {
+            this.scene.remove(oldHUDObject);
+        }
 
         // Add the CSS2DObject to the scene
         this.scene.add(hudObject);
@@ -51,6 +52,20 @@ export class HUD {
         if (controller) {
             this.update(null, controller);
         }
+    }
+
+    getHUDElement():HTMLElement {
+        const element = document.querySelector('.hud-element');
+        if (element) {
+            return element as HTMLElement;
+        }
+        const hudElement = document.createElement('div');
+        hudElement.className = 'hud-element';
+        hudElement.style.height = '100%';
+        hudElement.style.width = '100%';
+        hudElement.style.paddingLeft = '3px';
+        hudElement.textContent = 'HUD is loading...';
+        return hudElement;
     }
 
     updateText (string: string|number) {
