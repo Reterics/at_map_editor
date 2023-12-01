@@ -6,6 +6,7 @@ import { isCollisionDetected } from "@/src/utils/model";
 import { Active3DMode } from "@/src/types/three";
 import { roundToPrecision } from "@/src/utils/math";
 import { HUD } from "@/src/utils/controls/HUD";
+import {AssetObject} from "@/src/types/assets";
 
 let moveForward = false;
 let moveBackward = false;
@@ -29,6 +30,9 @@ export class FPSController {
     precision: number;
     active: Active3DMode;
     private hud: HUD;
+    assets?: AssetObject[]
+    reference?: AssetObject
+
     constructor(camera: PerspectiveCamera, domElement: HTMLElement, scene: Scene) {
         this.controls =  new PointerLockControls(camera, document.body);
 
@@ -64,7 +68,6 @@ export class FPSController {
             domElement.parentElement : document.body;
         this.hud = new HUD(scene, camera, parent, this);
     }
-
 
     updateItems() {
         this.items = this.scene.children.filter(m=>m.name.startsWith("mesh_"));

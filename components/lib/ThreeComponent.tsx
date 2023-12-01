@@ -32,7 +32,9 @@ export default function ThreeComponent({
     threeControl,
     ground,
     grassEnabled,
-    skyEnabled
+    skyEnabled,
+    assets,
+    selectAsset
 }: {
     items: AssetObject[],
     selected?: AssetObject
@@ -43,7 +45,9 @@ export default function ThreeComponent({
     threeControl: ThreeControlType,
     ground: string,
     grassEnabled?: boolean,
-    skyEnabled?: boolean
+    skyEnabled?: boolean,
+    assets: AssetObject[],
+    selectAsset: Function
 }) {
     const containerRef = useRef<HTMLDivElement>(null),
         planeSize = Math.max(width, height, 1000)*10,
@@ -134,6 +138,10 @@ export default function ThreeComponent({
         },
         "controls", threeControl);
 
+    if (controls instanceof FPSController) {
+        controls.assets = assets;
+        controls.reference = reference
+    }
 
     let shadowObject: ShadowType|undefined = scene.children.find((mesh: Object3D)=>
         mesh.name === "shadowObject") as ShadowType|undefined;

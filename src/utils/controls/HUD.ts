@@ -14,7 +14,7 @@ export class HUD {
     private _elapsed: number;
     _preDelta: number;
 
-    constructor(scene: Scene, camera: Camera, parentElement: HTMLElement, controller?: FPSController) {
+    constructor(scene: Scene, camera: Camera, parentElement: HTMLElement, controller: FPSController) {
         // Create a new CSS2DRenderer
         const cssRef = parentElement.querySelector('canvas') || parentElement;
         this.css2DRenderer = new CSS2DRenderer();
@@ -108,6 +108,11 @@ export class HUD {
             tableData.push("Far: " + controller.far);
             tableData.push("Mode: " + controller.active + " (KeyR)");
             tableData.push("Precision: " + controller.precision);
+            if (controller.reference) {
+                tableData.push("Selected object: " + (controller.reference.type !== "model" ?
+                    controller.reference.type :
+                    controller.reference.name || controller.reference.id || ""));
+            }
 
 
             this.updateLines(tableData);

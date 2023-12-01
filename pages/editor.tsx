@@ -61,7 +61,7 @@ export const defaultAssets: AssetObject[] = [
     },{
         "type": "line"
     },
-]; // TODO: Make dynamic
+];
 
 export default function Editor() {
 
@@ -314,6 +314,8 @@ export default function Editor() {
                                         ground={ground}
                                         grassEnabled={true}
                                         skyEnabled={true}
+                                        assets={assets}
+                                        selectAsset={()=>console.log('TODO')/*TODO*/}
                         />
                     </div>
                 }
