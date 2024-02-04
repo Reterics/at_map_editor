@@ -138,6 +138,7 @@ export const getMeshForItem = async (item: AssetObject): Promise<Mesh|Group> => 
             position2 = new Vector3(line.x2, 0, line.y2);
             const height = position1.distanceTo(position2);
             geometry = new CylinderGeometry(5, 5, height, 32);
+            break;
         case "model":
             console.log(item);
             if (item.path && item.path.endsWith(".gltf")) {
@@ -150,7 +151,6 @@ export const getMeshForItem = async (item: AssetObject): Promise<Mesh|Group> => 
                         rect.y + rect.h / 2);
                     return group;
                 }
-
             }
     }
     model = new Mesh(geometry, material);
