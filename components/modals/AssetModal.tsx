@@ -70,7 +70,16 @@ export default function AssetModal({
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.3)
             scene.add(ambientLight)
 
-            const modelGroup = await loadModel.gltf(file);
+            let loader;
+
+            if (file.name.endsWith('.gltf') || file.name.endsWith('.glb')) {
+                loader = loadModel.gltf;
+            } else if (file.name.endsWith('.fbx')) {
+                loader = loadModel.fbx;
+            } else if (file.name.endsWith('.obj')) {
+                loader = loadModel.obj;
+            }
+            const modelGroup = loader ? await loader(file) : null;
             if (modelGroup) {
                 lookAtObject(modelGroup, camera);
 
