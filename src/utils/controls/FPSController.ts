@@ -6,7 +6,7 @@ import { isCollisionDetected } from "@/src/utils/model";
 import { Active3DMode } from "@/src/types/three";
 import { roundToPrecision } from "@/src/utils/math";
 import { HUD } from "@/src/utils/controls/HUD";
-import {AssetObject} from "@/src/types/assets";
+import { AssetObject } from "@/src/types/assets";
 
 let moveForward = false;
 let moveBackward = false;

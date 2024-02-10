@@ -197,9 +197,11 @@ export default function ThreeComponent({
             const index = items.indexOf(item);
             const model = await getMeshForItem(item);
 
-            model.name = "mesh_" + index;
-            if (model && scene) {
-                scene.add(model);
+            if (model) {
+                model.name = "mesh_" + index;
+                if (model && scene) {
+                    scene.add(model);
+                }
             }
         }
     };

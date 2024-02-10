@@ -103,7 +103,7 @@ export const lookAtObject = (models: Object3D, camera: PerspectiveCamera): void 
     camera.lookAt(boundingBoxCenter);
 }
 
-export const getMeshForItem = async (item: AssetObject): Promise<Mesh|Group> => {
+export const getMeshForItem = async (item: AssetObject): Promise<Mesh|Group|null> => {
     let model;
 
     let material;
@@ -140,8 +140,10 @@ export const getMeshForItem = async (item: AssetObject): Promise<Mesh|Group> => 
             geometry = new CylinderGeometry(5, 5, height, 32);
             break;
         case "model":
-            console.log(item);
-            if (item.path && item.path.endsWith(".gltf")) {
+            if (!item.path) {
+                return null;
+            }
+            if (item.path.endsWith(".gltf") || item.path.endsWith(".glb")) {
                 const url = "http://localhost:3000/api/storage/?url=" + encodeURIComponent(await getFileURL(item.path));
                 const group = await loadModel.gltf(url);
                 if (group) {
@@ -151,7 +153,17 @@ export const getMeshForItem = async (item: AssetObject): Promise<Mesh|Group> => 
                         rect.y + rect.h / 2);
                     return group;
                 }
+                return null;
+            } else if (item.path.endsWith('.fbx')) {
+                return await loadModel.fbx(item.path);
+            } else if (item.path.endsWith('.obj')) {
+                return await loadModel.obj(item.path);
+            } else if (item.path.endsWith('.collada')) {
+                return await loadModel.collada(item.path);
+            } else if (item.path.endsWith('.stl')) {
+                return await loadModel.stl(item.path);
             }
+            return null;
     }
     model = new Mesh(geometry, material);
     model.castShadow = true; //default is false
@@ -256,7 +268,12 @@ export const setInitialCameraPosition = async (
         case "object":
             if (selected) {
                 const mesh = await getMeshForItem(selected);
-                lookAt = mesh.position;
+                if (mesh) {
+                    lookAt = mesh.position;
+                } else {
+                    console.warn('Failed to set camera position at mesh');
+                    return;
+                }
             } else {
                 lookAt = new THREE.Vector3(Math.round(width/2), 0, Math.round(height/2));
             }

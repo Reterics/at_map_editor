@@ -1,6 +1,6 @@
 "use client";
 import Layout from "@/components/layout";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
     BsFillGrid1X2Fill,
     BsBadge3DFill,
@@ -34,7 +34,7 @@ import StyledSelect from "@/components/form/StyledSelect";
 import { StyledSelectOption } from "@/src/types/inputs";
 import CustomizeTools from "@/components/lib/CustomizeTools";
 import { refreshAssets } from "@/src/utils/assets";
-import {debounce} from "@/src/utils/react";
+import { debounce } from "@/src/utils/react";
 
 export const emptyATMap = {
     created: new Date().getTime(),

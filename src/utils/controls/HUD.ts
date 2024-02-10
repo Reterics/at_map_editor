@@ -1,7 +1,7 @@
 import { Camera, Scene } from "three";
 import { CSS2DObject, CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
 import * as THREE from "three";
-import {FPSController} from "@/src/utils/controls/FPSController";
+import { FPSController } from "@/src/utils/controls/FPSController";
 
 
 export class HUD {
