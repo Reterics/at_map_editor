@@ -25,3 +25,18 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+.grid-container {
+  display: grid;
+  width: fit-content;
+  margin: 1em auto auto;
+}
+.map-grid {
+  width: 40px;
+  height: 40px;
+  border: 1px solid darkgray;
+  margin-bottom: 2px;
+}
+.map-grid.ready {
+  background-color: #004900;
+}

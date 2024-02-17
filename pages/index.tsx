@@ -14,6 +14,56 @@ import { deleteDoc } from "@firebase/firestore";
 export default function Home() {
     const [maps, setMaps] = useState([] as ATMap[]);
     const router = useRouter();
+    const grid: {
+        x: number,
+        y: number,
+        z: number,
+        projection2D: ATMap[][]
+    } = {
+        x: 10,
+        y: 10,
+        z: 1,
+        projection2D: []
+    };
+    grid.projection2D = Array.from(Array(grid.x)).map(_=>[]);
+    const gridTemplateColumns = [];
+
+    const gridNodes = [];
+
+    maps.forEach(map=>{
+        if (!map.name) {
+            return;
+        }
+        const coordinates = map.name.split('-').map(a=>Number(a));
+        const eligible = coordinates.length >= 2 && !Number.isNaN(coordinates[0]) && !Number.isNaN(coordinates[1]);
+
+        if (eligible) {
+            const x = coordinates.shift() as number;
+            const y = coordinates.shift() as number
+            if (grid.projection2D[x]) {
+
+                grid.projection2D[x][y] = map;
+            }
+        }
+    });
+
+    for (let x = 0; x < grid.x; x++) {
+        for (let y = 0; y < grid.y; y++) {
+            if (grid.projection2D[x] && grid.projection2D[x][y]) {
+                const map  = grid.projection2D[x][y];
+                gridNodes.push((<div
+                    style={{
+                        background: map.texture ? "url('"+map.texture+"')" : '#004900'
+                    }}
+                    id={map.id}
+                    className='map-grid ready'> </div>))
+
+            } else {
+                gridNodes.push((<div className='map-grid'> </div>))
+            }
+        }
+        gridTemplateColumns.push('1fr');
+    }
 
     const deleteMap = async (id: string|undefined) => {
         if (id && window.confirm('Are you sure you wish to delete this Map?')) {
@@ -31,7 +81,7 @@ export default function Home() {
     };
     useEffect(() => {
         void refreshMaps();
-    });
+    }, []);
 
     return (
         <Layout>
@@ -96,6 +146,13 @@ export default function Home() {
                     )}
                     </tbody>
                 </table>
+            </div>
+
+            <div className="grid-container grid" style={{
+                display: 'grid',
+                gridTemplateColumns: gridTemplateColumns.join(' ')
+            }}>
+                {gridNodes}
             </div>
 
         </Layout>

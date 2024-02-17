@@ -6,5 +6,7 @@ export interface ATMap {
     name: string;
     id?: string;
     items?: AssetObject[]
+    texture?: string,
+    spawn?: boolean
 }
 
