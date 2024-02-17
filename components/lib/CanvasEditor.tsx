@@ -165,6 +165,7 @@ export default function CanvasEditor({
 
     return (
         <canvas
+        id={"canvasEditor"}
         ref={canvasRef}
         className="w-full h-full border-black rounded-none p-0 m-0"
         onClick={(e) => onClick(e as unknown as MouseEvent)}

@@ -31,12 +31,17 @@ body {
   width: fit-content;
   margin: 1em auto auto;
 }
+
 .map-grid {
-  width: 40px;
+  width: 67px;
   height: 40px;
   border: 1px solid darkgray;
   margin-bottom: 2px;
 }
+
 .map-grid.ready {
   background-color: #004900;
+  background-size: contain !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
 }

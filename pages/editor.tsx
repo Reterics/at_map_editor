@@ -2,21 +2,21 @@
 import Layout from "@/components/layout";
 import { useEffect, useState } from "react";
 import {
-    BsFillGrid1X2Fill,
+    BsArrowsFullscreen,
     BsBadge3DFill,
-    BsFillMapFill,
-    BsFillSquareFill,
-    BsFillCircleFill,
-    BsSlashLg,
-    BsFillCursorFill,
     BsDownload,
     BsFileEarmark,
+    BsFillCircleFill,
+    BsFillCursorFill,
+    BsFillGrid1X2Fill,
+    BsFillMapFill,
+    BsFillPinMapFill,
+    BsFillSquareFill,
+    BsFloppy,
     BsFolder2Open,
     BsGeoAlt,
     BsGlobeAmericas,
-    BsArrowsFullscreen,
-    BsFloppy,
-    BsFillPinMapFill
+    BsSlashLg
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
 import { AssetObject } from "@/src/types/assets";
@@ -103,7 +103,12 @@ export default function Editor() {
     const saveMap = async () => {
         const now = new Date().getTime();
         if (map.id) {
-
+            if (layout === "canvas") {
+                const canvasEditor = document.getElementById('canvasEditor') as HTMLCanvasElement;
+                if (canvasEditor) {
+                    map.texture = canvasEditor.toDataURL("image/png");
+                }
+            }
             const useRef = doc(db, firebaseCollections.maps, map.id);
             await updateDoc(useRef, {
                 ...map,
