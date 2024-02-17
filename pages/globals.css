@@ -29,14 +29,13 @@ body {
 .grid-container {
   display: grid;
   width: fit-content;
-  margin: 1em auto auto;
+  margin: 1em auto 2em;
 }
 
 .map-grid {
   width: 67px;
   height: 40px;
   border: 1px solid darkgray;
-  margin-bottom: 2px;
 }
 
 .map-grid.ready {

@@ -9,6 +9,7 @@ import { ATMap } from "@/src/types/map";
 import { db, firebaseCollections, getCollection } from "@/src/firebase/config";
 import { doc } from "firebase/firestore";
 import { deleteDoc } from "@firebase/firestore";
+import Link from "next/link";
 
 
 export default function Home() {
@@ -51,15 +52,16 @@ export default function Home() {
         for (let y = 0; y < grid.y; y++) {
             if (grid.projection2D[x] && grid.projection2D[x][y]) {
                 const map  = grid.projection2D[x][y];
-                gridNodes.push((<div
+                gridNodes.push((<Link
                     style={{
                         background: map.texture ? "url('"+map.texture+"')" : '#004900'
                     }}
                     id={map.id}
-                    className='map-grid ready'> </div>))
+                    className='map-grid ready' href={'/editor?id=' + map.id}> </Link>))
 
             } else {
-                gridNodes.push((<div className='map-grid'> </div>))
+                gridNodes.push((<Link className='map-grid' href={'/editor?name=' +
+                    x.toString().padStart(4, '0') + '-' + y.toString().padStart(4, '0')}> </Link>))
             }
         }
         gridTemplateColumns.push('1fr');
@@ -85,17 +87,15 @@ export default function Home() {
 
     return (
         <Layout>
-            <div className="flex justify-between max-w-screen-xl m-auto">
-                <div />
-                <button type="button"
-                        className="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none
-                            focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2
-                            dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
-                        onClick={() => alert("Method is not implemented")}
-                >
-                    Create Map
-                </button>
+
+            <div className="grid-container grid" style={{
+                display: 'grid',
+                gridTemplateColumns: gridTemplateColumns.join(' ')
+            }}>
+                {gridNodes}
             </div>
+
+
             <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full mt-2">
                 <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                     <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -146,13 +146,6 @@ export default function Home() {
                     )}
                     </tbody>
                 </table>
-            </div>
-
-            <div className="grid-container grid" style={{
-                display: 'grid',
-                gridTemplateColumns: gridTemplateColumns.join(' ')
-            }}>
-                {gridNodes}
             </div>
 
         </Layout>

@@ -70,6 +70,7 @@ export default function Editor() {
 
     const searchParams = useSearchParams()
     const id = searchParams && searchParams.get('id') ?  searchParams.get('id') : undefined;
+    const name = searchParams && searchParams.get('name') ? searchParams.get('name') : "";
 
     const ground = '/assets/textures/green-grass-textures.jpg';
     const [map, setMap] = useState<ATMap>({ ...emptyATMap } as ATMap);
@@ -99,6 +100,14 @@ export default function Editor() {
             void updateMapFromCloud(id);
         }
     }, [id]);
+
+    useEffect(() => {
+        if (name) {
+            setMap((m)=> {
+                return { ...m, name: name }
+            });
+        }
+    }, [name]);
 
     const saveMap = async () => {
         const now = new Date().getTime();
