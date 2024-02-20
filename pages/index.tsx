@@ -13,7 +13,7 @@ import {
     BsArrowDown,
     BsArrowDownRight
 } from "react-icons/bs";
-import {ATMap, Coordinates} from "@/src/types/map";
+import { ATMap, Coordinates } from "@/src/types/map";
 import { db, firebaseCollections, getCollection } from "@/src/firebase/config";
 import { doc } from "firebase/firestore";
 import { deleteDoc } from "@firebase/firestore";
@@ -52,8 +52,8 @@ export default function Home() {
         }
     });
 
-    for (let i = coordinates.x; i < CONSTANTS.grid.x; i++) {
-        for (let j = coordinates.y; j < CONSTANTS.grid.y; j++) {
+    for (let i = coordinates.x; i < CONSTANTS.grid.x + coordinates.x; i++) {
+        for (let j = coordinates.y; j < CONSTANTS.grid.y + coordinates.y; j++) {
             const x = i > 10000 ? 10000 - i : i < 0 ? 10000 - i : i;
             const y = j > 10000 ? 10000 - j : j < 0 ? 10000 - j : j;
             if (projection2D[x] && projection2D[x][y]) {
@@ -75,7 +75,6 @@ export default function Home() {
 
     const deleteMap = async (id: string|undefined) => {
         if (id && window.confirm('Are you sure you wish to delete this Map?')) {
-            alert('Method is not implemented');
             await deleteDoc(doc(db, firebaseCollections.maps, id));
         }
     };
@@ -91,30 +90,43 @@ export default function Home() {
         void refreshMaps();
     }, []);
 
+    const moveMap = (deltaX: number, deltaY: number) => {
+        setCoordinates({
+            x: coordinates.x + deltaX,
+            y: coordinates.y + deltaY
+        });
+    };
+
     const cssPointer = { cursor: "pointer" };
     return (
         <Layout>
 
             <div className="grid-outer max-w-[720px] m-auto">
                 <div className="flex w-full flex-row justify-between">
-                    <BsArrowUpLeft style={cssPointer}/>
-                    <BsArrowUp style={cssPointer}/>
-                    <BsArrowUpRight  style={cssPointer}/>
+                    <BsArrowUpLeft style={cssPointer} onClick={()=> moveMap(-1, -1)}/>
+                    <BsArrowUp style={cssPointer} onClick={()=> moveMap(-1, 0)}/>
+                    <BsArrowUpRight  style={cssPointer} onClick={()=> moveMap(-1, 1)}/>
                 </div>
 
                 <div className="flex w-full flex-row justify-between">
-                    <div className="flex align-middle items-center"><BsArrowLeft style={cssPointer}/></div>
+                    <div className="flex align-middle items-center">
+                        <BsArrowLeft style={cssPointer} onClick={()=> moveMap(0, -1)}/>
+                    </div>
+
                     <div className="grid-container grid w-fit m-auto mt-2 mb-2" style={{
                         gridTemplateColumns: gridTemplateColumns.join(' ')
                     }}>
                         {gridNodes}
                     </div>
-                    <div className="flex align-middle items-center"><BsArrowRight style={cssPointer}/></div>
+
+                    <div className="flex align-middle items-center">
+                        <BsArrowRight style={cssPointer} onClick={()=> moveMap(0, 1)}/>
+                    </div>
                 </div>
                 <div className="flex w-full flex-row justify-between">
-                    <BsArrowDownLeft style={cssPointer}/>
-                    <BsArrowDown style={cssPointer}/>
-                    <BsArrowDownRight style={cssPointer}/>
+                    <BsArrowDownLeft style={cssPointer} onClick={()=> moveMap(1, -1)}/>
+                    <BsArrowDown style={cssPointer} onClick={()=> moveMap(1, 0)}/>
+                    <BsArrowDownRight style={cssPointer} onClick={()=> moveMap(1, 1)}/>
                 </div>
             </div>
 
