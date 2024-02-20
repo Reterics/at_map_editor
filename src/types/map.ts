@@ -10,3 +10,8 @@ export interface ATMap {
     spawn?: boolean
 }
 
+
+export interface Coordinates {
+    x: number;
+    y: number;
+}

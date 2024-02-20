@@ -13,7 +13,7 @@ import {
     BsArrowDown,
     BsArrowDownRight
 } from "react-icons/bs";
-import { ATMap } from "@/src/types/map";
+import {ATMap, Coordinates} from "@/src/types/map";
 import { db, firebaseCollections, getCollection } from "@/src/firebase/config";
 import { doc } from "firebase/firestore";
 import { deleteDoc } from "@firebase/firestore";
@@ -25,15 +25,16 @@ const CONSTANTS = {
         y: 10,
         z: 1
     }
-}
+};
+
 export default function Home() {
     const [maps, setMaps] = useState([] as ATMap[]);
     const router = useRouter();
     const projection2D : ATMap[][] = Array.from(Array(CONSTANTS.grid.x)).map(_=>[]);
-
-    const gridTemplateColumns = [];
-
+    const gridTemplateColumns: string[] = [];
     const gridNodes = [];
+
+    const [coordinates, setCoordinates] = useState<Coordinates>({ x: 0, y: 0 });
 
     maps.forEach(map=>{
         if (!map.name) {
@@ -51,8 +52,8 @@ export default function Home() {
         }
     });
 
-    for (let i = 0; i < CONSTANTS.grid.x; i++) {
-        for (let j = 0; j < CONSTANTS.grid.y; j++) {
+    for (let i = coordinates.x; i < CONSTANTS.grid.x; i++) {
+        for (let j = coordinates.y; j < CONSTANTS.grid.y; j++) {
             const x = i > 10000 ? 10000 - i : i < 0 ? 10000 - i : i;
             const y = j > 10000 ? 10000 - j : j < 0 ? 10000 - j : j;
             if (projection2D[x] && projection2D[x][y]) {
