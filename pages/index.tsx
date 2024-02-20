@@ -19,22 +19,18 @@ import { doc } from "firebase/firestore";
 import { deleteDoc } from "@firebase/firestore";
 import Link from "next/link";
 
-
+const CONSTANTS = {
+    grid: {
+        x: 10,
+        y: 10,
+        z: 1
+    }
+}
 export default function Home() {
     const [maps, setMaps] = useState([] as ATMap[]);
     const router = useRouter();
-    const grid: {
-        x: number,
-        y: number,
-        z: number,
-        projection2D: ATMap[][]
-    } = {
-        x: 10,
-        y: 10,
-        z: 1,
-        projection2D: []
-    };
-    grid.projection2D = Array.from(Array(grid.x)).map(_=>[]);
+    const projection2D : ATMap[][] = Array.from(Array(CONSTANTS.grid.x)).map(_=>[]);
+
     const gridTemplateColumns = [];
 
     const gridNodes = [];
@@ -49,17 +45,18 @@ export default function Home() {
         if (eligible) {
             const x = coordinates.shift() as number;
             const y = coordinates.shift() as number
-            if (grid.projection2D[x]) {
-
-                grid.projection2D[x][y] = map;
+            if (projection2D[x]) {
+                projection2D[x][y] = map;
             }
         }
     });
 
-    for (let x = 0; x < grid.x; x++) {
-        for (let y = 0; y < grid.y; y++) {
-            if (grid.projection2D[x] && grid.projection2D[x][y]) {
-                const map  = grid.projection2D[x][y];
+    for (let i = 0; i < CONSTANTS.grid.x; i++) {
+        for (let j = 0; j < CONSTANTS.grid.y; j++) {
+            const x = i > 10000 ? 10000 - i : i < 0 ? 10000 - i : i;
+            const y = j > 10000 ? 10000 - j : j < 0 ? 10000 - j : j;
+            if (projection2D[x] && projection2D[x][y]) {
+                const map  = projection2D[x][y];
                 gridNodes.push((<Link
                     style={{
                         background: map.texture ? "url('"+map.texture+"')" : '#004900'
