@@ -26,11 +26,6 @@ body {
     rgb(var(--background-start-rgb));
 }
 
-.grid-container {
-  display: grid;
-  width: fit-content;
-  margin: 1em auto 2em;
-}
 
 .map-grid {
   width: 67px;
