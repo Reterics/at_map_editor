@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import { AssetObject, Line, Rectangle, ShadowType } from "@/src/types/assets";
+import {AssetObject, Line, Rectangle, RenderedPlane, ShadowType} from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Color, Mesh, Scene } from "three";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
@@ -52,7 +52,7 @@ export default function ThreeComponent({
     selectAsset: Function
 }) {
     const containerRef = useRef<HTMLDivElement>(null),
-        planeSize = Math.max(width, height, 1000)*10,
+        planeSize = Math.max(width, height, 1000),
         helperNames = [
             "sky",
             "light",
@@ -86,7 +86,7 @@ export default function ThreeComponent({
             context:  WebGLRenderingContext | WebGL2RenderingContext | undefined = renderer.getContext(),
             scene: THREE.Scene = new THREE.Scene(),
             grass: Grass|undefined = grassEnabled ? new Grass(scene,{
-                instances: 1000000,
+                instances: 100000,
                 width: planeSize,
                 height: planeSize
             }) : undefined;
@@ -210,6 +210,17 @@ export default function ThreeComponent({
     useEffect(()=> {
         void reloadMeshes();
     }, [items, scene]);
+
+    useEffect(() => {
+        if (heightMap && scene) {
+
+            const plane = (scene as THREE.Scene).children.find(m => m.name === 'plane') as RenderedPlane;
+            if (plane && !plane.isHeightMap) {
+                (scene as THREE.Scene).remove(plane);
+                void addBasePlane(scene);
+            }
+        }
+    }, [heightMap, scene]);
 
 
     const cancelAnimation = () => {

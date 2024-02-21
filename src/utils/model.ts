@@ -26,7 +26,7 @@ import {Loader} from "three/src/Three";
 import {ColladaLoader} from "three/examples/jsm/loaders/ColladaLoader";
 import {STLLoader} from "three/examples/jsm/loaders/STLLoader";
 import {Object3D} from "three/src/core/Object3D";
-import {AssetObject, Circle, Line, Rectangle, ShadowType} from "@/src/types/assets";
+import {AssetObject, Circle, Line, Rectangle, RenderedPlane, ShadowType} from "@/src/types/assets";
 import {TrackballControls} from "three/examples/jsm/controls/TrackballControls";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {ThreeControlType} from "@/src/types/general";
@@ -220,10 +220,11 @@ export const loadTexture = (url: string): Promise<THREE.Texture> => {
     });
 }
 
-export const getGroundPlane = async (width: number, height: number, textureSrc?:string, heightMap?:string): Promise<Mesh<THREE.PlaneGeometry, MeshStandardMaterial, Object3DEventMap>> => {
+export const getGroundPlane = async (width: number, height: number, textureSrc?:string, heightMap?:string): Promise<RenderedPlane> => {
     const texture = await loadTexture(textureSrc || '/assets/textures/green-grass-textures.jpg');
     const heightMapTexture = heightMap ? await loadTexture(heightMap) : null;
     const heightImg = heightMapTexture ? heightMapTexture.image : null;
+
     const geometry = heightImg ?
         new THREE.PlaneGeometry(width, height, width - 1, height - 1) :
         new THREE.PlaneGeometry(width, height);
@@ -236,7 +237,7 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
     material.map = texture;
     material.needsUpdate = true;
     if (!heightImg) {
-        const plane = new THREE.Mesh(geometry, material);
+        const plane = new THREE.Mesh(geometry, material) as RenderedPlane;
         plane.position.setY(0);
         plane.receiveShadow = true;
         plane.rotation.set(Math.PI / 2, 0, 0);
@@ -277,11 +278,13 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
     geometry.attributes.position.needsUpdate = true;
 
     geometry.computeVertexNormals(); // Optional: Compute normals for better lighting
-    const plane = new THREE.Mesh(geometry, material);
+    const plane = new THREE.Mesh(geometry, material) as RenderedPlane;
     plane.position.setY(0);
+    // plane.position.set(width / 2, 0, height / 2);
     plane.receiveShadow = true;
     plane.rotation.set(Math.PI / 2, 0, 0);
     plane.name = "plane";
+    plane.isHeightMap = true;
     return plane;
 }
 

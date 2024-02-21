@@ -54,3 +54,7 @@ export type AssetObject = Asset|Rectangle|Circle|Line|Point;
 export interface ShadowType extends Mesh {
     refType?: string
 }
+
+export interface RenderedPlane extends Mesh {
+    isHeightMap?: boolean
+}
