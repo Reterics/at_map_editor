@@ -241,6 +241,7 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
         plane.position.setY(0);
         plane.receiveShadow = true;
         plane.rotation.set(Math.PI / 2, 0, 0);
+        plane.position.set(width / 2, 0, height / 2);
 
         //plane.rotation.set(-Math.PI/2, Math.PI/2000, Math.PI);
         plane.name = "plane";
@@ -249,7 +250,7 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
 
 
 
-    const maxHeight = 20;
+    const maxHeight = 100;
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d') as CanvasRenderingContext2D;
 
@@ -275,12 +276,12 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
             vertices[posIndex + 2] = (grayScale / 255) * maxHeight;
         }
     }
-    geometry.attributes.position.needsUpdate = true;
+    // geometry.attributes.position.needsUpdate = true;
 
     geometry.computeVertexNormals(); // Optional: Compute normals for better lighting
     const plane = new THREE.Mesh(geometry, material) as RenderedPlane;
     plane.position.setY(0);
-    // plane.position.set(width / 2, 0, height / 2);
+    plane.position.set(width / 2, 0, height / 2);
     plane.receiveShadow = true;
     plane.rotation.set(Math.PI / 2, 0, 0);
     plane.name = "plane";
@@ -340,7 +341,7 @@ export const setInitialCameraPosition = async (
     }
     if (threeControl !== "fps") {
         camera.position.copy(lookAt);
-        camera.position.x = +Math.round(Math.max(height, width) * 3 / 4);
+        //camera.position.x = +Math.round(Math.max(height, width) * 2);
         camera.position.y = +Math.round(Math.max(height, width) * 3 / 4);
         if (controls.target) {
             controls.target.copy(lookAt);

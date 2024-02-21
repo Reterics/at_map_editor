@@ -72,6 +72,8 @@ export class Grass {
         this.instancedMesh = new InstancedMesh(geometry, this.leavesMaterial, this.instances);
         this.instancedMesh.castShadow = true;
         this.instancedMesh.name = "grass";
+        this.instancedMesh.position.set(this.width / 2, 0, this.height / 2);
+
         this.scene.add(this.instancedMesh);
         this.regenerateGrassCoordinates();
     }
