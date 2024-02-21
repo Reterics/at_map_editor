@@ -90,6 +90,40 @@ export const downloadAsFile = (name: string, body: string, fileType = 'text/plai
 };
 
 
+export const uploadFileInputAsDataURL = (file: Blob): Promise<string|ArrayBuffer|null> => {
+    return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = function () {
+            resolve(reader.result);
+        };
+        reader.readAsDataURL(file);
+        reader.onerror = function (error) {
+            console.log('Error: ', error);
+        };
+    })
+};
+
+export const readFileAsURL = (): Promise<TextFile> => {
+    return new Promise(resolve => {
+        const fileInput = document.createElement("input");
+        fileInput.setAttribute("type", "file");
+        fileInput.onchange = async function () {
+            const formData: TextFile = {
+                value: ''
+            };
+            const files = fileInput.files as FileList;
+            if (files && files.length) {
+                formData.value = await uploadFileInputAsDataURL(files[0]);
+                formData.file_input = files[0];
+            }
+            fileInput.outerHTML = "";
+            resolve(formData);
+        };
+        document.body.appendChild(fileInput);
+        fileInput.click();
+    });
+};
+
 export const uploadFileInputAsText = (file: Blob): Promise<string|ArrayBuffer|null> => {
     return new Promise(resolve => {
         const reader = new FileReader();

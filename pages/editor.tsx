@@ -15,7 +15,7 @@ import {
     BsFloppy,
     BsFolder2Open,
     BsGeoAlt,
-    BsGlobeAmericas,
+    BsGlobeAmericas, BsMap,
     BsSlashLg
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
@@ -23,7 +23,7 @@ import { AssetObject } from "@/src/types/assets";
 import { degToRad } from "@/src/utils/math";
 import ThreeComponent from "@/components/lib/ThreeComponent";
 import { LayoutType, ThreeControlType } from "@/src/types/general";
-import { downloadAsFile, readTextFile } from "@/src/utils/general";
+import {downloadAsFile, readFileAsURL, readTextFile} from "@/src/utils/general";
 import ToolbarButton from "@/components/form/ToolbarButton";
 import { useSearchParams } from 'next/navigation';
 import { db, firebaseCollections, getById } from "@/src/firebase/config";
@@ -35,6 +35,7 @@ import { StyledSelectOption } from "@/src/types/inputs";
 import CustomizeTools from "@/components/lib/CustomizeTools";
 import { refreshAssets } from "@/src/utils/assets";
 import { debounce } from "@/src/utils/react";
+import {TextureLoader} from "three";
 
 export const emptyATMap = {
     created: new Date().getTime(),
@@ -73,6 +74,7 @@ export default function Editor() {
     const name = searchParams && searchParams.get('name') ? searchParams.get('name') : "";
 
     const ground = '/assets/textures/green-grass-textures.jpg';
+    const [heightMap, setHeightMap] = useState<string|undefined>(undefined);
     const [map, setMap] = useState<ATMap>({ ...emptyATMap } as ATMap);
 
     // TODO: Remove this porting
@@ -237,6 +239,14 @@ export default function Editor() {
         }
     }
 
+    const uploadHeightMap = async (): Promise<void> => {
+        const data = await readFileAsURL();
+        if (data && typeof data.value === "string" && data.value) {
+            console.log(data);
+            setHeightMap(data.value);
+        }
+    };
+
     return (
         <Layout>
             <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full mt-2">
@@ -276,6 +286,11 @@ export default function Editor() {
                     items={items}
                     setReference={setReference}
                 />
+
+                <ToolbarButton onClick={()=>uploadHeightMap()}>
+                    <BsMap />
+                </ToolbarButton>
+
 
                 <ToolbarButton
                     style={{ float:"right" }}
@@ -326,6 +341,7 @@ export default function Editor() {
                                         reference={reference}
                                         threeControl={threeControl}
                                         ground={ground}
+                                        heightMap={heightMap}
                                         grassEnabled={true}
                                         skyEnabled={true}
                                         assets={assets}

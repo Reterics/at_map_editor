@@ -31,6 +31,7 @@ export default function ThreeComponent({
     reference,
     threeControl,
     ground,
+    heightMap,
     grassEnabled,
     skyEnabled,
     assets,
@@ -44,6 +45,7 @@ export default function ThreeComponent({
     reference: AssetObject,
     threeControl: ThreeControlType,
     ground: string,
+    heightMap?: string,
     grassEnabled?: boolean,
     skyEnabled?: boolean,
     assets: AssetObject[],
@@ -69,7 +71,7 @@ export default function ThreeComponent({
         if (!scene || scene.children.find(mesh => mesh.name === "plane")) {
             return false;
         }
-        const plane = await getGroundPlane(planeSize, planeSize, ground);
+        const plane = await getGroundPlane(planeSize, planeSize, ground, heightMap);
         scene.add(plane);
         return plane;
     };

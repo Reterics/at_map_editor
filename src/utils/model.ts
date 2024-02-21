@@ -1,4 +1,4 @@
-import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import {GLTF, GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 import * as THREE from "three";
 import {
     ArrowHelper,
@@ -16,22 +16,22 @@ import {
     Quaternion,
     Scene,
     SphereGeometry,
-    TextureLoader,
+    TextureLoader, TypedArray,
     Vector3,
     WebGLRenderer
 } from "three";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
-import { Loader } from "three/src/Three";
-import { ColladaLoader } from "three/examples/jsm/loaders/ColladaLoader";
-import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
-import { Object3D } from "three/src/core/Object3D";
-import { AssetObject, Circle, Line, Rectangle, ShadowType } from "@/src/types/assets";
-import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { ThreeControlType } from "@/src/types/general";
-import { FPSController } from "@/src/utils/controls/FPSController";
-import { getFileURL } from "@/src/firebase/storage";
+import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
+import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
+import {Loader} from "three/src/Three";
+import {ColladaLoader} from "three/examples/jsm/loaders/ColladaLoader";
+import {STLLoader} from "three/examples/jsm/loaders/STLLoader";
+import {Object3D} from "three/src/core/Object3D";
+import {AssetObject, Circle, Line, Rectangle, ShadowType} from "@/src/types/assets";
+import {TrackballControls} from "three/examples/jsm/controls/TrackballControls";
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import {ThreeControlType} from "@/src/types/general";
+import {FPSController} from "@/src/utils/controls/FPSController";
+import {getFileURL} from "@/src/firebase/storage";
 
 const genericLoader = (file: File|string, modelLoader: Loader) => {
     return new Promise(resolve => {
@@ -210,28 +210,79 @@ export const getArrowHelper = (): Group => {
     return arrowGroup;
 }
 
-export const getGroundPlane = (width: number, height: number, texture?:string): Promise<Mesh<THREE.PlaneGeometry, MeshStandardMaterial, Object3DEventMap>> => {
+export const loadTexture = (url: string): Promise<THREE.Texture> => {
     return new Promise(resolve => {
-        const geometry = new THREE.PlaneGeometry(width, height);
-        const material = new THREE.MeshStandardMaterial({ color: 0xffff00, side: THREE.DoubleSide });
         const loader = new THREE.TextureLoader();
-        loader.load(texture || '/assets/textures/green-grass-textures.jpg',
+        loader.load(url,
             function (texture) {
-                texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-                texture.offset.set(0, 0);
-                texture.repeat.set(2, 2);
-                material.map = texture;
-                material.needsUpdate = true;
-                const plane = new THREE.Mesh(geometry, material);
-                plane.position.setY(0);
-                plane.receiveShadow = true;
-                plane.rotation.set(Math.PI / 2, 0, 0);
-
-                //plane.rotation.set(-Math.PI/2, Math.PI/2000, Math.PI);
-                plane.name = "plane";
-                resolve(plane);
-            });
+            resolve(texture);
+        });
     });
+}
+
+export const getGroundPlane = async (width: number, height: number, textureSrc?:string, heightMap?:string): Promise<Mesh<THREE.PlaneGeometry, MeshStandardMaterial, Object3DEventMap>> => {
+    const texture = await loadTexture(textureSrc || '/assets/textures/green-grass-textures.jpg');
+    const heightMapTexture = heightMap ? await loadTexture(heightMap) : null;
+    const heightImg = heightMapTexture ? heightMapTexture.image : null;
+    const geometry = heightImg ?
+        new THREE.PlaneGeometry(width, height, width - 1, height - 1) :
+        new THREE.PlaneGeometry(width, height);
+    const material = new THREE.MeshStandardMaterial({ color: 0xffff00, side: THREE.DoubleSide });
+
+
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.offset.set(0, 0);
+    texture.repeat.set(2, 2);
+    material.map = texture;
+    material.needsUpdate = true;
+    if (!heightImg) {
+        const plane = new THREE.Mesh(geometry, material);
+        plane.position.setY(0);
+        plane.receiveShadow = true;
+        plane.rotation.set(Math.PI / 2, 0, 0);
+
+        //plane.rotation.set(-Math.PI/2, Math.PI/2000, Math.PI);
+        plane.name = "plane";
+        return plane;
+    }
+
+
+
+    const maxHeight = 20;
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d') as CanvasRenderingContext2D;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    // Draw the image onto the canvas
+    context.drawImage(heightImg, 0, 0, width, height);
+    const imageData = context.getImageData(0, 0, width, height).data;
+
+    // @ts-ignore
+    const vertices: TypedArray = geometry.vertices || geometry.attributes.position.array;
+
+    // Adjust each vertex in the geometry
+    for (let j = 0; j < height; j++) {
+        for (let i = 0; i < width; i++) {
+            const n = (j * width + i) * 4;
+            const grayScale = imageData[n]; // Assuming the image is grayscale, we can just take the red channel
+             // Scale the height based on your needs
+            // Set the z position of the vertex
+
+            const posIndex = (j * width + i) * 3;
+            vertices[posIndex + 2] = (grayScale / 255) * maxHeight;
+        }
+    }
+    geometry.attributes.position.needsUpdate = true;
+
+    geometry.computeVertexNormals(); // Optional: Compute normals for better lighting
+    const plane = new THREE.Mesh(geometry, material);
+    plane.position.setY(0);
+    plane.receiveShadow = true;
+    plane.rotation.set(Math.PI / 2, 0, 0);
+    plane.name = "plane";
+    return plane;
 }
 
 
