@@ -44,7 +44,7 @@ void main() {
     // here the displacement is made stronger on the blades tips.
     float dispPower = 1. - cos( uv.y * 3.1416 * 0.5 );
 
-    float displacement = noise * ( 0.3 * dispPower );
+    float displacement = noise * ( 0.1 * dispPower );
     mvPosition.z -= displacement;
 
     vec4 modelViewPosition = modelViewMatrix * mvPosition;

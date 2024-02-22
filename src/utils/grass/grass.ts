@@ -48,7 +48,7 @@ export class Grass {
         for (let i=0 ; i< this.instances ; i++) {
             temp.position.set(
                 (Math.random()) * this.width - this.width / 2,
-                2,
+                0.2,
                 (Math.random()) * this.height - this.height / 2,
             );
 
@@ -66,8 +66,8 @@ export class Grass {
             this.scene.remove(grass);
         }
 
-        const geometry = new PlaneGeometry(1, 10, 2, 4);
-        geometry.translate(0, 0.5, 0);
+        const geometry = new PlaneGeometry(0.1, 0.3, 2, 4);
+        geometry.translate(0, 0, 0);
 
         this.instancedMesh = new InstancedMesh(geometry, this.leavesMaterial, this.instances);
         this.instancedMesh.castShadow = true;

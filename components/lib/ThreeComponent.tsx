@@ -52,7 +52,7 @@ export default function ThreeComponent({
     selectAsset: Function
 }) {
     const containerRef = useRef<HTMLDivElement>(null),
-        planeSize = Math.max(width, height, 1000),
+        planeSize = 1000, // Map size is 1000x1000x1000 by AnotherTry standard
         helperNames = [
             "sky",
             "light",
@@ -86,7 +86,7 @@ export default function ThreeComponent({
             context:  WebGLRenderingContext | WebGL2RenderingContext | undefined = renderer.getContext(),
             scene: THREE.Scene = new THREE.Scene(),
             grass: Grass|undefined = grassEnabled ? new Grass(scene,{
-                instances: 100000,
+                instances: 1000000,
                 width: planeSize,
                 height: planeSize
             }) : undefined;
@@ -106,6 +106,7 @@ export default function ThreeComponent({
             console.warn("Context Restored");
         }, false);
 
+        console.log(width, height);
         renderer.setSize(width, height);
         if (grass) {
             grass.addToScene();
@@ -262,8 +263,8 @@ export default function ThreeComponent({
             renderer,
             controls,
             scene,
-            width,
-            height,
+            planeSize,
+            planeSize,
             threeControl,
             selected);
     }, [camera, renderer, controls, threeControl])

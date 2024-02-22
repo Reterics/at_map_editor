@@ -118,8 +118,12 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
     const heightMapTexture = heightMap ? await loadTexture(heightMap) : null;
     const heightImg = heightMapTexture ? heightMapTexture.image : null;
 
+    const widthSegments = Math.min(99, width - 1),
+        heightSegments = Math.min(99, height - 1),
+        cWidth = widthSegments + 1,
+        cHeight = heightSegments + 1;
     const geometry = heightImg ?
-        new THREE.PlaneGeometry(width, height, width - 1, height - 1) :
+        new THREE.PlaneGeometry(width, height, widthSegments, heightSegments) :
         new THREE.PlaneGeometry(width, height);
     const material = new THREE.MeshStandardMaterial({ color: 0xffff00, side: THREE.DoubleSide });
 
@@ -147,25 +151,25 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = cWidth;
+    canvas.height = cHeight;
 
     // Draw the image onto the canvas
-    context.drawImage(heightImg, 0, 0, width, height);
-    const imageData = context.getImageData(0, 0, width, height).data;
+    context.drawImage(heightImg, 0, 0, cWidth, cHeight);
+    const imageData = context.getImageData(0, 0, cWidth, cHeight).data;
 
     // @ts-ignore
     const vertices: TypedArray = geometry.vertices || geometry.attributes.position.array;
 
     // Adjust each vertex in the geometry
-    for (let j = 0; j < height; j++) {
-        for (let i = 0; i < width; i++) {
-            const n = (j * width + i) * 4;
+    for (let j = 0; j < cHeight; j++) {
+        for (let i = 0; i < cWidth; i++) {
+            const n = (j * cWidth + i) * 4;
             const grayScale = imageData[n]; // Assuming the image is grayscale, we can just take the red channel
             // Scale the height based on your needs
             // Set the z position of the vertex
 
-            const posIndex = (j * width + i) * 3;
+            const posIndex = (j * cWidth + i) * 3;
             vertices[posIndex + 2] = (grayScale / 255) * maxHeight;
         }
     }
@@ -176,7 +180,7 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
     plane.position.setY(0);
     plane.position.set(width / 2, 0, height / 2);
     plane.receiveShadow = true;
-    plane.rotation.set(Math.PI / 2, 0, 0);
+    plane.rotation.set(-Math.PI / 2, 0, 0);
     plane.name = "plane";
     plane.isHeightMap = true;
     return plane;
@@ -319,7 +323,7 @@ export const setInitialCameraPosition = async (
     selected?: AssetObject) => {
     camera.updateProjectionMatrix();
 
-    renderer.setSize(width, height);
+    // renderer.setSize(width, height);
 
     let lookAt;
     switch (threeControl) {
@@ -363,11 +367,11 @@ export const createShadowObject = async (reference: AssetObject): Promise<Shadow
     };
     switch (reference.type) {
         case "rect":
-            (config as Rectangle).w = 50;
-            (config as Rectangle).h = 50;
+            (config as Rectangle).w = 5;
+            (config as Rectangle).h = 5;
             break;
         case "circle":
-            (config as Circle).radius = 25;
+            (config as Circle).radius = 5;
             break;
     }
     const shadowObject = await getMeshForItem(config) as ShadowType;
