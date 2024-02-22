@@ -64,3 +64,8 @@ export interface PlaneConfig extends Asset {
     w: number
     h: number
 }
+
+export interface WaterConfig {
+    normal?: string
+    flow?: string
+}

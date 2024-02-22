@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import {AssetObject, Line, Rectangle, RenderedPlane, ShadowType} from "@/src/types/assets";
+import {AssetObject, Line, Rectangle, RenderedPlane, ShadowType, WaterConfig} from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Color, Mesh, Scene } from "three";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
@@ -32,7 +32,7 @@ export default function ThreeComponent({
     threeControl,
     ground,
     heightMap,
-    flowMap,
+    water,
     grassEnabled,
     skyEnabled,
     assets,
@@ -47,7 +47,7 @@ export default function ThreeComponent({
     threeControl: ThreeControlType,
     ground: string,
     heightMap?: string,
-    flowMap?: string,
+    water?: WaterConfig,
     grassEnabled?: boolean,
     skyEnabled?: boolean,
     assets: AssetObject[],
@@ -226,16 +226,15 @@ export default function ThreeComponent({
     }, [heightMap, scene]);
 
     useEffect(() => {
-        if (flowMap && scene) {
-
-            const water = (scene as THREE.Scene).children.find(m => m.name === 'water') as RenderedPlane;
-            if (!water) {
-                getWater(0, flowMap, planeSize).then(waterMesh => {
+        if (water && (water.flow || water.normal) && scene && heightMap) {
+            const waterMesh = (scene as THREE.Scene).children.find(m => m.name === 'water') as RenderedPlane;
+            if (!waterMesh) {
+                getWater(0, water, planeSize).then(waterMesh => {
                     (scene as THREE.Scene).add(waterMesh);
                 });
             }
         }
-    }, [flowMap, scene]);
+    }, [water, scene, heightMap]);
 
 
     const cancelAnimation = () => {

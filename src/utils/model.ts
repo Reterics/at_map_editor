@@ -27,7 +27,16 @@ import { Loader } from "three/src/Three";
 import { ColladaLoader } from "three/examples/jsm/loaders/ColladaLoader";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 import { Object3D } from "three/src/core/Object3D";
-import { AssetObject, Circle, Line, PlaneConfig, Rectangle, RenderedPlane, ShadowType } from "@/src/types/assets";
+import {
+    AssetObject,
+    Circle,
+    Line,
+    PlaneConfig,
+    Rectangle,
+    RenderedPlane,
+    ShadowType,
+    WaterConfig
+} from "@/src/types/assets";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { ThreeControlType } from "@/src/types/general";
@@ -186,20 +195,24 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
     return plane;
 }
 
-export const getWater = async (y = 0, flowMapURL = 'textures/water/flowmap_water.png', planeSize = 100) => {
-    const flowMap = await loadTexture(flowMapURL);
+export const getWater = async (y = 0, waterConfig: WaterConfig, planeSize = 100) => {
+    const flowMap = await loadTexture(waterConfig.flow || '/assets/water/height.png');
+    const normal0 = await loadTexture(waterConfig.normal || '/assets/water/normal0.jpg');
+    const normal1 = await loadTexture('/assets/water/normal1.jpg');
     const waterGeometry = new THREE.PlaneGeometry(1000, 1000);
 
     const water = new Water(waterGeometry, {
-        scale: 2,
+        scale: 1,
         textureWidth: 1024,
         textureHeight: 1024,
-        flowMap: flowMap
+        flowMap: flowMap,
+        normalMap0: normal0,
+        normalMap1: normal1
     });
 
     water.name = "water";
     water.position.set(planeSize / 2, y, planeSize / 2);
-    water.rotation.x = Math.PI * - 0.5;
+    water.rotation.x = -Math.PI / 2;
     return water;
 }
 

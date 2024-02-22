@@ -19,7 +19,7 @@ import {
     BsSlashLg, BsWater
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
-import { AssetObject } from "@/src/types/assets";
+import {AssetObject, WaterConfig} from "@/src/types/assets";
 import { degToRad } from "@/src/utils/math";
 import ThreeComponent from "@/components/lib/ThreeComponent";
 import { LayoutType, ThreeControlType } from "@/src/types/general";
@@ -75,7 +75,10 @@ export default function Editor() {
 
     const ground = '/assets/textures/green-grass-textures.jpg';
     const [heightMap, setHeightMap] = useState<string|undefined>(undefined);
-    const [flowMap, setFlowMap] = useState<string|undefined>(undefined);
+    const [water, setWater] = useState<WaterConfig>({
+        normal: undefined,
+        flow: undefined
+    });
     const [map, setMap] = useState<ATMap>({ ...emptyATMap } as ATMap);
 
     // TODO: Remove this porting
@@ -247,10 +250,18 @@ export default function Editor() {
         }
     };
     const uploadFlowMap = async (): Promise<void> => {
-        const data = await readFileAsURL();
-        if (data && typeof data.value === "string" && data.value) {
-            setFlowMap(data.value);
+        const config = Object.assign({}, water);
+        const flowMap = await readFileAsURL();
+        if (flowMap && typeof flowMap.value === 'string' && flowMap.value) {
+            config.flow = flowMap.value;
         }
+
+        const normal = await readFileAsURL();
+        if (normal && typeof normal.value === 'string' && normal.value) {
+            config.normal = normal.value;
+        }
+
+        setWater(config);
     };
 
     return (
@@ -353,7 +364,7 @@ export default function Editor() {
                                         threeControl={threeControl}
                                         ground={ground}
                                         heightMap={heightMap}
-                                        flowMap={flowMap}
+                                        water={water}
                                         grassEnabled={true}
                                         skyEnabled={true}
                                         assets={assets}
