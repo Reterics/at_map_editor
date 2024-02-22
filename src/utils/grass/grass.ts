@@ -19,6 +19,7 @@ export class Grass {
     private width: number;
     private height: number;
     private instancedMesh?: InstancedMesh<PlaneGeometry, ShaderMaterial>;
+    private enabled: Boolean;
 
     constructor (scene: Scene, options?: GrassOptions) {
         const opt: GrassOptions = options || {};
@@ -27,6 +28,7 @@ export class Grass {
         this.instances = opt.instances || 1000;
         this.width = opt.width || 1000;
         this.height = opt.height || 1000;
+        this.enabled = opt.enabled || false;
         this.leavesMaterial = new ShaderMaterial({
             vertexShader,
             fragmentShader,
@@ -79,6 +81,12 @@ export class Grass {
     }
 
     refresh() {
+        if (!this.enabled) {
+            return this.destroy();
+        }
+        if (!this.instancedMesh) {
+            this.addToScene();
+        }
         this.leavesMaterial.uniforms.time.value = this.clock.getElapsedTime();
         this.leavesMaterial.uniformsNeedUpdate = true;
     }
@@ -86,7 +94,16 @@ export class Grass {
     destroy() {
         if (this.instancedMesh) {
             this.scene.remove(this.instancedMesh);
+            this.instancedMesh.dispose();
+            this.instancedMesh = undefined;
         }
+    }
+
+    isEnabled(bool?: boolean) {
+        if (typeof bool === "boolean") {
+            this.enabled = bool;
+        }
+        return this.enabled;
     }
 
     setDimensions(width: number, height: number) {

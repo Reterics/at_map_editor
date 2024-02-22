@@ -168,8 +168,7 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
     context.drawImage(heightImg, 0, 0, cWidth, cHeight);
     const imageData = context.getImageData(0, 0, cWidth, cHeight).data;
 
-    // @ts-ignore
-    const vertices: TypedArray = geometry.vertices || geometry.attributes.position.array;
+    const vertices: TypedArray = geometry.attributes.position.array;
 
     // Adjust each vertex in the geometry
     for (let j = 0; j < cHeight; j++) {
@@ -186,6 +185,7 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
     // geometry.attributes.position.needsUpdate = true;
 
     geometry.computeVertexNormals(); // Optional: Compute normals for better lighting
+    geometry.computeBoundingBox();
     const plane = new THREE.Mesh(geometry, material) as RenderedPlane;
     plane.position.set(width / 2, -35, height / 2);
     plane.receiveShadow = true;

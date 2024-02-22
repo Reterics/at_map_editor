@@ -16,7 +16,7 @@ import {
     BsFolder2Open,
     BsGeoAlt,
     BsGlobeAmericas, BsMap,
-    BsSlashLg, BsWater
+    BsSlashLg, BsTree, BsTreeFill, BsWater
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
 import {AssetObject, WaterConfig} from "@/src/types/assets";
@@ -79,6 +79,7 @@ export default function Editor() {
         normal: undefined,
         flow: undefined
     });
+    const [grassEnabled, setGrassEnabled] = useState<boolean>(true);
     const [map, setMap] = useState<ATMap>({ ...emptyATMap } as ATMap);
 
     // TODO: Remove this porting
@@ -314,6 +315,11 @@ export default function Editor() {
                 </ToolbarButton>
 
 
+                <ToolbarButton onClick={()=>setGrassEnabled(!grassEnabled)}>
+                    {grassEnabled ? <BsTree /> : <BsTreeFill />}
+                </ToolbarButton>
+
+
                 <ToolbarButton
                     style={{ float:"right" }}
                     onClick={() => setThreeControl("fps")}
@@ -365,7 +371,7 @@ export default function Editor() {
                                         ground={ground}
                                         heightMap={heightMap}
                                         water={water}
-                                        grassEnabled={true}
+                                        grassEnabled={grassEnabled}
                                         skyEnabled={true}
                                         assets={assets}
                                         selectAsset={()=>console.log('TODO')/*TODO*/}

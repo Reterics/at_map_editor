@@ -87,11 +87,12 @@ export default function ThreeComponent({
             }),
             context:  WebGLRenderingContext | WebGL2RenderingContext | undefined = renderer.getContext(),
             scene: THREE.Scene = new THREE.Scene(),
-            grass: Grass|undefined = grassEnabled ? new Grass(scene,{
+            grass: Grass|undefined = new Grass(scene,{
                 instances: 1000000,
                 width: planeSize,
-                height: planeSize
-            }) : undefined;
+                height: planeSize,
+                enabled: grassEnabled
+            });
 
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -127,6 +128,11 @@ export default function ThreeComponent({
         renderer,
         scene,
         grass
+    }: {
+        camera: THREE.PerspectiveCamera,
+        renderer: THREE.WebGLRenderer,
+        scene: THREE.Scene,
+        grass: Grass|undefined
     } = useWindow(initializeThreeGlobals, [
         "camera",
         "renderer",
@@ -470,6 +476,10 @@ export default function ThreeComponent({
             controls.lock();
         }
         return true;
+    }
+
+    if (grass) {
+        grass.isEnabled(grassEnabled);
     }
 
     return <div ref={containerRef}
