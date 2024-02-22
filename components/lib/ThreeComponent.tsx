@@ -13,7 +13,7 @@ import {
     getArrowHelper,
     getControls,
     getGroundPlane,
-    getMeshForItem, isCollisionDetected,
+    getMeshForItem, getWater, isCollisionDetected,
     setInitialCameraPosition
 } from "@/src/utils/model";
 import { Object3D } from "three/src/core/Object3D";
@@ -32,6 +32,7 @@ export default function ThreeComponent({
     threeControl,
     ground,
     heightMap,
+    flowMap,
     grassEnabled,
     skyEnabled,
     assets,
@@ -46,6 +47,7 @@ export default function ThreeComponent({
     threeControl: ThreeControlType,
     ground: string,
     heightMap?: string,
+    flowMap?: string,
     grassEnabled?: boolean,
     skyEnabled?: boolean,
     assets: AssetObject[],
@@ -222,6 +224,18 @@ export default function ThreeComponent({
             }
         }
     }, [heightMap, scene]);
+
+    useEffect(() => {
+        if (flowMap && scene) {
+
+            const water = (scene as THREE.Scene).children.find(m => m.name === 'water') as RenderedPlane;
+            if (!water) {
+                getWater(0, flowMap, planeSize).then(waterMesh => {
+                    (scene as THREE.Scene).add(waterMesh);
+                });
+            }
+        }
+    }, [flowMap, scene]);
 
 
     const cancelAnimation = () => {

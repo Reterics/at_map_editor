@@ -16,7 +16,7 @@ import {
     BsFolder2Open,
     BsGeoAlt,
     BsGlobeAmericas, BsMap,
-    BsSlashLg
+    BsSlashLg, BsWater
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
 import { AssetObject } from "@/src/types/assets";
@@ -75,6 +75,7 @@ export default function Editor() {
 
     const ground = '/assets/textures/green-grass-textures.jpg';
     const [heightMap, setHeightMap] = useState<string|undefined>(undefined);
+    const [flowMap, setFlowMap] = useState<string|undefined>(undefined);
     const [map, setMap] = useState<ATMap>({ ...emptyATMap } as ATMap);
 
     // TODO: Remove this porting
@@ -242,8 +243,13 @@ export default function Editor() {
     const uploadHeightMap = async (): Promise<void> => {
         const data = await readFileAsURL();
         if (data && typeof data.value === "string" && data.value) {
-            console.log(data);
             setHeightMap(data.value);
+        }
+    };
+    const uploadFlowMap = async (): Promise<void> => {
+        const data = await readFileAsURL();
+        if (data && typeof data.value === "string" && data.value) {
+            setFlowMap(data.value);
         }
     };
 
@@ -289,6 +295,11 @@ export default function Editor() {
 
                 <ToolbarButton onClick={()=>uploadHeightMap()}>
                     <BsMap />
+                </ToolbarButton>
+
+
+                <ToolbarButton onClick={()=>uploadFlowMap()}>
+                    <BsWater />
                 </ToolbarButton>
 
 
@@ -342,6 +353,7 @@ export default function Editor() {
                                         threeControl={threeControl}
                                         ground={ground}
                                         heightMap={heightMap}
+                                        flowMap={flowMap}
                                         grassEnabled={true}
                                         skyEnabled={true}
                                         assets={assets}

@@ -1,4 +1,5 @@
-import {GLTF, GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { Water } from "three/examples/jsm/objects/Water2";
 import * as THREE from "three";
 import {
     ArrowHelper,
@@ -20,18 +21,18 @@ import {
     Vector3,
     WebGLRenderer
 } from "three";
-import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
-import {OBJLoader} from "three/examples/jsm/loaders/OBJLoader";
-import {Loader} from "three/src/Three";
-import {ColladaLoader} from "three/examples/jsm/loaders/ColladaLoader";
-import {STLLoader} from "three/examples/jsm/loaders/STLLoader";
-import {Object3D} from "three/src/core/Object3D";
-import {AssetObject, Circle, Line, PlaneConfig, Rectangle, RenderedPlane, ShadowType} from "@/src/types/assets";
-import {TrackballControls} from "three/examples/jsm/controls/TrackballControls";
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import {ThreeControlType} from "@/src/types/general";
-import {FPSController} from "@/src/utils/controls/FPSController";
-import {getFileURL} from "@/src/firebase/storage";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+import { Loader } from "three/src/Three";
+import { ColladaLoader } from "three/examples/jsm/loaders/ColladaLoader";
+import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
+import { Object3D } from "three/src/core/Object3D";
+import { AssetObject, Circle, Line, PlaneConfig, Rectangle, RenderedPlane, ShadowType } from "@/src/types/assets";
+import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { ThreeControlType } from "@/src/types/general";
+import { FPSController } from "@/src/utils/controls/FPSController";
+import { getFileURL } from "@/src/firebase/storage";
 
 const genericLoader = (file: File|string, modelLoader: Loader) => {
     return new Promise(resolve => {
@@ -177,8 +178,7 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
 
     geometry.computeVertexNormals(); // Optional: Compute normals for better lighting
     const plane = new THREE.Mesh(geometry, material) as RenderedPlane;
-    plane.position.setY(0);
-    plane.position.set(width / 2, 0, height / 2);
+    plane.position.set(width / 2, -35, height / 2);
     plane.receiveShadow = true;
     plane.rotation.set(-Math.PI / 2, 0, 0);
     plane.name = "plane";
@@ -186,6 +186,22 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
     return plane;
 }
 
+export const getWater = async (y = 0, flowMapURL = 'textures/water/flowmap_water.png', planeSize = 100) => {
+    const flowMap = await loadTexture(flowMapURL);
+    const waterGeometry = new THREE.PlaneGeometry(1000, 1000);
+
+    const water = new Water(waterGeometry, {
+        scale: 2,
+        textureWidth: 1024,
+        textureHeight: 1024,
+        flowMap: flowMap
+    });
+
+    water.name = "water";
+    water.position.set(planeSize / 2, y, planeSize / 2);
+    water.rotation.x = Math.PI * - 0.5;
+    return water;
+}
 
 export const getMeshForItem = async (item: AssetObject): Promise<Mesh|Group|null> => {
     let model;
