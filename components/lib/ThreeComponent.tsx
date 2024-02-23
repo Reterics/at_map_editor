@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import {AssetObject, Line, Rectangle, RenderedPlane, ShadowType, WaterConfig} from "@/src/types/assets";
+import { AssetObject, Line, Rectangle, RenderedPlane, ShadowType } from "@/src/types/assets";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Color, Mesh, Scene } from "three";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
@@ -69,15 +69,6 @@ export default function ThreeComponent({
 
     let arrowHelpers: THREE.Group,
         helpersCount = 0;
-    const addBasePlane = async (scene: Scene) => {
-        if (!scene || scene.children.find(mesh => mesh.name === "plane")) {
-            return false;
-        }
-        const plane = await getGroundPlane(planeSize, planeSize, ground, heightMap);
-        scene.add(plane);
-        return plane;
-    };
-
 
     const initializeThreeGlobals = () => {
 
@@ -109,7 +100,6 @@ export default function ThreeComponent({
             console.warn("Context Restored");
         }, false);
 
-        console.log(width, height);
         renderer.setSize(width, height);
         if (grass) {
             grass.addToScene();
@@ -119,7 +109,6 @@ export default function ThreeComponent({
         }
         renderer.render(scene, camera);
 
-        void addBasePlane(scene);
         return { camera, renderer, scene, grass }
     }
 
@@ -221,13 +210,14 @@ export default function ThreeComponent({
     }, [items, scene]);
 
     useEffect(() => {
-        if (heightMap && scene) {
-
-            const plane = (scene as THREE.Scene).children.find(m => m.name === 'plane') as RenderedPlane;
-            if (plane && !plane.isHeightMap) {
-                (scene as THREE.Scene).remove(plane);
-                void addBasePlane(scene);
+        if (scene) {
+            const plane = scene.children.find(m => m.name === 'plane') as RenderedPlane;
+            if (plane) {
+                scene.remove(plane);
             }
+            getGroundPlane(planeSize, ground, heightMap).then((planeMesh) => {
+                scene.add(planeMesh);
+            });
         }
     }, [heightMap, scene]);
 

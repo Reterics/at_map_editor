@@ -61,11 +61,5 @@ export interface RenderedPlane extends Mesh {
 
 export interface PlaneConfig extends Asset {
     heightmap?: string
-    w: number
-    h: number
-}
-
-export interface WaterConfig {
-    normal?: string
-    flow?: string
+    size: number
 }

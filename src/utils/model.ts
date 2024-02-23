@@ -34,8 +34,7 @@ import {
     PlaneConfig,
     Rectangle,
     RenderedPlane,
-    ShadowType,
-    WaterConfig
+    ShadowType
 } from "@/src/types/assets";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -123,18 +122,16 @@ export const loadTexture = (url: string): Promise<THREE.Texture> => {
     });
 }
 
-export const getGroundPlane = async (width: number, height: number, textureSrc?:string, heightMap?:string): Promise<RenderedPlane> => {
+export const getGroundPlane = async (size: number, textureSrc?:string, heightMap?:string): Promise<RenderedPlane> => {
     const texture = await loadTexture(textureSrc || '/assets/textures/green-grass-textures.jpg');
     const heightMapTexture = heightMap ? await loadTexture(heightMap) : null;
     const heightImg = heightMapTexture ? heightMapTexture.image : null;
 
-    const widthSegments = Math.min(99, width - 1),
-        heightSegments = Math.min(99, height - 1),
-        cWidth = widthSegments + 1,
-        cHeight = heightSegments + 1;
+    const segments = Math.min(99, size - 1),
+        cSize = segments + 1;
     const geometry = heightImg ?
-        new THREE.PlaneGeometry(width, height, widthSegments, heightSegments) :
-        new THREE.PlaneGeometry(width, height);
+        new THREE.PlaneGeometry(size, size, segments, segments) :
+        new THREE.PlaneGeometry(size, size);
     const material = new THREE.MeshStandardMaterial({ color: 0xffff00, side: THREE.DoubleSide });
 
 
@@ -148,37 +145,35 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
         plane.position.setY(0);
         plane.receiveShadow = true;
         plane.rotation.set(Math.PI / 2, 0, 0);
-        plane.position.set(width / 2, 0, height / 2);
+        plane.position.set(size / 2, 0, size / 2);
 
         //plane.rotation.set(-Math.PI/2, Math.PI/2000, Math.PI);
         plane.name = "plane";
         return plane;
     }
 
-
-
     const maxHeight = 100;
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d') as CanvasRenderingContext2D;
 
-    canvas.width = cWidth;
-    canvas.height = cHeight;
+    canvas.width = cSize;
+    canvas.height = cSize;
 
     // Draw the image onto the canvas
-    context.drawImage(heightImg, 0, 0, cWidth, cHeight);
-    const imageData = context.getImageData(0, 0, cWidth, cHeight).data;
+    context.drawImage(heightImg, 0, 0, cSize, cSize);
+    const imageData = context.getImageData(0, 0, cSize, cSize).data;
 
     const vertices: TypedArray = geometry.attributes.position.array;
 
     // Adjust each vertex in the geometry
-    for (let j = 0; j < cHeight; j++) {
-        for (let i = 0; i < cWidth; i++) {
-            const n = (j * cWidth + i) * 4;
+    for (let j = 0; j < cSize; j++) {
+        for (let i = 0; i < cSize; i++) {
+            const n = (j * cSize + i) * 4;
             const grayScale = imageData[n]; // Assuming the image is grayscale, we can just take the red channel
             // Scale the height based on your needs
             // Set the z position of the vertex
 
-            const posIndex = (j * cWidth + i) * 3;
+            const posIndex = (j * cSize + i) * 3;
             vertices[posIndex + 2] = (grayScale / 255) * maxHeight;
         }
     }
@@ -187,7 +182,7 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
     geometry.computeVertexNormals(); // Optional: Compute normals for better lighting
     geometry.computeBoundingBox();
     const plane = new THREE.Mesh(geometry, material) as RenderedPlane;
-    plane.position.set(width / 2, -35, height / 2);
+    plane.position.set(size / 2, -35, size / 2);
     plane.receiveShadow = true;
     plane.rotation.set(-Math.PI / 2, 0, 0);
     plane.name = "plane";
@@ -279,7 +274,7 @@ export const getMeshForItem = async (item: AssetObject): Promise<Mesh|Group|null
             return null;
         case "plane":
             const plane = item as PlaneConfig;
-            return await getGroundPlane(plane.w, plane.h, plane.texture, plane.heightmap);
+            return await getGroundPlane(plane.size, plane.texture, plane.heightmap);
     }
     model = new Mesh(geometry, material);
     model.castShadow = true; //default is false

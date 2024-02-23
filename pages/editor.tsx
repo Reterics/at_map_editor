@@ -19,11 +19,11 @@ import {
     BsSlashLg, BsTree, BsTreeFill, BsWater
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
-import {AssetObject, WaterConfig} from "@/src/types/assets";
+import { AssetObject } from "@/src/types/assets";
 import { degToRad } from "@/src/utils/math";
 import ThreeComponent from "@/components/lib/ThreeComponent";
 import { LayoutType, ThreeControlType } from "@/src/types/general";
-import {downloadAsFile, readFileAsURL, readTextFile} from "@/src/utils/general";
+import { downloadAsFile, readFileAsURL, readTextFile } from "@/src/utils/general";
 import ToolbarButton from "@/components/form/ToolbarButton";
 import { useSearchParams } from 'next/navigation';
 import { db, firebaseCollections, getById } from "@/src/firebase/config";
@@ -35,7 +35,6 @@ import { StyledSelectOption } from "@/src/types/inputs";
 import CustomizeTools from "@/components/lib/CustomizeTools";
 import { refreshAssets } from "@/src/utils/assets";
 import { debounce } from "@/src/utils/react";
-import {TextureLoader} from "three";
 
 export const emptyATMap = {
     created: new Date().getTime(),
