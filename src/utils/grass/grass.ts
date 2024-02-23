@@ -51,7 +51,7 @@ export class Grass {
         const plane = this.scene.children.find(mesh=> mesh.name === "plane") as RenderedPlane|undefined;
         let vertices: TypedArray;
         if (!plane || plane.geometry.attributes.position.array.length < 10000) {
-            vertices = new Uint8Array().fill(0,0, 30000);
+            vertices = new Uint8Array().fill(35,0, 30000);
         } else {
             vertices = plane.geometry.attributes.position.array;
         }
@@ -59,15 +59,15 @@ export class Grass {
         const segments = Math.min(99, this.width - 1),
             cSize = segments + 1,
             ratio = cSize / this.width,
-            hW = Math.floor(this.width / 2);
+            hW = this.width / 2;
 
         for (let index=0 ; index < this.instances ; index++) {
-            const j = math.range(0, cSize);
-            const i = math.range(0, cSize);// - this.height / 2;
-            //console.log('RANDOM: ', i, j);
-            const n = (Math.round(j) * cSize + Math.round(i)) * 3;
+            const j = math.range(0, cSize); // TODO: Investigate with rounded
+            const i = math.range(0, cSize);
 
-            const heightOnPos = vertices[n + 2] - 35;
+            const n = (Math.round(i) * cSize + Math.round(j)) * 3;
+
+            const heightOnPos = vertices[n + 2] - 35 + 0.2;
 
             temp.position.set(
                 j / ratio - hW,
@@ -76,8 +76,7 @@ export class Grass {
             );
 
             temp.scale.setScalar(0.5 + Math.random() * 0.5);
-            // temp.rotation.y = Math.random() * Math.PI;
-            temp.rotation.x = -Math.PI / 2;
+            temp.rotation.y = Math.random() * Math.PI;
             temp.updateMatrix();
             this.instancedMesh.setMatrixAt(index, temp.matrix);
         }
