@@ -217,6 +217,9 @@ export default function ThreeComponent({
             }
             getGroundPlane(planeSize, ground, heightMap).then((planeMesh) => {
                 scene.add(planeMesh);
+                if (grass) {
+                    grass.regenerateGrassCoordinates();
+                }
             });
         }
     }, [heightMap, scene]);

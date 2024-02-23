@@ -30,9 +30,10 @@ export const isPointInsideCircle = (x: number, y: number, centerX: number, cente
 };
 
 export const math = {
-    range: (a: number, b:number) => Math.random() * (b - a) + a,
+    range: (min: number, max:number) => Math.random() * (max - min) + min,
     rand: (a: number, b: number) => Math.round(math.range(a, b))
 }
+
 
 export const roundToPrecision = (value: number, precision: number) => {
     const multiplier = Math.pow(10, precision || 0);
