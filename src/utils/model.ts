@@ -195,9 +195,9 @@ export const getGroundPlane = async (width: number, height: number, textureSrc?:
     return plane;
 }
 
-export const getWater = async (y = 0, waterConfig: WaterConfig, planeSize = 100) => {
-    const flowMap = await loadTexture(waterConfig.flow || '/assets/water/height.png');
-    const normal0 = await loadTexture(waterConfig.normal || '/assets/water/normal0.jpg');
+export const getWater = async (flow: string|undefined, planeSize = 100) => {
+    const flowMap = await loadTexture(flow || '/assets/water/height.png');
+    const normal0 = await loadTexture('/assets/water/normal0.jpg');
     const normal1 = await loadTexture('/assets/water/normal1.jpg');
     const waterGeometry = new THREE.PlaneGeometry(1000, 1000);
 
@@ -211,7 +211,7 @@ export const getWater = async (y = 0, waterConfig: WaterConfig, planeSize = 100)
     });
 
     water.name = "water";
-    water.position.set(planeSize / 2, y, planeSize / 2);
+    water.position.set(planeSize / 2, 0, planeSize / 2);
     water.rotation.x = -Math.PI / 2;
     return water;
 }

@@ -47,7 +47,7 @@ export default function ThreeComponent({
     threeControl: ThreeControlType,
     ground: string,
     heightMap?: string,
-    water?: WaterConfig,
+    water?: string,
     grassEnabled?: boolean,
     skyEnabled?: boolean,
     assets: AssetObject[],
@@ -232,13 +232,14 @@ export default function ThreeComponent({
     }, [heightMap, scene]);
 
     useEffect(() => {
-        if (water && (water.flow || water.normal) && scene && heightMap) {
-            const waterMesh = (scene as THREE.Scene).children.find(m => m.name === 'water') as RenderedPlane;
-            if (!waterMesh) {
-                getWater(0, water, planeSize).then(waterMesh => {
-                    (scene as THREE.Scene).add(waterMesh);
-                });
-            }
+        if (water && scene && heightMap) {
+            const renderedWater = scene.children.find(m => m.name === 'water') as RenderedPlane;
+            getWater(water, planeSize).then(waterMesh => {
+                if (renderedWater) {
+                    scene.remove(renderedWater);
+                }
+                scene.add(waterMesh);
+            });
         }
     }, [water, scene, heightMap]);
 

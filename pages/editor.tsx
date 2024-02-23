@@ -75,10 +75,7 @@ export default function Editor() {
 
     const ground = '/assets/textures/green-grass-textures.jpg';
     const [heightMap, setHeightMap] = useState<string|undefined>(undefined);
-    const [water, setWater] = useState<WaterConfig>({
-        normal: undefined,
-        flow: undefined
-    });
+    const [water, setWater] = useState<string|undefined>(undefined);
     const [grassEnabled, setGrassEnabled] = useState<boolean>(true);
     const [map, setMap] = useState<ATMap>({ ...emptyATMap } as ATMap);
 
@@ -251,18 +248,10 @@ export default function Editor() {
         }
     };
     const uploadFlowMap = async (): Promise<void> => {
-        const config = Object.assign({}, water);
         const flowMap = await readFileAsURL();
         if (flowMap && typeof flowMap.value === 'string' && flowMap.value) {
-            config.flow = flowMap.value;
+            setWater(flowMap.value)
         }
-
-        const normal = await readFileAsURL();
-        if (normal && typeof normal.value === 'string' && normal.value) {
-            config.normal = normal.value;
-        }
-
-        setWater(config);
     };
 
     return (
