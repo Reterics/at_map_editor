@@ -13,7 +13,7 @@ import {
     getArrowHelper,
     getControls,
     getGroundPlane,
-    getMeshForItem, getWater, isCollisionDetected,
+    getMeshForItem, getWater,
     setInitialCameraPosition
 } from "@/src/utils/model";
 import { Object3D } from "three/src/core/Object3D";
@@ -437,9 +437,16 @@ export default function ThreeComponent({
             });
             if (intersect) {
                 const point = intersect.point;
-                const mainObject = intersect.object as Mesh;
+                // const mainObject = intersect.object as Mesh;
                 if (shadowObject) {
-                    const movementSpeed = 3; // Adjust the speed as needed
+                    // if (intersect.face) {
+                        //shadowObject.position.set(0,0,0);
+                        //shadowObject.lookAt(intersect.face.normal)
+                    // }
+                    shadowObject.position.copy(point)
+                    /*
+                    @Deprecated
+                    const movementSpeed = 3;
                     shadowObject.position.copy(camera.position)
                     const direction = point.clone().sub(shadowObject.position);
                     direction.normalize();
@@ -452,7 +459,7 @@ export default function ThreeComponent({
                         if (i >= 1000) {
                             break;
                         }
-                    }
+                    }*/
                 }
             }
         }
