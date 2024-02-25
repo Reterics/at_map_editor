@@ -35,49 +35,8 @@ import { StyledSelectOption } from "@/src/types/inputs";
 import CustomizeTools from "@/components/lib/CustomizeTools";
 import { getTypedAsset, refreshAssets } from "@/src/utils/assets";
 import { debounce } from "@/src/utils/react";
+import { defaultAssets, defaultPlane, defaultWater, emptyATMap } from "@/src/constants";
 
-export const defaultWater: WaterConfig = {
-    type: "water",
-    flowMap: "/assets/water/height.png",
-    normalMap0: "/assets/water/normal0.jpg",
-    normalMap1: "/assets/water/normal1.jpg"
-};
-
-export const defaultPlane: PlaneConfig = {
-    type: "plane",
-    texture: "/assets/textures/green-grass-textures.jpg",
-    size: 1000
-};
-
-export const emptyATMap: ATMap = {
-    created: new Date().getTime(),
-    author: "",
-    name: "",
-    items: [
-        defaultPlane,
-        defaultWater
-    ]
-}
-
-export const defaultAssets: AssetObject[] = [
-    {
-        "type": "cursor"
-    },
-    {
-        "type": "point"
-    },{
-        "type": "circle",
-        "radius": 2,
-        "startAngle": degToRad(0),
-        "endAngle": degToRad(360)
-    },{
-        "type": "rect",
-        "w": 3,
-        "h": 3
-    },{
-        "type": "line"
-    },
-];
 
 export default function Editor() {
     const [ assets, setAssets ] = useState<AssetObject[]>(defaultAssets);

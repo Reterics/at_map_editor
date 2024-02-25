@@ -4,7 +4,7 @@ import { Asset, AssetObject, Point, Line, Rectangle, Circle, PlaneConfig } from 
 import { getDistance, isPointInRectangle, isPointInsideCircle, isPointOnLine } from "@/src/utils/math";
 import { Draw } from "@/src/utils/draw";
 import { getTypedAsset } from "@/src/utils/assets";
-import { defaultPlane } from "@/pages/editor";
+import { defaultPlane } from "@/src/constants";
 
 let isDrawing = false; // Track if the mouse is being held down
 let startX: number,

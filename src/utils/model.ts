@@ -33,7 +33,7 @@ import {
     Line,
     PlaneConfig,
     Rectangle,
-    RenderedPlane,
+    RenderedPlane, RenderedWater,
     ShadowType,
     WaterConfig
 } from "@/src/types/assets";
@@ -42,6 +42,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { ThreeControlType } from "@/src/types/general";
 import { FPSController } from "@/src/utils/controls/FPSController";
 import { getFileURL } from "@/src/firebase/storage";
+import { Constants } from "@/src/constants";
 
 const genericLoader = (file: File|string, modelLoader: Loader) => {
     return new Promise(resolve => {
@@ -135,7 +136,6 @@ export const getGroundPlane = async (size: number, textureSrc?:string, heightMap
         new THREE.PlaneGeometry(size, size);
     const material = new THREE.MeshStandardMaterial({ color: 0xffff00, side: THREE.DoubleSide });
 
-
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     texture.offset.set(0, 0);
     texture.repeat.set(2, 2);
@@ -150,6 +150,7 @@ export const getGroundPlane = async (size: number, textureSrc?:string, heightMap
 
         //plane.rotation.set(-Math.PI/2, Math.PI/2000, Math.PI);
         plane.name = "plane";
+        plane.heightMap = heightMap;
         return plane;
     }
 
@@ -183,7 +184,7 @@ export const getGroundPlane = async (size: number, textureSrc?:string, heightMap
     geometry.computeVertexNormals(); // Optional: Compute normals for better lighting
     geometry.computeBoundingBox();
     const plane = new THREE.Mesh(geometry, material) as RenderedPlane;
-    plane.position.set(size / 2, -35, size / 2);
+    plane.position.set(size / 2, -1 * Constants.plane.waterLevel, size / 2);
     plane.receiveShadow = true;
     plane.rotation.set(-Math.PI / 2, 0, 0);
     plane.name = "plane";
@@ -204,9 +205,10 @@ export const getWater = async (waterConfig: WaterConfig, planeSize = 100) => {
         flowMap: flowMap,
         normalMap0: normal0,
         normalMap1: normal1
-    });
+    }) as RenderedWater;
 
     water.name = "water";
+    water.flowMap = waterConfig.flowMap;
     water.position.set(planeSize / 2, -1, planeSize / 2);
     water.rotation.x = -Math.PI / 2;
     return water;

@@ -1,6 +1,5 @@
 export interface GrassOptions {
-    instances?: number,
-    width?: number,
-    height?: number,
+    instances?: number
+    size?: number
     enabled?: boolean
 }

@@ -18,19 +18,12 @@ import { db, firebaseCollections, getCollection } from "@/src/firebase/config";
 import { doc } from "firebase/firestore";
 import { deleteDoc } from "@firebase/firestore";
 import Link from "next/link";
-
-const CONSTANTS = {
-    grid: {
-        x: 10,
-        y: 10,
-        z: 1
-    }
-};
+import { Constants } from "@/src/constants";
 
 export default function Home() {
     const [maps, setMaps] = useState([] as ATMap[]);
     const router = useRouter();
-    const projection2D : ATMap[][] = Array.from(Array(CONSTANTS.grid.x)).map(_=>[]);
+    const projection2D : ATMap[][] = Array.from(Array(Constants.grid.x)).map(_=>[]);
     const gridTemplateColumns: string[] = [];
     const gridNodes = [];
 
@@ -52,8 +45,8 @@ export default function Home() {
         }
     });
 
-    for (let i = coordinates.x; i < CONSTANTS.grid.x + coordinates.x; i++) {
-        for (let j = coordinates.y; j < CONSTANTS.grid.y + coordinates.y; j++) {
+    for (let i = coordinates.x; i < Constants.grid.x + coordinates.x; i++) {
+        for (let j = coordinates.y; j < Constants.grid.y + coordinates.y; j++) {
             const x = i > 10000 ? 10000 - i : i < 0 ? 10000 - i : i;
             const y = j > 10000 ? 10000 - j : j < 0 ? 10000 - j : j;
             if (projection2D[x] && projection2D[x][y]) {

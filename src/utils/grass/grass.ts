@@ -1,12 +1,12 @@
-import {Clock, DoubleSide, InstancedMesh, Matrix4, PlaneGeometry, Scene, ShaderMaterial, TypedArray} from "three";
+import { Clock, DoubleSide, InstancedMesh, PlaneGeometry, Scene, ShaderMaterial, TypedArray } from "three";
 import { Object3D } from "three/src/core/Object3D";
 import { GrassOptions } from "@/src/types/grass";
 
 import vertexShader from "./grass.vert";
 import fragmentShader from "./grass.frag";
-import {RenderedPlane} from "@/src/types/assets";
-import {ceil} from "three/examples/jsm/nodes/shadernode/ShaderNodeBaseElements";
-import {math} from "@/src/utils/math";
+import { RenderedPlane } from "@/src/types/assets";
+import { randomNum } from "@/src/utils/math";
+import { Constants } from "@/src/constants";
 
 const uniforms = {
     time: {
@@ -19,8 +19,7 @@ export class Grass {
     private readonly instances: number;
     private scene: Scene;
     private readonly leavesMaterial: ShaderMaterial;
-    private width: number;
-    private height: number;
+    private size: number;
     private instancedMesh?: InstancedMesh<PlaneGeometry, ShaderMaterial>;
     private enabled: Boolean;
 
@@ -29,8 +28,7 @@ export class Grass {
         this.scene = scene;
         this.clock = new Clock();
         this.instances = opt.instances || 1000;
-        this.width = opt.width || 1000;
-        this.height = opt.height || 1000;
+        this.size = opt.size || 10000;
         this.enabled = opt.enabled || false;
         this.leavesMaterial = new ShaderMaterial({
             vertexShader,
@@ -51,26 +49,26 @@ export class Grass {
         const plane = this.scene.children.find(mesh=> mesh.name === "plane") as RenderedPlane|undefined;
         let vertices: TypedArray;
         if (!plane || plane.geometry.attributes.position.array.length < 10000) {
-            vertices = new Uint8Array().fill(35,0, 30000);
+            vertices = new Uint8Array().fill(Constants.plane.waterLevel,0, 30000);
         } else {
             vertices = plane.geometry.attributes.position.array;
         }
         const temp = new Object3D();
-        const segments = Math.min(99, this.width - 1),
+        const segments = Math.min(99, this.size - 1),
             cSize = segments + 1,
-            ratio = cSize / this.width,
-            hW = this.width / 2;
+            ratio = cSize / this.size,
+            hW = this.size / 2;
 
         for (let index=0 ; index < this.instances ; index++) {
-            const j = math.range(0, cSize); // TODO: Investigate with rounded
-            const i = math.range(0, cSize);
+            const j = randomNum(cSize - 1, 0);
+            const i = randomNum(cSize - 1, 0);
 
             const n = (Math.round(i) * cSize + Math.round(j)) * 3;
 
-            const heightOnPos = vertices[n + 2] - 35 + 0.2;
+            const heightOnPos = vertices[n + 2] - Constants.plane.waterLevel + 0.2;
 
             temp.position.set(
-                j / ratio - hW,
+                j / ratio - hW, // +10
                 heightOnPos || 0.2,
                 i / ratio - hW,
             );
@@ -78,8 +76,10 @@ export class Grass {
             temp.scale.setScalar(0.5 + Math.random() * 0.5);
             temp.rotation.y = Math.random() * Math.PI;
             temp.updateMatrix();
+
             this.instancedMesh.setMatrixAt(index, temp.matrix);
         }
+
         this.instancedMesh.updateMatrix();
     }
 
@@ -95,7 +95,7 @@ export class Grass {
         this.instancedMesh = new InstancedMesh(geometry, this.leavesMaterial, this.instances);
         this.instancedMesh.castShadow = true;
         this.instancedMesh.name = "grass";
-        this.instancedMesh.position.set(this.width / 2, 0, this.height / 2);
+        this.instancedMesh.position.set(this.size / 2, 0, this.size / 2);
 
         this.scene.add(this.instancedMesh);
         this.regenerateGrassCoordinates();
@@ -127,11 +127,9 @@ export class Grass {
         return this.enabled;
     }
 
-    setDimensions(width: number, height: number) {
-        if (height && width && height !== this.height || width !== this.width) {
-            this.height = height;
-            this.width = width;
-
+    setSize(size: number) {
+        if (size && size !== this.size) {
+            this.size = size;
             this.regenerateGrassCoordinates();
         }
     }

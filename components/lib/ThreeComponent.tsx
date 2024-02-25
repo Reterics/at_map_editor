@@ -27,7 +27,7 @@ import {
 import { Object3D } from "three/src/core/Object3D";
 import { useWindow } from "@/src/utils/react";
 import { FPSController } from "@/src/utils/controls/FPSController";
-import { getTypedAsset } from "@/src/utils/assets";
+import { Constants } from "@/src/constants";
 
 let animationID: number|undefined;
 
@@ -57,17 +57,8 @@ export default function ThreeComponent({
     selectAsset: Function
 }) {
     const containerRef = useRef<HTMLDivElement>(null),
-        planeSize = 1000, // Map size is 1000x1000x1000 by AnotherTry standard
-        helperNames = [
-            "sky",
-            "light",
-            "ambientLight",
-            "grass",
-            "arrows",
-            "plane",
-            "shadowObject",
-            "hud-2d"
-        ],
+        planeSize = Constants.plane.size, // Map size is 1000x1000x1000 by AnotherTry standard
+        helperNames = Constants.helperNames,
         clock = new THREE.Clock(true);
 
     let arrowHelpers: THREE.Group,
@@ -82,9 +73,8 @@ export default function ThreeComponent({
             context:  WebGLRenderingContext | WebGL2RenderingContext | undefined = renderer.getContext(),
             scene: THREE.Scene = new THREE.Scene(),
             grass: Grass|undefined = new Grass(scene,{
-                instances: 1000000,
-                width: planeSize,
-                height: planeSize,
+                instances: Constants.grass.instances,
+                size: planeSize,
                 enabled: grassEnabled
             });
 
@@ -189,63 +179,65 @@ export default function ThreeComponent({
         }
     };
 
-    const reloadMeshes = async () => {
-        if (!scene) {
-            return;
-        }
-        scene.children
-            .filter((m: Object3D)=>m.name && m.name.startsWith('mesh_'))
-            .forEach((m: Object3D)=>scene.remove(m));
 
-        for (const item of items) {
-            const index = items.indexOf(item);
-            switch (item.type) {
-                case "plane":
-                    let planet = scene
-                        .children.find(p => p.name === 'plane') as RenderedPlane|undefined;
-                    const planetConfig = item as PlaneConfig;
-                    if (!planet || planet.heightMap !== planetConfig.heightMap) {
-                        if (planet) {
-                            scene.remove(planet);
-                        }
-                        const newPlane = await getMeshForItem(item);
-                        if (newPlane) {
-                            newPlane.name = 'plane';
-                            scene.add(newPlane);
-                            if (grass) {
-                                grass.destroy();
-                                grass.addToScene();
+    useEffect(()=> {
+        const reloadMeshes = async () => {
+            if (!scene) {
+                return;
+            }
+            scene.children
+                .filter((m: Object3D)=>m.name && m.name.startsWith('mesh_'))
+                .forEach((m: Object3D)=>scene.remove(m));
+
+            for (const item of items) {
+                const index = items.indexOf(item);
+                switch (item.type) {
+                    case "plane":
+                        let planet = scene
+                            .children.find(p => p.name === 'plane') as RenderedPlane|undefined;
+                        const planetConfig = item as PlaneConfig;
+                        if (!planet || planet.heightMap !== planetConfig.heightMap) {
+                            if (planet) {
+                                scene.remove(planet);
+                            }
+                            const newPlane = await getMeshForItem(item);
+                            if (newPlane) {
+                                newPlane.name = 'plane';
+                                scene.add(newPlane);
+                                if (grass) {
+                                    grass.destroy();
+                                    grass.addToScene();
+                                }
                             }
                         }
-                    }
-                    break;
-                case "water":
-                    let water = scene
-                        .children.find(p => p.name === 'water') as RenderedWater|undefined;
-                    const waterConfig = item as WaterConfig;
-                    if (!water || water.flowMap !== waterConfig.flowMap) {
-                        if (water) {
-                            scene.remove(water);
+                        break;
+                    case "water":
+                        let water = scene
+                            .children.find(p => p.name === 'water') as RenderedWater|undefined;
+                        const waterConfig = item as WaterConfig;
+                        if (!water || water.flowMap !== waterConfig.flowMap) {
+                            if (water) {
+                                scene.remove(water);
+                            }
+                            const newWater = await getMeshForItem(item);
+                            if (newWater) {
+                                newWater.name = 'water';
+                                scene.add(newWater);
+                            }
                         }
-                        const newWater = await getMeshForItem(item);
-                        if (newWater) {
-                            newWater.name = 'water';
-                            scene.add(newWater);
+                        break;
+                    default:
+                        const model = await getMeshForItem(item);
+                        if (model) {
+                            model.name = "mesh_" + index;
+                            scene.add(model);
                         }
-                    }
-                    break;
-                default:
-                    const model = await getMeshForItem(item);
-                    if (model) {
-                        model.name = "mesh_" + index;
-                        scene.add(model);
-                    }
+                }
             }
-        }
-    };
-    useEffect(()=> {
+        };
+
         void reloadMeshes();
-    }, [items, scene]);
+    }, [grass, items, scene]);
 
     const cancelAnimation = () => {
         if (typeof animationID === "number") {
@@ -428,7 +420,7 @@ export default function ThreeComponent({
     if (camera && renderer && camera.aspect !== width / height) {
         camera.aspect = width / height;
         if (grass) {
-            grass.setDimensions(planeSize, planeSize);
+            grass.setSize(planeSize);
         }
         updateCameraPosition();
     }
