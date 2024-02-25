@@ -1,4 +1,5 @@
 import { Mesh } from "three";
+import { Water } from "three/examples/jsm/objects/Water2";
 
 export type AssetType = 'cursor'|'point'|'circle'|'rect'|'line'|'model'|'plane'|'water';
 
@@ -56,7 +57,11 @@ export interface ShadowType extends Mesh {
 }
 
 export interface RenderedPlane extends Mesh {
-    isHeightMap?: boolean
+    heightMap?: string
+}
+
+export interface RenderedWater extends Water {
+    flowMap?: string
 }
 
 export interface PlaneConfig extends Asset {

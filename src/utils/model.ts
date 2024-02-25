@@ -34,7 +34,8 @@ import {
     PlaneConfig,
     Rectangle,
     RenderedPlane,
-    ShadowType
+    ShadowType,
+    WaterConfig
 } from "@/src/types/assets";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -186,14 +187,14 @@ export const getGroundPlane = async (size: number, textureSrc?:string, heightMap
     plane.receiveShadow = true;
     plane.rotation.set(-Math.PI / 2, 0, 0);
     plane.name = "plane";
-    plane.isHeightMap = true;
+    plane.heightMap = heightMap;
     return plane;
 }
 
-export const getWater = async (flow: string|undefined, planeSize = 100) => {
-    const flowMap = await loadTexture(flow || '/assets/water/height.png');
-    const normal0 = await loadTexture('/assets/water/normal0.jpg');
-    const normal1 = await loadTexture('/assets/water/normal1.jpg');
+export const getWater = async (waterConfig: WaterConfig, planeSize = 100) => {
+    const flowMap = await loadTexture(waterConfig.flowMap || '/assets/water/height.png');
+    const normal0 = await loadTexture(waterConfig.normalMap0 || '/assets/water/normal0.jpg');
+    const normal1 = await loadTexture(waterConfig.normalMap1 || '/assets/water/normal1.jpg');
     const waterGeometry = new THREE.PlaneGeometry(1000, 1000);
 
     const water = new Water(waterGeometry, {
@@ -206,7 +207,7 @@ export const getWater = async (flow: string|undefined, planeSize = 100) => {
     });
 
     water.name = "water";
-    water.position.set(planeSize / 2, 0, planeSize / 2);
+    water.position.set(planeSize / 2, -1, planeSize / 2);
     water.rotation.x = -Math.PI / 2;
     return water;
 }
@@ -275,6 +276,8 @@ export const getMeshForItem = async (item: AssetObject): Promise<Mesh|Group|null
         case "plane":
             const plane = item as PlaneConfig;
             return await getGroundPlane(plane.size, plane.texture, plane.heightMap);
+        case "water":
+            return await getWater(item as WaterConfig, 1000);
     }
     model = new Mesh(geometry, material);
     model.castShadow = true; //default is false

@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Asset, AssetObject, Point, Line, Rectangle, Circle } from "@/src/types/assets";
+import { Asset, AssetObject, Point, Line, Rectangle, Circle, PlaneConfig } from "@/src/types/assets";
 import { getDistance, isPointInRectangle, isPointInsideCircle, isPointOnLine } from "@/src/utils/math";
 import { Draw } from "@/src/utils/draw";
+import { getTypedAsset } from "@/src/utils/assets";
+import { defaultPlane } from "@/pages/editor";
 
 let isDrawing = false; // Track if the mouse is being held down
 let startX: number,
@@ -13,19 +15,18 @@ export default function CanvasEditor({
     items,
     height,
     width,
-    setItems,
-    ground
+    setItems
 }: {
     reference: AssetObject,
     items: AssetObject[],
     height: number,
     width: number,
-    setItems:Function,
-    ground: string
+    setItems:Function
 }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [drawer, setDrawer] = useState<Draw|null>(null);
 
+    const plane = getTypedAsset(items, 'plane') as PlaneConfig || defaultPlane;
 
     const render = () => {
         if (drawer) {
@@ -38,9 +39,9 @@ export default function CanvasEditor({
 
     useEffect(() => {
         if (canvasRef.current) {
-            setDrawer(new Draw(canvasRef.current, { background: ground }));
+            setDrawer(new Draw(canvasRef.current, { background: plane.texture }));
         }
-    }, [canvasRef, ground]);
+    }, [canvasRef, plane]);
 
     if (canvasRef && canvasRef.current && drawer) {
         void render();

@@ -1,5 +1,5 @@
 import { firebaseCollections, getCollection } from "@/src/firebase/config";
-import { AssetObject } from "@/src/types/assets";
+import { AssetObject, AssetType } from "@/src/types/assets";
 import { getFileURL } from "@/src/firebase/storage";
 
 
@@ -12,3 +12,7 @@ export const refreshAssets = async (setAssets: Function) => {
     }
     setAssets(assets as AssetObject[]);
 };
+
+export const getTypedAsset = (assets: AssetObject[], type: AssetType): AssetObject|undefined => {
+    return assets.find(o => o.type === type);
+}

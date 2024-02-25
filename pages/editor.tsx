@@ -33,7 +33,7 @@ import { collection, doc, setDoc, updateDoc } from "firebase/firestore";
 import StyledSelect from "@/components/form/StyledSelect";
 import { StyledSelectOption } from "@/src/types/inputs";
 import CustomizeTools from "@/components/lib/CustomizeTools";
-import { refreshAssets } from "@/src/utils/assets";
+import { getTypedAsset, refreshAssets } from "@/src/utils/assets";
 import { debounce } from "@/src/utils/react";
 
 export const defaultWater: WaterConfig = {
@@ -54,7 +54,8 @@ export const emptyATMap: ATMap = {
     author: "",
     name: "",
     items: [
-        defaultPlane
+        defaultPlane,
+        defaultWater
     ]
 }
 
@@ -79,8 +80,6 @@ export const defaultAssets: AssetObject[] = [
 ];
 
 export default function Editor() {
-    const envTypes = ['plane', 'water'];
-
     const [ assets, setAssets ] = useState<AssetObject[]>(defaultAssets);
 
     const searchParams = useSearchParams()
@@ -90,10 +89,7 @@ export default function Editor() {
     const [grassEnabled, setGrassEnabled] = useState<boolean>(true);
     const [map, setMap] = useState<ATMap>({ ...emptyATMap });
 
-    const items = map.items.filter(object => !envTypes.includes(object.type));
     const setItems = (items: AssetObject[]) => setMap({ ...map, items: items });
-    const plane = map.items.find(o => o.type === 'plane') as PlaneConfig || defaultPlane;
-    const water = map.items.find(o => o.type === 'water') as WaterConfig || defaultWater;
 
     const [layout, setLayout] = useState<LayoutType>("three");
     const [editorDimensions, setEditorDimensions] =
@@ -101,7 +97,7 @@ export default function Editor() {
     const [reference, setReference] = useState(assets[3]);
     const [threeControl, setThreeControl] = useState<ThreeControlType>("orbit");
 
-    const selected = items.find(item=>item.selected);
+    const selected = map.items.find(item=>item.selected);
 
     const updateMapFromCloud = async (id: string) => {
         const map = await getById(id, firebaseCollections.maps);
@@ -223,7 +219,7 @@ export default function Editor() {
     const selectedModel = (asset: AssetObject) => {
         setReference(Object.assign({}, asset));
         if (asset.type !== "cursor" && selected) {
-            setItems([...items.map(i=> {
+            setItems([...map.items.map(i=> {
                 i.selected = false; return i;
             })]);
         }
@@ -231,7 +227,7 @@ export default function Editor() {
 
     const exportData = () => {
         const name = "map-" + new Date().toISOString() + ".json";
-        downloadAsFile(name, JSON.stringify(items), 'application/json');
+        downloadAsFile(name, JSON.stringify(map.items), 'application/json');
     }
 
     const importData = async function () {
@@ -254,15 +250,17 @@ export default function Editor() {
     const uploadHeightMap = async (): Promise<void> => {
         const data = await readFileAsURL();
         if (data && typeof data.value === "string" && data.value) {
+            const plane = getTypedAsset(assets, 'plane') as PlaneConfig || defaultPlane;
             plane.heightMap = data.value;
-            setItems([plane, ...items.filter(item=>item.type !== 'plane')]);
+            setItems([plane, ...map.items.filter(item=>item.type !== 'plane')]);
         }
     };
     const uploadFlowMap = async (): Promise<void> => {
         const flowMap = await readFileAsURL();
         if (flowMap && typeof flowMap.value === 'string' && flowMap.value) {
+            const water = getTypedAsset(assets, 'water') as WaterConfig|| defaultWater;
             water.flowMap = flowMap.value;
-            setItems([water, ...items.filter(item=>item.type !== 'water')]);
+            setItems([water, ...map.items.filter(item=>item.type !== 'water')]);
         }
     };
 
@@ -302,7 +300,7 @@ export default function Editor() {
                     reference={reference}
                     setItems={setItems}
                     selected={selected}
-                    items={items}
+                    items={map.items}
                     setReference={setReference}
                 />
 
@@ -351,27 +349,23 @@ export default function Editor() {
                     (layout === "normal" || layout === "canvas") && editorDimensions[0] && <div className="relative overflow-x-auto shadow-md
                     m-auto w-full mt-2 p-0">
                         <CanvasEditor reference={reference}
-                                      items={items}
+                                      items={map.items}
                                       width={editorDimensions[0]}
                                       height={editorDimensions[1]}
                                       setItems={setItems}
-                                      ground={plane.texture}
                         />
                     </div>
                 }
                 {
                     (layout === "normal" || layout === "three") && editorDimensions[0] && <div className="relative overflow-x-auto shadow-md
                    m-auto w-full mt-2 border-2 p-0">
-                        <ThreeComponent items={items}
+                        <ThreeComponent items={map.items}
                                         selected={selected}
                                         width={editorDimensions[0]}
                                         height={editorDimensions[1]}
                                         setItems={setItems}
                                         reference={reference}
                                         threeControl={threeControl}
-                                        ground={plane.texture}
-                                        heightMap={plane.heightMap}
-                                        water={water.flowMap}
                                         grassEnabled={grassEnabled}
                                         skyEnabled={true}
                                         assets={assets}
