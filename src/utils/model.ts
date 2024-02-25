@@ -342,17 +342,14 @@ export const getControls = (type: ThreeControlType, camera:PerspectiveCamera, re
 }
 
 export const setInitialCameraPosition = async (
-    camera:PerspectiveCamera,
+    camera: PerspectiveCamera,
     renderer: WebGLRenderer,
     controls: TrackballControls | OrbitControls | FPSController,
     scene: Scene,
-    width: number,
-    height: number,
+    planeSize: number,
     threeControl: ThreeControlType,
     selected?: AssetObject) => {
     camera.updateProjectionMatrix();
-
-    // renderer.setSize(width, height);
 
     let lookAt;
     switch (threeControl) {
@@ -366,19 +363,18 @@ export const setInitialCameraPosition = async (
                     return;
                 }
             } else {
-                lookAt = new THREE.Vector3(Math.round(width/2), 0, Math.round(height/2));
+                lookAt = new THREE.Vector3(Math.round(planeSize/2), 0, Math.round(planeSize/2));
             }
             break;
         case "fps":
         case "orbit":
         case "trackball":
         default:
-            lookAt = new THREE.Vector3(Math.round(width/2), 0, Math.round(height/2));
+            lookAt = new THREE.Vector3(Math.round(planeSize/2), 0, Math.round(planeSize/2));
     }
     if (threeControl !== "fps") {
         camera.position.copy(lookAt);
-        //camera.position.x = +Math.round(Math.max(height, width) * 2);
-        camera.position.y = +Math.round(Math.max(height, width) * 3 / 4);
+        camera.position.y = +Math.round(Math.max(planeSize, planeSize) * 3 / 4);
         if (controls.target) {
             controls.target.copy(lookAt);
         }

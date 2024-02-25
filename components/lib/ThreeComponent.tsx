@@ -58,8 +58,7 @@ export default function ThreeComponent({
 }) {
     const containerRef = useRef<HTMLDivElement>(null),
         planeSize = Constants.plane.size, // Map size is 1000x1000x1000 by AnotherTry standard
-        helperNames = Constants.helperNames,
-        clock = new THREE.Clock(true);
+        helperNames = Constants.helperNames;
 
     let arrowHelpers: THREE.Group,
         helpersCount = 0;
@@ -172,8 +171,7 @@ export default function ThreeComponent({
                 renderer,
                 controls,
                 scene,
-                width,
-                height,
+                planeSize,
                 threeControl,
                 selected);
         }
@@ -256,6 +254,7 @@ export default function ThreeComponent({
         } else if (containerRef.current && !containerRef.current.childNodes.length) {
             containerRef.current?.appendChild(renderer.domElement);
         }
+        const clock = new THREE.Clock(true)
         const animate = () => {
             if (grass) {
                 grass.refresh();
@@ -270,7 +269,7 @@ export default function ThreeComponent({
 
         // Clean up the event listener when the component is unmounted
         return () => {};
-    }, [camera, controls, renderer, scene]);
+    }, [camera, controls, renderer, scene, grass]);
 
     useEffect(()=>{
         void setInitialCameraPosition(
@@ -279,10 +278,8 @@ export default function ThreeComponent({
             controls,
             scene,
             planeSize,
-            planeSize,
-            threeControl,
-            selected);
-    }, [camera, renderer, controls, threeControl])
+            threeControl);
+    }, [camera, renderer, controls, threeControl, scene, planeSize])
 
     const addArrowHelper = ()=>{
         const arrowGroup = getArrowHelper();
