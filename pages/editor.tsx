@@ -19,7 +19,7 @@ import {
     BsSlashLg, BsTree, BsTreeFill, BsWater
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
-import { AssetObject } from "@/src/types/assets";
+import { AssetObject, PlaneConfig, WaterConfig  } from "@/src/types/assets";
 import { degToRad } from "@/src/utils/math";
 import ThreeComponent from "@/components/lib/ThreeComponent";
 import { LayoutType, ThreeControlType } from "@/src/types/general";
@@ -36,11 +36,26 @@ import CustomizeTools from "@/components/lib/CustomizeTools";
 import { refreshAssets } from "@/src/utils/assets";
 import { debounce } from "@/src/utils/react";
 
-export const emptyATMap = {
+export const defaultWater: WaterConfig = {
+    type: "water",
+    flowMap: "/assets/water/height.png",
+    normalMap0: "/assets/water/normal0.jpg",
+    normalMap1: "/assets/water/normal1.jpg"
+};
+
+export const defaultPlane: PlaneConfig = {
+    type: "plane",
+    texture: "/assets/textures/green-grass-textures.jpg",
+    size: 1000
+};
+
+export const emptyATMap: ATMap = {
     created: new Date().getTime(),
     author: "",
     name: "",
-    items: []
+    items: [
+        defaultPlane
+    ]
 }
 
 export const defaultAssets: AssetObject[] = [
@@ -64,7 +79,7 @@ export const defaultAssets: AssetObject[] = [
 ];
 
 export default function Editor() {
-
+    const envTypes = ['plane', 'water'];
 
     const [ assets, setAssets ] = useState<AssetObject[]>(defaultAssets);
 
@@ -72,18 +87,14 @@ export default function Editor() {
     const id = searchParams && searchParams.get('id') ?  searchParams.get('id') : undefined;
     const name = searchParams && searchParams.get('name') ? searchParams.get('name') : "";
 
-    const ground = '/assets/textures/green-grass-textures.jpg';
-    const [heightMap, setHeightMap] = useState<string|undefined>(undefined);
-    const [water, setWater] = useState<string|undefined>(undefined);
     const [grassEnabled, setGrassEnabled] = useState<boolean>(true);
-    const [map, setMap] = useState<ATMap>({ ...emptyATMap } as ATMap);
+    const [map, setMap] = useState<ATMap>({ ...emptyATMap });
 
-    // TODO: Remove this porting
-    const items = map.items || [];
-    const setItems = (items: AssetObject[]) => {
-        setMap({ ...map, items: items });
-    };
-    // const [items, setItems] = useState<AssetObject[]>([]);
+    const items = map.items.filter(object => !envTypes.includes(object.type));
+    const setItems = (items: AssetObject[]) => setMap({ ...map, items: items });
+    const plane = map.items.find(o => o.type === 'plane') as PlaneConfig || defaultPlane;
+    const water = map.items.find(o => o.type === 'water') as WaterConfig || defaultWater;
+
     const [layout, setLayout] = useState<LayoutType>("three");
     const [editorDimensions, setEditorDimensions] =
         useState([0, 0]);
@@ -243,13 +254,15 @@ export default function Editor() {
     const uploadHeightMap = async (): Promise<void> => {
         const data = await readFileAsURL();
         if (data && typeof data.value === "string" && data.value) {
-            setHeightMap(data.value);
+            plane.heightMap = data.value;
+            setItems([plane, ...items.filter(item=>item.type !== 'plane')]);
         }
     };
     const uploadFlowMap = async (): Promise<void> => {
         const flowMap = await readFileAsURL();
         if (flowMap && typeof flowMap.value === 'string' && flowMap.value) {
-            setWater(flowMap.value)
+            water.flowMap = flowMap.value;
+            setItems([water, ...items.filter(item=>item.type !== 'water')]);
         }
     };
 
@@ -342,7 +355,7 @@ export default function Editor() {
                                       width={editorDimensions[0]}
                                       height={editorDimensions[1]}
                                       setItems={setItems}
-                                      ground={ground}
+                                      ground={plane.texture}
                         />
                     </div>
                 }
@@ -356,9 +369,9 @@ export default function Editor() {
                                         setItems={setItems}
                                         reference={reference}
                                         threeControl={threeControl}
-                                        ground={ground}
-                                        heightMap={heightMap}
-                                        water={water}
+                                        ground={plane.texture}
+                                        heightMap={plane.heightMap}
+                                        water={water.flowMap}
                                         grassEnabled={grassEnabled}
                                         skyEnabled={true}
                                         assets={assets}

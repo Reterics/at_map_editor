@@ -274,7 +274,7 @@ export const getMeshForItem = async (item: AssetObject): Promise<Mesh|Group|null
             return null;
         case "plane":
             const plane = item as PlaneConfig;
-            return await getGroundPlane(plane.size, plane.texture, plane.heightmap);
+            return await getGroundPlane(plane.size, plane.texture, plane.heightMap);
     }
     model = new Mesh(geometry, material);
     model.castShadow = true; //default is false
