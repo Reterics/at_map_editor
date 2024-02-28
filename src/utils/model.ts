@@ -374,7 +374,7 @@ export const setInitialCameraPosition = async (
     }
     if (threeControl !== "fps") {
         camera.position.copy(lookAt);
-        camera.position.y = +Math.round(Math.max(planeSize, planeSize) * 3 / 4);
+        camera.position.y = 640;
         if (controls.target) {
             controls.target.copy(lookAt);
         }

@@ -160,3 +160,30 @@ export const readTextFile = (accept = 'application/json'): Promise<TextFile> => 
         fileInput.click();
     });
 }
+
+export const cropImage = (imageURL: string, targetWidth?: number, targetHeight?: number): Promise<string> => {
+    return new Promise(resolve => {
+        const img = new Image();
+        img.src = imageURL;
+
+        img.onload = () => {
+            const shorterSide = Math.min(img.width, img.height);
+            const tw = targetWidth || shorterSide;
+            const th = targetHeight || shorterSide;
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            const sx = (img.width - shorterSide) / 2;
+            const sy = (img.height - shorterSide) / 2;
+
+            canvas.width = tw;
+            canvas.height = th;
+
+            if (ctx) {
+                ctx.drawImage(img, sx, 0, tw, th, 0, 0, tw, th);
+            }
+
+            resolve(canvas.toDataURL("image/png"));
+        }
+    });
+};
