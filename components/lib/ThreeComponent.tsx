@@ -42,7 +42,7 @@ export default function ThreeComponent({
     grassEnabled,
     skyEnabled,
     assets,
-    selectAsset
+    onCameraReset
 }: {
     items: AssetObject[],
     selected?: AssetObject
@@ -54,7 +54,7 @@ export default function ThreeComponent({
     grassEnabled?: boolean,
     skyEnabled?: boolean,
     assets: AssetObject[],
-    selectAsset: Function
+    onCameraReset: Function
 }) {
     const containerRef = useRef<HTMLDivElement>(null),
         planeSize = Constants.plane.size, // Map size is 1000x1000x1000 by AnotherTry standard
@@ -67,7 +67,9 @@ export default function ThreeComponent({
 
         const camera: THREE.PerspectiveCamera = new THREE.PerspectiveCamera(75, width / height, 0.1, 20001),
             renderer: THREE.WebGLRenderer = new THREE.WebGLRenderer({
-                antialias: true
+                antialias: true,
+                preserveDrawingBuffer: false,
+                powerPreference: 'high-performance',
             }),
             context:  WebGLRenderingContext | WebGL2RenderingContext | undefined = renderer.getContext(),
             scene: THREE.Scene = new THREE.Scene(),

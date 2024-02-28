@@ -20,10 +20,9 @@ import {
 } from "react-icons/bs";
 import CanvasEditor from "@/components/lib/CanvasEditor";
 import { AssetObject, PlaneConfig, WaterConfig  } from "@/src/types/assets";
-import { degToRad } from "@/src/utils/math";
 import ThreeComponent from "@/components/lib/ThreeComponent";
 import { LayoutType, ThreeControlType } from "@/src/types/general";
-import { downloadAsFile, readFileAsURL, readTextFile } from "@/src/utils/general";
+import { cropImage, downloadAsFile, readFileAsURL, readTextFile } from "@/src/utils/general";
 import ToolbarButton from "@/components/form/ToolbarButton";
 import { useSearchParams } from 'next/navigation';
 import { db, firebaseCollections, getById } from "@/src/firebase/config";
@@ -47,6 +46,7 @@ export default function Editor() {
 
     const [grassEnabled, setGrassEnabled] = useState<boolean>(true);
     const [map, setMap] = useState<ATMap>({ ...emptyATMap });
+    const [texture, setTexture] = useState<string|undefined>(undefined);
 
     const setItems = (items: AssetObject[]) => setMap({ ...map, items: items });
 
@@ -86,6 +86,8 @@ export default function Editor() {
                 if (canvasEditor) {
                     map.texture = canvasEditor.toDataURL("image/png");
                 }
+            } else if (texture) {
+                map.texture = texture;
             }
             const useRef = doc(db, firebaseCollections.maps, map.id);
             await updateDoc(useRef, {
@@ -223,6 +225,19 @@ export default function Editor() {
         }
     };
 
+    const onCameraReset = (domElement: HTMLCanvasElement) => {
+        if (domElement) {
+            const image = domElement.toDataURL();
+
+            const cropSize = Math.min(domElement.width, domElement.height) || domElement.offsetHeight;
+            cropImage(image, cropSize, cropSize).then((img) => {
+                if (img) {
+                    setTexture(img);
+                }
+            });
+        }
+    };
+
     return (
         <Layout>
             <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full mt-2">
@@ -328,7 +343,7 @@ export default function Editor() {
                                         grassEnabled={grassEnabled}
                                         skyEnabled={true}
                                         assets={assets}
-                                        selectAsset={()=>console.log('TODO')/*TODO*/}
+                                        onCameraReset={onCameraReset}
                         />
                     </div>
                 }
