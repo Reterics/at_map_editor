@@ -28,6 +28,7 @@ import { Object3D } from "three/src/core/Object3D";
 import { useWindow } from "@/src/utils/react";
 import { FPSController } from "@/src/utils/controls/FPSController";
 import { Constants } from "@/src/constants";
+import {SerenityGrass} from "@/src/utils/grass/serenityGrass";
 
 let animationID: number|undefined;
 
@@ -73,7 +74,7 @@ export default function ThreeComponent({
             }),
             context:  WebGLRenderingContext | WebGL2RenderingContext | undefined = renderer.getContext(),
             scene: THREE.Scene = new THREE.Scene(),
-            grass: Grass|undefined = new Grass(scene,{
+            grass: SerenityGrass|undefined = new SerenityGrass(scene,{
                 instances: Constants.grass.instances,
                 size: planeSize,
                 enabled: grassEnabled
