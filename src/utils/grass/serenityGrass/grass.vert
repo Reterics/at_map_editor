@@ -37,16 +37,6 @@ vec3 rotateVectorByQuaternion(vec3 v, vec4 q){
     return 2.0 * cross(q.xyz, v * q.w + cross(q.xyz, v)) + v;
 }
 
-float placeOnSphere(vec3 v){
-    float theta = acos(v.z/radius);
-    float phi = acos(v.x/(radius * sin(theta)));
-    float sV = radius * sin(theta) * sin(phi);
-    //If undefined, set to default value
-    if(sV != sV){
-        sV = v.y;
-    }
-    return sV;
-}
 
 void main() {
 
@@ -82,7 +72,7 @@ void main() {
     pos.x = globalPos.x - tile.x * width;
     pos.z = globalPos.z - tile.z * width;
 
-    pos.y = max(0.0, placeOnSphere(pos)) - radius;
+    // pos.y = max(0.0, placeOnSphere(pos)) - radius;
     pos.y += getYPosition(vec2(pos.x+delta*posX, pos.z+delta*posZ));
 
     //Position of the blade in the visible patch [0->1]

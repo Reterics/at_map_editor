@@ -22,14 +22,6 @@ const joints = 4;
 const bladeWidth = 0.12;
 const bladeHeight = 1;
 
-//Patch side length
-const width = 100;
-//Number of vertices on ground plane side
-const resolution = 64;
-//Distance between two ground plane vertices
-const delta = width/resolution;
-//Radius of the sphere onto which the ground plane is bent
-const radius = 240;
 
 //The global coordinates
 //The geometry never leaves a box of width*width around (0, 0)
@@ -59,6 +51,7 @@ const specularColour = new Vector3(1.0, 1.0, 1.0);
 export class SerenityGrass {
     private clock: Clock;
     private scene: Scene;
+    private readonly instances: number;
     private readonly grassMaterial: RawShaderMaterial;
     private size: number;
     private mesh?: Mesh<InstancedBufferGeometry, RawShaderMaterial>;
@@ -69,6 +62,7 @@ export class SerenityGrass {
         const opt: GrassOptions = options || {};
         this.scene = scene;
         this.clock = new Clock();
+        this.instances = opt.instances || 1000;
         this.size = opt.size || 10000;
         this.enabled = opt.enabled || false;
         const loader = new TextureLoader();
@@ -76,6 +70,10 @@ export class SerenityGrass {
         const grassTexture = loader.load('/assets/grass/blade_diffuse.jpg');
         const alphaMap = loader.load('/assets/grass/blade_alpha.jpg');
         const noiseTexture = loader.load('/assets/grass/perlinFbm.jpg');
+        //Number of vertices on ground plane side
+        const resolution = 64;
+        //Distance between two ground plane vertices
+        const delta = this.size/resolution;
 
         this.grassMaterial = new RawShaderMaterial({
             uniforms: {
@@ -83,8 +81,7 @@ export class SerenityGrass {
                 delta: { type: 'float', value: delta } as IUniform,
                 posX: { type: 'float', value: pos.x } as IUniform,
                 posZ: { type: 'float', value: pos.y } as IUniform,
-                radius: { type: 'float', value: radius } as IUniform,
-                width: { type: 'float', value: width } as IUniform,
+                width: { type: 'float', value: this.size } as IUniform,
                 map: { value: grassTexture },
                 alphaMap: { value: alphaMap },
                 noiseTexture: { value: noiseTexture },
@@ -186,20 +183,21 @@ export class SerenityGrass {
         instancedGeometry.attributes.uv = grassBaseGeometry.attributes.uv;
         instancedGeometry.attributes.normal = grassBaseGeometry.attributes.normal;
 
+
         // Each instance has its own data for position, orientation and scale
         const indices = [];
         const offsets = [];
         const scales = [];
         const halfRootAngles = [];
 
-//For each instance of the grass blade
-        for (let i = 0; i < instances; i++){
+        //For each instance of the grass blade
+        for (let i = 0; i < this.instances; i++){
 
-            indices.push(i/instances);
+            indices.push(i/this.instances);
 
             //Offset of the roots
-            x = Math.random() * width - width/2;
-            z = Math.random() * width - width/2;
+            x = Math.random() * this.size - this.size/2;
+            z = Math.random() * this.size - this.size/2;
             y = 0;
             offsets.push(x, y, z);
 
