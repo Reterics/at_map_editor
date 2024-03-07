@@ -15,7 +15,6 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Color } from "three";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import { ThreeControlType } from "@/src/types/general";
-import { Grass } from "@/src/utils/grass/grass";
 import { renderEnvironment } from "@/src/utils/background";
 import {
     createShadowObject,
@@ -28,7 +27,7 @@ import { Object3D } from "three/src/core/Object3D";
 import { useWindow } from "@/src/utils/react";
 import { FPSController } from "@/src/utils/controls/FPSController";
 import { Constants } from "@/src/constants";
-import {SerenityGrass} from "@/src/utils/grass/serenityGrass";
+import SerenityGrass from "@/src/utils/grass/serenityGrass";
 
 let animationID: number|undefined;
 
@@ -116,7 +115,7 @@ export default function ThreeComponent({
         camera: THREE.PerspectiveCamera,
         renderer: THREE.WebGLRenderer,
         scene: THREE.Scene,
-        grass: Grass|undefined
+        grass: SerenityGrass|undefined
     } = useWindow(initializeThreeGlobals, [
         "camera",
         "renderer",

@@ -7,6 +7,8 @@ import fragmentShader from "./grass.frag";
 import { RenderedPlane } from "@/src/types/assets";
 import { randomNum } from "@/src/utils/math";
 import { Constants } from "@/src/constants";
+import { BufferGeometry } from "three/src/core/BufferGeometry";
+import { Grass } from "@/src/utils/grass";
 
 const uniforms = {
     time: {
@@ -14,14 +16,15 @@ const uniforms = {
     }
 }
 
-export class Grass {
-    private clock: Clock;
-    private readonly instances: number;
-    private scene: Scene;
-    private readonly leavesMaterial: ShaderMaterial;
-    private size: number;
-    private instancedMesh?: InstancedMesh<PlaneGeometry, ShaderMaterial>;
-    private enabled: Boolean;
+export default class InstancedGrass implements Grass {
+    clock: Clock;
+    scene: Scene;
+    readonly instances: number;
+    readonly grassMaterial: ShaderMaterial;
+    size: number;
+    mesh?: InstancedMesh<BufferGeometry, ShaderMaterial>;
+    enabled: Boolean;
+    geometry: BufferGeometry;
 
     constructor (scene: Scene, options?: GrassOptions) {
         const opt: GrassOptions = options || {};
@@ -30,12 +33,15 @@ export class Grass {
         this.instances = opt.instances || 1000;
         this.size = opt.size || 10000;
         this.enabled = opt.enabled || false;
-        this.leavesMaterial = new ShaderMaterial({
+        this.grassMaterial = new ShaderMaterial({
             vertexShader,
             fragmentShader,
             uniforms,
             side: DoubleSide
         });
+        const geometry = new PlaneGeometry(0.1, 0.3, 2, 4);
+        geometry.translate(0, 0, 0);
+        this.geometry = geometry;
     }
 
     getFromScene() {
@@ -43,7 +49,7 @@ export class Grass {
     }
 
     regenerateGrassCoordinates() {
-        if (!this.instancedMesh) {
+        if (!this.mesh) {
             return false;
         }
         const plane = this.scene.children.find(mesh=> mesh.name === "plane") as RenderedPlane|undefined;
@@ -77,10 +83,10 @@ export class Grass {
             temp.rotation.y = Math.random() * Math.PI;
             temp.updateMatrix();
 
-            this.instancedMesh.setMatrixAt(index, temp.matrix);
+            this.mesh.setMatrixAt(index, temp.matrix);
         }
 
-        this.instancedMesh.updateMatrix();
+        this.mesh.updateMatrix();
     }
 
     addToScene() {
@@ -89,15 +95,12 @@ export class Grass {
             this.scene.remove(grass);
         }
 
-        const geometry = new PlaneGeometry(0.1, 0.3, 2, 4);
-        geometry.translate(0, 0, 0);
+        this.mesh = new InstancedMesh(this.geometry, this.grassMaterial, this.instances);
+        this.mesh.castShadow = true;
+        this.mesh.name = "grass";
+        this.mesh.position.set(this.size / 2, 0, this.size / 2);
 
-        this.instancedMesh = new InstancedMesh(geometry, this.leavesMaterial, this.instances);
-        this.instancedMesh.castShadow = true;
-        this.instancedMesh.name = "grass";
-        this.instancedMesh.position.set(this.size / 2, 0, this.size / 2);
-
-        this.scene.add(this.instancedMesh);
+        this.scene.add(this.mesh);
         this.regenerateGrassCoordinates();
     }
 
@@ -105,18 +108,18 @@ export class Grass {
         if (!this.enabled) {
             return this.destroy();
         }
-        if (!this.instancedMesh) {
+        if (!this.mesh) {
             this.addToScene();
         }
-        this.leavesMaterial.uniforms.time.value = this.clock.getElapsedTime();
-        this.leavesMaterial.uniformsNeedUpdate = true;
+        this.grassMaterial.uniforms.time.value = this.clock.getElapsedTime();
+        this.grassMaterial.uniformsNeedUpdate = true;
     }
 
     destroy() {
-        if (this.instancedMesh) {
-            this.scene.remove(this.instancedMesh);
-            this.instancedMesh.dispose();
-            this.instancedMesh = undefined;
+        if (this.mesh) {
+            this.scene.remove(this.mesh);
+            this.mesh.dispose();
+            this.mesh = undefined;
         }
     }
 
