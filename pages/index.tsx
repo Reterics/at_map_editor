@@ -56,11 +56,15 @@ export default function Home() {
                         background: map.texture ? "url('"+map.texture+"')" : '#004900'
                     }}
                     id={map.id}
+                    key={map.id}
                     className='map-grid ready' href={'/editor?id=' + map.id}> </Link>))
 
             } else {
-                gridNodes.push((<Link className='map-grid' href={'/editor?name=' +
-                    x.toString().padStart(4, '0') + '-' + y.toString().padStart(4, '0')}> </Link>))
+                const name = x.toString().padStart(4, '0') + '-' + y.toString().padStart(4, '0')
+                gridNodes.push((<Link
+                    key={name}
+                    className='map-grid'
+                    href={'/editor?name=' + name}> </Link>))
             }
         }
         gridTemplateColumns.push('1fr');
