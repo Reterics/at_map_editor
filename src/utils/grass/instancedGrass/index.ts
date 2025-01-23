@@ -1,4 +1,12 @@
-import { Clock, DoubleSide, InstancedMesh, PlaneGeometry, Scene, ShaderMaterial, TypedArray } from "three";
+import {
+    Clock,
+    DoubleSide,
+    InstancedMesh,
+    PlaneGeometry,
+    RawShaderMaterial,
+    Scene,
+    TypedArray
+} from "three";
 import { Object3D } from "three/src/core/Object3D";
 import { GrassOptions } from "@/src/types/grass";
 
@@ -20,10 +28,10 @@ export default class InstancedGrass implements Grass {
     clock: Clock;
     scene: Scene;
     readonly instances: number;
-    readonly grassMaterial: ShaderMaterial;
+    readonly grassMaterial: RawShaderMaterial;
     size: number;
-    mesh?: InstancedMesh<BufferGeometry, ShaderMaterial>;
-    enabled: Boolean;
+    mesh?: InstancedMesh<BufferGeometry, RawShaderMaterial>;
+    enabled: boolean;
     geometry: BufferGeometry;
 
     constructor (scene: Scene, options?: GrassOptions) {
@@ -33,7 +41,7 @@ export default class InstancedGrass implements Grass {
         this.instances = opt.instances || 1000;
         this.size = opt.size || 10000;
         this.enabled = opt.enabled || false;
-        this.grassMaterial = new ShaderMaterial({
+        this.grassMaterial = new RawShaderMaterial({
             vertexShader,
             fragmentShader,
             uniforms,

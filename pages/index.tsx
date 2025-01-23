@@ -15,41 +15,19 @@ import {
 } from "react-icons/bs";
 import { ATMap, Coordinates } from "@/src/types/map";
 import { db, firebaseCollections, getCollection } from "@/src/firebase/config";
-import { doc } from "firebase/firestore";
-import { deleteDoc } from "@firebase/firestore";
+import { doc, deleteDoc } from "firebase/firestore";
 import Link from "next/link";
 import { Constants } from "@/src/constants";
 
-export default function Home() {
-    const [maps, setMaps] = useState([] as ATMap[]);
-    const router = useRouter();
-    const projection2D : ATMap[][] = Array.from(Array(Constants.grid.x)).map(_=>[]);
+export const useGridProperties = (coordinates: Coordinates, projection2D: ATMap[][]) => {
     const gridTemplateColumns: string[] = [];
-    const gridNodes = [];
-
-    const [coordinates, setCoordinates] = useState<Coordinates>({ x: 0, y: 0 });
-
-    maps.forEach(map=>{
-        if (!map.name) {
-            return;
-        }
-        const coordinates = map.name.split('-').map(a=>Number(a));
-        const eligible = coordinates.length >= 2 && !Number.isNaN(coordinates[0]) && !Number.isNaN(coordinates[1]);
-
-        if (eligible) {
-            const x = coordinates.shift() as number;
-            const y = coordinates.shift() as number
-            if (projection2D[x]) {
-                projection2D[x][y] = map;
-            }
-        }
-    });
+    const gridNodes: React.ReactNode[] = [];
 
     for (let i = coordinates.x; i < Constants.grid.x + coordinates.x; i++) {
         for (let j = coordinates.y; j < Constants.grid.y + coordinates.y; j++) {
             const x = i > 10000 ? 10000 - i : i < 0 ? 10000 - i : i;
             const y = j > 10000 ? 10000 - j : j < 0 ? 10000 - j : j;
-            if (projection2D[x] && projection2D[x][y]) {
+            if (projection2D[x]?.[y]) {
                 const map  = projection2D[x][y];
                 gridNodes.push((<Link
                     style={{
@@ -69,6 +47,33 @@ export default function Home() {
         }
         gridTemplateColumns.push('1fr');
     }
+
+    return {gridNodes, gridTemplateColumns}
+}
+export default function Home() {
+    const router = useRouter();
+    const [maps, setMaps] = useState<ATMap[]>([]);
+    const [coordinates, setCoordinates] = useState<Coordinates>({ x: 0, y: 0 });
+
+    const projection2D: ATMap[][] = Array.from(Array(Constants.grid.x)).map(_=>[]);
+
+    maps.forEach(map => {
+        if (!map.name) {
+            return;
+        }
+        const coords = map.name.split('-').map(a=>Number(a));
+        const eligible = coords.length >= 2 && !Number.isNaN(coords[0]) && !Number.isNaN(coords[1]);
+
+        if (eligible) {
+            const x = coords.shift() as number;
+            const y = coords.shift() as number
+            if (projection2D[x]) {
+                projection2D[x][y] = map;
+            }
+        }
+    });
+
+    const { gridNodes, gridTemplateColumns } = useGridProperties(coordinates, projection2D);
 
     const deleteMap = async (id: string|undefined) => {
         if (id && window.confirm('Are you sure you wish to delete this Map?')) {

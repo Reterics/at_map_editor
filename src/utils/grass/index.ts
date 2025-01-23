@@ -8,7 +8,7 @@ export interface Grass {
     readonly grassMaterial: RawShaderMaterial;
     size: number;
     mesh?: Mesh<BufferGeometry, RawShaderMaterial>;
-    enabled: Boolean;
+    enabled: boolean;
     geometry: BufferGeometry;
 
     getFromScene: ()=>Object3D|undefined

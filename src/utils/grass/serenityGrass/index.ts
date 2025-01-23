@@ -17,7 +17,7 @@ export default class SerenityGrass implements Grass {
     readonly grassMaterial: RawShaderMaterial;
     size: number;
     mesh?: Mesh<InstancedBufferGeometry, RawShaderMaterial>;
-    enabled: Boolean;
+    enabled: boolean;
     geometry: InstancedBufferGeometry;
 
     constructor (scene: Scene, options?: GrassOptions) {

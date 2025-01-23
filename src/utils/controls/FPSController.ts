@@ -21,22 +21,23 @@ const direction = new Vector3();
 
 export class FPSController {
     controls: PointerLockControls;
-    private scene: Scene;
+    private readonly scene: Scene;
     private items: Object3D[];
-    private rayCaster: Raycaster;
+    private readonly rayCaster: Raycaster;
     target: null;
     private shadowObject: Object3D | undefined;
     far: number;
     precision: number;
     active: Active3DMode;
-    private hud: HUD;
+    private readonly hud: HUD;
     assets?: AssetObject[]
     reference?: AssetObject
+    private readonly camera: PerspectiveCamera;
 
     constructor(camera: PerspectiveCamera, domElement: HTMLElement, scene: Scene) {
         this.controls =  new PointerLockControls(camera, document.body);
 
-        const obj = this.controls.getObject();
+        const obj = this.controls.object;
         obj.name = "camera";
         this.target = null;
         //obj.up.set(0, 0, 1);
@@ -63,8 +64,9 @@ export class FPSController {
         document.addEventListener('wheel', this.onScroll.bind(this));
         this.controls.addEventListener('lock', this.updateShadowObject.bind(this));
 
-        
-        const parent = domElement && domElement.parentElement ?
+
+        this.camera = camera;
+        const parent = domElement?.parentElement ?
             domElement.parentElement : document.body;
         this.hud = new HUD(scene, camera, parent, this);
     }
@@ -157,9 +159,9 @@ export class FPSController {
 
     update(deltaTime?: number | undefined) {
         const delta = deltaTime || ((performance.now() - prevTime) / 1000);
-        if (this.controls && this.controls.isLocked) {
+        if (this.controls?.isLocked) {
 
-            this.rayCaster.ray.origin.copy(this.controls.getObject().position);
+            this.rayCaster.ray.origin.copy(this.controls.object.position);
             this.rayCaster.ray.origin.z -= 10;
 
             const intersections = this.rayCaster.intersectObjects(this.items, false);
@@ -187,11 +189,11 @@ export class FPSController {
             this.controls.moveRight(- velocity.x * delta);
             this.controls.moveForward(- velocity.z * delta);
 
-            this.controls.getObject().position.y += (velocity.y * delta); // new behavior
+            this.controls.object.position.y += (velocity.y * delta); // new behavior
 
-            if (this.controls.getObject().position.y < 35) {
+            if (this.controls.object.position.y < 35) {
                 velocity.y = 0;
-                this.controls.getObject().position.y = 35;
+                this.controls.object.position.y = 35;
                 canJump = true;
             }
 
@@ -201,11 +203,13 @@ export class FPSController {
     }
 
     getCursorPosition() {
-        const rect = this.controls.domElement.getBoundingClientRect();
+        const rect = this.controls.domElement?.getBoundingClientRect();
         const mouse = new THREE.Vector2();
 
-        mouse.x = ((rect.width / 2) / rect.width) * 2 - 1;
-        mouse.y = -((rect.height / 2) / rect.height) * 2 + 1;
+        if (rect) {
+            mouse.x = ((rect.width / 2) / rect.width) * 2 - 1;
+            mouse.y = -((rect.height / 2) / rect.height) * 2 + 1;
+        }
         return mouse;
     }
 
@@ -222,7 +226,7 @@ export class FPSController {
 
     dropObject (object: Object3D|undefined) {
         if (object) {
-            const camera = this.controls.camera;
+            const camera = this.camera;
             const movementSpeed = 3; // Adjust the speed as needed
             object.position.copy(camera.position)
 

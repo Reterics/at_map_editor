@@ -2,7 +2,7 @@
   "extends": [
     "next/core-web-vitals"
   ],
-  "plugins": ["@stylistic/ts"],
+  "plugins": ["@stylistic"],
   "rules": {
     "object-curly-spacing": ["warn", "always"],
     "space-in-parens": ["warn", "never"],
