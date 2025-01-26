@@ -2,8 +2,7 @@ import { AssetObject, Circle, Point, Rectangle, Asset, Line } from "@/src/types/
 import { ChangeEvent, SyntheticEvent, useRef } from "react";
 import { BsEraserFill, BsPaintBucket } from "react-icons/bs";
 import ToolbarButton from "@/components/form/ToolbarButton";
-import StyledSelect from "@/components/form/StyledSelect";
-import { StyledSelectOption } from "@/src/types/inputs";
+import { StyledSelect, StyledSelectOption } from "uic-pack";
 
 
 export default function CustomizeTools({ reference, selected, items, setItems, setReference }:

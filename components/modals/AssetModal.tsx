@@ -1,6 +1,5 @@
 import { AssetObject } from "@/src/types/assets";
-import StyledFile from "@/components/form/StyledFile";
-import StyledInput from "@/components/form/StyledInput";
+import { StyledFile, StyledInput } from "uic-pack";
 import { ChangeEvent, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";

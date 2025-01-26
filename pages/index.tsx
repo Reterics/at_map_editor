@@ -48,7 +48,7 @@ export const useGridProperties = (coordinates: Coordinates, projection2D: ATMap[
         gridTemplateColumns.push('1fr');
     }
 
-    return {gridNodes, gridTemplateColumns}
+    return { gridNodes, gridTemplateColumns }
 }
 export default function Home() {
     const router = useRouter();
