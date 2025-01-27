@@ -7,6 +7,7 @@ import AssetModal from "@/components/modals/AssetModal";
 import { collection, doc, setDoc } from "firebase/firestore";
 import Image from 'next/image'
 import { refreshAssets } from "@/src/utils/assets";
+import {TableViewActions, TableViewComponent} from "uic-pack";
 
 
 export default function Assets() {
@@ -38,6 +39,21 @@ export default function Assets() {
         void refreshAssets(setAssets);
     }, []);
 
+    const tableLines = assets.map((asset: AssetObject, index) => [
+        (asset.id ? asset.id : index+1),
+        (asset.image ? <Image src={asset.image}
+                              alt="Preview Image"
+                              width={80}
+                              height={32}
+        /> : ""),
+        (asset.name ? asset.name : ""),
+        asset.type,
+        TableViewActions({
+            onEdit: () => editAsset(asset),
+            onRemove: () => deleteAsset(asset.id),
+        })
+    ])
+
     return (
         <Layout>
             <div className="flex justify-between max-w-screen-xl m-auto">
@@ -51,62 +67,14 @@ export default function Assets() {
                     Add Asset
                 </button>
             </div>
-            <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-screen-xl m-auto w-full mt-2">
-                <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                    <tr>
-                        <th scope="col" className="px-6 py-3 w-[50px]">
-                            ID
-                        </th>
-
-                        <th scope="col" className="px-6 py-3 w-[140px]">
-                            Image
-                        </th>
-                        <th scope="col" className="px-6 py-3">
-                            Name
-                        </th>
-                        <th scope="col" className="px-6 py-3">
-                            Type
-                        </th>
-                        <th scope="col" className="px-6 py-3 w-[100px]">
-                            Action
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {assets.map((asset, index) =>
-                        <tr key={index} className="bg-white border-b dark:bg-gray-900 dark:border-gray-700">
-
-                            <th scope="row"
-                                className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {(asset.id ? asset.id : index+1)}
-                            </th>
-                            <th scope="row"
-                                className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {(asset.image ? <Image src={asset.image}
-                                                       alt="Preview Image"
-                                                       width={80}
-                                                       height={32}
-                                /> : "")}
-                            </th>
-                            <th scope="row"
-                                className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {(asset.name ? asset.name : "")}
-                            </th>
-
-                            <th scope="row"
-                                className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {asset.type}
-                            </th>
-                            <td className="px-6 py-4 flex flex-row text-lg">
-                                <BsPencilSquare className="cursor-pointer ml-2" onClick={() => editAsset(asset)}/>
-                                <BsFillTrashFill className="cursor-pointer ml-2" onClick={() =>
-                                    deleteAsset(asset.id)}/>
-                            </td>
-                        </tr>
-                    )}
-                    </tbody>
-                </table>
+            <div className="relative overflow-x-auto shadow-md max-w-screen-xl m-auto w-full mt-2">
+                <TableViewComponent lines={tableLines} header={[
+                    'ID',
+                    'Image',
+                    'Name',
+                    'Type',
+                    'Actions'
+                ]} />
             </div>
             <AssetModal
                 visible={showNewAsset}

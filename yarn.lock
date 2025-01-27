@@ -2791,6 +2791,11 @@ queue-microtask@^1.2.2:
   dependencies:
     scheduler "^0.25.0"
 
+react-icons@^5.4.0:
+  version "5.4.0"
+  resolved "https://registry.npmjs.org/react-icons/-/react-icons-5.4.0.tgz"
+  integrity sha512-7eltJxgVt7X64oHh6wSWNwwbKTCtMfK35hcjvJS0yxEAhPM8oUKdS3+kqaW1vicIltw+kR2unHaa12S9pPALoQ==
+
 react-icons@4.12.0:
   version "4.12.0"
   resolved "https://registry.npmjs.org/react-icons/-/react-icons-4.12.0.tgz"
@@ -3386,13 +3391,14 @@ typescript@^5.7.3, typescript@>=3.3.1, typescript@>=4.8.4, "typescript@>=4.8.4 <
   resolved "https://registry.npmjs.org/typescript/-/typescript-5.7.3.tgz"
   integrity sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==
 
-uic-pack@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.npmjs.org/uic-pack/-/uic-pack-0.1.0.tgz"
-  integrity sha512-CQlQtgs6UrNYK7EYoeZ9/MkujHRVgop8p8cp3oZZXJ1pfDeZNXD55ERiLAhqUhcYgx3RAQfuNNTFig+PmU5Tow==
+uic-pack@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.npmjs.org/uic-pack/-/uic-pack-0.2.0.tgz"
+  integrity sha512-ykEKDMaOqptavrPpUbVKcxRiCfAOsG3B3pkAiT9F/irfBcza8Yt4atEn44igCH5JqLDbxSDUMNEWh86/2HPMaw==
   dependencies:
     react "^19.0.0"
     react-dom "^19.0.0"
+    react-icons "^5.4.0"
 
 unbox-primitive@^1.1.0:
   version "1.1.0"
