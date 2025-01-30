@@ -1,5 +1,4 @@
-import Layout from "@/components/layout";
-import { BsFillTrashFill, BsPencilSquare } from "react-icons/bs";
+import Layout from "@/app/layout";
 import React, { useEffect, useState } from "react";
 import { AssetObject } from "@/src/types/assets";
 import { db, firebaseCollections } from "@/src/firebase/config";
@@ -7,7 +6,7 @@ import AssetModal from "@/components/modals/AssetModal";
 import { collection, doc, setDoc } from "firebase/firestore";
 import Image from 'next/image'
 import { refreshAssets } from "@/src/utils/assets";
-import {TableViewActions, TableViewComponent} from "uic-pack";
+import { TableViewActions, TableViewComponent } from "uic-pack";
 
 
 export default function Assets() {

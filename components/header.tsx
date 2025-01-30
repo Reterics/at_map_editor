@@ -2,20 +2,19 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Image from "next/image";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/app/store/ThemeContext";
 
 export default function Header() {
     const pathname = usePathname()
-    const { systemTheme, theme, setTheme } = useTheme();
-    const currentTheme = theme === 'system' ? systemTheme : theme;
-
+    const isDarkTheme = useTheme()?.theme === 'dark';
+console.error(useTheme()?.theme)
     return (
         <header>
             <nav className="w-full bg-white border-gray-200 dark:bg-gray-900">
                 <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
                     <a href="https://reterics.com/" className="flex items-center">
                         <Image src={
-                            currentTheme === "dark" ? "/logo-light.png" : "/logo.png"
+                            isDarkTheme ? "/logo-light.png" : "/logo.png"
                         } width={30} height={32} className="h-8" alt="Reterics Logo"/>
                         <div
                             className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white flex-row flex">T

@@ -1,9 +1,7 @@
-import Layout from "@/components/layout";
+import Layout from "@/app/layout";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-    BsPencilSquare,
-    BsFillTrashFill,
     BsArrowLeft,
     BsArrowRight,
     BsArrowUpLeft,
@@ -18,7 +16,7 @@ import { db, firebaseCollections, getCollection } from "@/src/firebase/config";
 import { doc, deleteDoc } from "firebase/firestore";
 import Link from "next/link";
 import { Constants } from "@/src/constants";
-import {TableViewActions, TableViewComponent} from "uic-pack";
+import { TableViewActions, TableViewComponent } from "uic-pack";
 
 export const useGridProperties = (coordinates: Coordinates, projection2D: ATMap[][]) => {
     const gridTemplateColumns: string[] = [];
